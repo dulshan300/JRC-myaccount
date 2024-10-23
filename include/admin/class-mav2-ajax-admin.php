@@ -366,21 +366,36 @@ final class MAV2_Ajax_Admin
         function: woocommerce_get_customer_upe_payment_tokens
         line: 337
         code to remove all the token not exist on stripe
+
+        woocommerce_get_customer_payment_tokens_legacy
+        line: 160
         */
 
         $keys = $this->get_stripe_keys();
 
         $stripe = new \Stripe\StripeClient($keys['secret_key']);
 
-        $token = $_POST['token'];
-        $card = $token['card'];
+        $source = $_POST['token'];
+        $card = $source['card'];
+        $payment_method_id = $source['id'];
 
         $user = wp_get_current_user();
 
         // get user options
         $customer_id = get_user_meta(get_current_user_id(), 'wp__stripe_customer_id', true);
 
+        if (!empty($customer_id)) {
+
+            try {
+                // check customer in stripe account 
+                $customer = $stripe->customers->retrieve($customer_id);
+            } catch (\Exception $ex) {
+                $customer_id = '';
+            }
+        }
+
         if (empty($customer_id)) {
+
             $customer = $stripe->customers->create([
                 'name' => $user->display_name,
                 'email' => $user->user_email,
@@ -392,29 +407,46 @@ final class MAV2_Ajax_Admin
             $customer_id = $customer->id;
         }
 
-        $customer = $stripe->customers->retrieve($customer_id);
-        // create payment method
-        error_log('Creating payment method');
-        $pm =  $stripe->paymentMethods->create([
-            'type' => 'card',
-            'card' => [
-                'token' => $token['id']
-            ]
-        ]);
+        error_log('Customer ID: ' . $customer_id);
+        error_log('Token ID: ' . $payment_method_id);
+
+
+        // attach payment method to customer
+        error_log('Attaching payment method to customer');
+
+        $stripe->paymentMethods->attach(
+            $payment_method_id,
+            ['customer' => $customer_id]
+        );
+
+        // getting payment method form stripe
+        $pm = $stripe->paymentMethods->retrieve($payment_method_id);
+        error_log('Payment method form stripe: ' . print_r($pm, true));
 
         // add payment method to woocommerce
         error_log('Adding payment method to woocommerce');
 
+        if (class_exists('WC_Stripe_Payment_Tokens')) {
+            $stripe_tokens_instance = WC_Stripe_Payment_Tokens::get_instance();
+
+            // Remove the action for retrieving customer payment tokens
+            remove_action('woocommerce_get_customer_payment_tokens', [$stripe_tokens_instance, 'woocommerce_get_customer_payment_tokens'], 10, 3);
+
+            remove_action('woocommerce_payment_token_deleted', [$stripe_tokens_instance, 'woocommerce_payment_token_deleted'], 10, 2);
+
+            // Optionally, log or confirm that the action has been removed
+            error_log('Removed Stripe woocommerce_get_customer_payment_tokens action.');
+        }
 
         $pt = new WC_Payment_Token_CC();
-        $pt->set_token($pm->id);
-        $pt->set_gateway_id('stripe');
+        $pt->set_token($payment_method_id);
+        $pt->set_gateway_id(WC_Stripe_UPE_Payment_Gateway::ID);
         $pt->set_card_type(strtolower($card['brand']));
         $pt->set_last4($card['last4']);
         $pt->set_expiry_month($card['exp_month']);
         $pt->set_expiry_year($card['exp_year']);
         $pt->set_user_id($user->ID);
-        // $pt->set_default(true);
+        $pt->set_default(true);
 
 
         if ($pt->validate()) {
@@ -424,19 +456,47 @@ final class MAV2_Ajax_Admin
             error_log(print_r($pt->get_error_messages(), true));
         }
 
-        // attach payment method to customer
-        error_log('Attaching payment method to customer');
-        $stripe->paymentMethods->attach(
-            $pm->id,
-            ['customer' => $customer_id]
-        );
+        $stripe_customer = new WC_Stripe_Customer($user->ID);
+        $stripe_sources  = $stripe_customer->get_sources();
 
-        wp_send_json_success([$pt->get_id(), $card]);
+
+        if (class_exists('WC_Stripe_Payment_Tokens')) {
+            $stripe_tokens_instance = WC_Stripe_Payment_Tokens::get_instance();
+
+            // Remove the action for retrieving customer payment tokens
+            add_action('woocommerce_get_customer_payment_tokens', [$stripe_tokens_instance, 'woocommerce_get_customer_payment_tokens'], 10, 3);
+
+            add_action('woocommerce_payment_token_deleted', [$stripe_tokens_instance, 'woocommerce_payment_token_deleted'], 10, 2);
+
+            // Optionally, log or confirm that the action has been removed
+            error_log('Add Stripe woocommerce_get_customer_payment_tokens action.');
+        }
+
+        wp_send_json_success($stripe_sources);
     }
+
+
 
     public function user_delete_payment_method()
     {
-        wp_send_json_success(["success"]);
+        $keys = $this->get_stripe_keys();
+        $stripe = new \Stripe\StripeClient($keys['secret_key']);
+
+        // get payment token
+        $token_id = $_POST['id'];
+
+        $pt = WC_Payment_Tokens::get($token_id);
+
+
+        // delete token
+
+        $stripe->paymentMethods->detach($pt->get_token());
+
+
+        $pt->delete();
+
+
+        wp_send_json_success();
     }
 
     private function get_stripe_keys()

@@ -20,6 +20,8 @@ require_once MAV2_PATH . 'include/admin/class-mav2-admin.php';
 require_once MAV2_PATH . 'include/admin/class-mav2-ajax-admin.php';
 require_once MAV2_PATH . 'include/admin/class-mav2-short-code.php';
 
+
+
 function mav2_init()
 {
     $mav2 = new MAV2_Admin();
@@ -27,3 +29,13 @@ function mav2_init()
 }
 
 add_action('plugins_loaded', 'mav2_init');
+
+
+add_action('woocommerce_payment_token_deleted', 'check_custom_token_removal', 10, 2);
+
+function check_custom_token_removal($token_id, $token) {
+    if ($token->get_gateway_id() === 'stripe') {
+        // Log or handle the token deletion
+        error_log('Custom Stripe token deleted: ' . $token_id);
+    }
+}
