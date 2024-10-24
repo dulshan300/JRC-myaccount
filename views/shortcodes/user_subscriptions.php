@@ -3,6 +3,7 @@ $user_id = get_current_user_id();
 
 if (empty($user_id)) {
     echo 'Please login to see your subscription';
+
     return;
 }
 
@@ -97,7 +98,7 @@ $res = $wpdb->get_results($sql);
 
 $out_data = [];
 
-$w_countries = new WC_Countries();
+$w_countries = new WC_Countries;
 $all_countries = $w_countries->get_countries();
 
 foreach ($res as $sub) {
@@ -106,13 +107,13 @@ foreach ($res as $sub) {
     $temp['status'] = $sub->prepaid_cancel === 'yes' ? 'wc-cancelled' : $sub->status;
     $temp['prepaid_cancel'] = $sub->prepaid_cancel;
     $temp['product'] = $sub->product;
-    $temp['plan'] = (intval($sub->plan) > 1 ? $sub->plan . ' Months' : $sub->plan . ' Month') . " Plan";
+    $temp['plan'] = (intval($sub->plan) > 1 ? $sub->plan.' Months' : $sub->plan.' Month').' Plan';
 
     if ($sub->plan == 1) {
-        $temp['shipped'] = '1' . " of " . $sub->plan;
+        $temp['shipped'] = '1'.' of '.$sub->plan;
     } else {
 
-        $temp['shipped'] = intval($sub->plan) - intval($sub->to_ship) . " of " . $sub->plan;
+        $temp['shipped'] = intval($sub->plan) - intval($sub->to_ship).' of '.$sub->plan;
     }
 
     $temp['next_shipment_date'] = date('Y-m-03', strtotime($sub->next_shipment_date));
@@ -120,7 +121,6 @@ foreach ($res as $sub) {
     $sub_orders = [$sub->parent_order_id];
     $sub_orders = array_merge($sub_orders, unserialize($sub->renewal_ids));
     $last_sub = end($sub_orders);
-
 
     // getting order details
     $osql = "SELECT
@@ -207,13 +207,12 @@ foreach ($res as $sub) {
     ";
 
     $odata = $wpdb->get_row($osql);
-    $temp['created_at'] = date('d F Y', strtotime($odata->created_at . ' + 8 hours'));
+    $temp['created_at'] = date('d F Y', strtotime($odata->created_at.' + 8 hours'));
     $temp['product_value'] = number_format(floatval($odata->subtotal), 2);
     $temp['shipping'] = number_format(floatval($odata->shipping), 2);
-    $temp['discount'] = floatval($odata->discount) > 0 ? number_format(floatval($odata->discount), 2) . " ({$odata->coupon})" : "0.00";
+    $temp['discount'] = floatval($odata->discount) > 0 ? number_format(floatval($odata->discount), 2)." ({$odata->coupon})" : '0.00';
     $temp['total'] = number_format(floatval($odata->total_amount), 2);
     $temp['currency'] = get_woocommerce_currency_symbol($odata->currency);
-
 
     // get order shipping address
     $shppng_sql = "SELECT
@@ -237,7 +236,7 @@ foreach ($res as $sub) {
     $keys = array_keys($shppng_data);
 
     foreach ($keys as $k) {
-        if (!empty($shppng_data[$k])) {
+        if (! empty($shppng_data[$k])) {
             if ($k === 'country') {
                 $shppng_data[$k] = $all_countries[$shppng_data[$k]];
             }
@@ -252,14 +251,14 @@ foreach ($res as $sub) {
     $fullfilled = unserialize($sub->fullfilled);
     $last_box = end($fullfilled);
 
-    $last_date = strtotime($odata->created_at . ' + 8 hours');
+    $last_date = strtotime($odata->created_at.' + 8 hours');
     $order = wc_get_order($last_box);
 
     if ($order) {
         $last_date = $order->get_date_paid()->date;
     }
 
-    $temp['next_payment'] = date('03 F Y', strtotime(date('Y-m-03', $last_date) . ' +' . ($sub->plan > 1 ? $sub->to_ship + 1 : 1) . ' month'));
+    $temp['next_payment'] = date('03 F Y', strtotime(date('Y-m-03', $last_date).' +'.($sub->plan > 1 ? $sub->to_ship + 1 : 1).' month'));
 
     $out_data[] = $temp;
 }
@@ -327,7 +326,7 @@ foreach ($res as $sub) {
 
 <!-- generate html -->
 <div id="sub_cards">
-    <?php foreach ($out_data as $sub): ?>
+    <?php foreach ($out_data as $sub) { ?>
 
         <div class="sub_card">
             <div class="sub_card_header">
@@ -342,18 +341,18 @@ foreach ($res as $sub) {
                 <div class="sub_plan_details">
                     <span class="sub_plan_shipped">No. of Boxes Shipped: <?php echo $sub['shipped']; ?></span>
                     <span class="sub_plan_created">Subscription Date: <?php echo $sub['created_at']; ?></span>
-                    <?php if ($sub['status'] != 'wc-cancelled'): ?>
+                    <?php if ($sub['status'] != 'wc-cancelled') { ?>
                         <span class="sub_plan_next_renew">Next Payment Renewal Date: <?php echo $sub['next_payment']; ?></span>
-                    <?php endif ?>
+                    <?php } ?>
 
                     <div class="sub_plan_status">
-                        <?php if ($sub['status'] === 'wc-active'): ?>
+                        <?php if ($sub['status'] === 'wc-active') { ?>
                             <button data-sub="<?php echo $sub['id']; ?>" class="sub_button sub_plan_cancel_sub">Cancel Subscription</button>
-                        <?php elseif ($sub['status'] === 'wc-cancelled'): ?>
+                        <?php } elseif ($sub['status'] === 'wc-cancelled') { ?>
                             <span class="sub_status sub_plan_inactive">Cancelled</span>
-                        <?php else: ?>
+                        <?php } else { ?>
                             <span class="sub_status sub_plan_pending">Pending</span>
-                        <?php endif; ?>
+                        <?php } ?>
 
                         <span class="sub_plan_cancel_note">Note: Cancellation will take effect after your plan ends</span>
                     </div>
@@ -361,20 +360,20 @@ foreach ($res as $sub) {
 
                 <!-- product values -->
                 <div class="sub_product_values">
-                    <span class="sub_product_value">Product Value: <?php echo $sub['currency'] . $sub['product_value']; ?></span>
-                    <span class="sub_product_subtotal">Subtotal: <?php echo $sub['currency'] . $sub['product_value']; ?></span>
-                    <span class="sub_product_shipping">Shipping: <?php echo $sub['currency'] . $sub['shipping']; ?></span>
-                    <span class="sub_product_discount">Discount: <?php echo $sub['currency'] . $sub['discount']; ?></span>
-                    <span class="sub_product_total">Total: <?php echo $sub['currency'] . $sub['total']; ?></span>
+                    <span class="sub_product_value">Product Value: <?php echo $sub['currency'].$sub['product_value']; ?></span>
+                    <span class="sub_product_subtotal">Subtotal: <?php echo $sub['currency'].$sub['product_value']; ?></span>
+                    <span class="sub_product_shipping">Shipping: <?php echo $sub['currency'].$sub['shipping']; ?></span>
+                    <span class="sub_product_discount">Discount: <?php echo $sub['currency'].$sub['discount']; ?></span>
+                    <span class="sub_product_total">Total: <?php echo $sub['currency'].$sub['total']; ?></span>
                 </div>
 
                 <!-- address details -->
 
                 <div class="sub_plan_shipping">
                     <ul>
-                        <?php foreach ($sub['address'] as $line): ?>
+                        <?php foreach ($sub['address'] as $line) { ?>
                             <li class="sub_address_line"><?= $line ?></li>
-                        <?php endforeach; ?>
+                        <?php } ?>
                     </ul>
                 </div>
 
@@ -383,12 +382,12 @@ foreach ($res as $sub) {
 
         </div>
 
-    <?php endforeach; ?>
+    <?php } ?>
 
     <!-- if no subscriptions -->
-    <?php if (empty($out_data)): ?>
+    <?php if (empty($out_data)) { ?>
 
         <p>No Subscriptions Found</p>
 
-    <?php endif; ?>
+    <?php } ?>
 </div>

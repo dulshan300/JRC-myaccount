@@ -4,13 +4,13 @@
 
 final class MAV2_Ajax_Admin
 {
-    static private $_currency_recored = null;
+    private static $_currency_recored = null;
 
     public function mav2_test()
     {
-        error_log("Testing AJAX call...");
+        error_log('Testing AJAX call...');
 
-        wp_send_json_success(["success"]);
+        wp_send_json_success(['success']);
     }
 
     public function cancel_subscription()
@@ -19,6 +19,7 @@ final class MAV2_Ajax_Admin
 
         if (empty($user_id)) {
             wp_send_json_error('Please login');
+
             return;
         }
 
@@ -73,6 +74,7 @@ final class MAV2_Ajax_Admin
 
         if (empty($user_id)) {
             wp_send_json_error('Please login');
+
             return;
         }
 
@@ -88,8 +90,6 @@ final class MAV2_Ajax_Admin
         $billing_postcode = sanitize_text_field($_POST['billing_postcode']);
         $billing_country = sanitize_text_field($_POST['billing_country']);
 
-
-
         // validation errors
         $validation_erros = [];
 
@@ -101,7 +101,7 @@ final class MAV2_Ajax_Admin
             $validation_erros['billing_last_name'] = 'Last name is required';
         }
 
-        if (!filter_var($billing_email, FILTER_VALIDATE_EMAIL)) {
+        if (! filter_var($billing_email, FILTER_VALIDATE_EMAIL)) {
             $validation_erros['billing_email'] = 'Email is required';
         }
 
@@ -111,7 +111,6 @@ final class MAV2_Ajax_Admin
         } else {
             $validation_erros['billing_phone'] = 'Phone is required';
         }
-
 
         if (strlen($billing_address_1) < 3) {
             $validation_erros['billing_address_1'] = 'Address is required';
@@ -132,12 +131,11 @@ final class MAV2_Ajax_Admin
             $validation_erros['billing_country'] = 'Country is required';
         }
 
-        if (!empty($validation_erros)) {
+        if (! empty($validation_erros)) {
             wp_send_json($validation_erros, 422);
+
             return;
         }
-
-
 
         update_user_meta($user_id, 'billing_first_name', $billing_first_name);
         update_user_meta($user_id, 'billing_last_name', $billing_last_name);
@@ -175,9 +173,9 @@ final class MAV2_Ajax_Admin
     {
         $user = wp_get_current_user();
 
-
-        if (!is_user_logged_in()) {
+        if (! is_user_logged_in()) {
             wp_send_json_error('Please login');
+
             return;
         }
 
@@ -207,7 +205,7 @@ final class MAV2_Ajax_Admin
             $validation_erros['ua_email'] = 'Email is required';
         }
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $validation_erros['ua_email'] = 'Email is invalid';
         }
 
@@ -215,18 +213,15 @@ final class MAV2_Ajax_Admin
 
         $email_check = email_exists($email);
 
-        if (!$email_check === false & $email_check !== $user_id) {
+        if (! $email_check === false & $email_check !== $user_id) {
             $validation_erros['ua_email'] = 'Email already exists';
         }
 
-
-        if (!empty($validation_erros)) {
+        if (! empty($validation_erros)) {
             wp_send_json($validation_erros, 422);
+
             return;
         }
-
-
-
 
         update_user_meta($user_id, 'first_name', $first_name);
         update_user_meta($user_id, 'last_name', $last_name);
@@ -235,16 +230,16 @@ final class MAV2_Ajax_Admin
 
         wp_update_user($data);
 
-        wp_send_json_success(["success"]);
+        wp_send_json_success(['success']);
     }
 
     public function user_password_update_form()
     {
         $user = wp_get_current_user();
 
-
-        if (!is_user_logged_in()) {
+        if (! is_user_logged_in()) {
             wp_send_json_error('Please login');
+
             return;
         }
 
@@ -256,7 +251,7 @@ final class MAV2_Ajax_Admin
         // validating password
         // check current password
 
-        if (!wp_check_password($current_password, $user->user_pass, $user->ID)) {
+        if (! wp_check_password($current_password, $user->user_pass, $user->ID)) {
 
             $validation_erros['current_password'] = 'Current password is incorrect';
         }
@@ -270,7 +265,6 @@ final class MAV2_Ajax_Admin
             $validation_erros['confirm_password'] = 'Confirm password does not match';
         }
 
-
         if (count($validation_erros) > 0) {
             wp_send_json($validation_erros, 422);
         }
@@ -279,84 +273,28 @@ final class MAV2_Ajax_Admin
 
         wp_set_password($new_password, $user->ID);
 
-        wp_send_json_success(["success"]);
+        wp_send_json_success(['success']);
     }
 
-    public function user_add_payment_method_sql()
+    private function user_get_payment_methods()
     {
-        global $wpdb;
-
-        $keys = $this->get_stripe_keys();
-
-        $stripe = new \Stripe\StripeClient($keys['secret_key']);
-
-        $token = $_POST['token'];
-        $card = $token['card'];
-
         $user = wp_get_current_user();
+        $tokens = WC_Payment_Tokens::get_customer_tokens($user->ID);
 
-        // get user options
-        $customer_id = get_user_meta(get_current_user_id(), 'wp__stripe_customer_id', true);
+        $token_details = [];
 
-        if (empty($customer_id)) {
-            $customer = $stripe->customers->create([
-                'name' => $user->display_name,
-                'email' => $user->user_email,
-                'description' => 'Customer for ' . $user->display_name
-            ]);
-
-            update_user_meta(get_current_user_id(), 'wp__stripe_customer_id', $customer->id);
-
-            $customer_id = $customer->id;
+        foreach ($tokens as $token) {
+            // delete token
+            $token_details[] = [
+                'id' => $token->get_id(),
+                'card_type' => ucfirst($token->get_card_type()),
+                'last4' => $token->get_last4(),
+                'expiry' => $token->get_expiry_month().'/'.$token->get_expiry_year(),
+                'user_id' => $token->get_user_id(),
+            ];
         }
 
-        $customer = $stripe->customers->retrieve($customer_id);
-        // create payment method
-        error_log('Creating payment method');
-        $pm =  $stripe->paymentMethods->create([
-            'type' => 'card',
-            'card' => [
-                'token' => $token['id']
-            ]
-        ]);
-
-        // add payment method to woocommerce
-        error_log('Adding payment method to woocommerce');
-
-        $cc = [
-            'gateway_id' => 'stripe',
-            'token' => $pm->id,
-            'user_id' => $user->ID,
-            'type' => 'CC',
-            'is_default' => 0
-        ];
-
-        // insert this in to 'wp_woocommerce_payment_tokens'
-        $wpdb->insert('wp_woocommerce_payment_tokens', $cc);
-
-        $token_id = $wpdb->insert_id;
-
-        $cc_meta = [
-            'card_type' => $card['brand'],
-            'last4' => $card['last4'],
-            'expiry_month' => $card['exp_month'],
-            'expiry_year' => $card['exp_year'],
-        ];
-
-        // insert this in to 'wp_woocommerce_payment_tokenmeta'
-        foreach ($cc_meta as $key => $value) {
-            $wpdb->insert('wp_woocommerce_payment_tokenmeta', ['payment_token_id' => $token_id, 'meta_key' => $key, 'meta_value' => $value]);
-        }
-
-
-        // attach payment method to customer
-        error_log('Attaching payment method to customer');
-        $stripe->paymentMethods->attach(
-            $pm->id,
-            ['customer' => $customer_id]
-        );
-
-        wp_send_json_success([$token_id, $card]);
+        return $token_details;
     }
 
     public function user_add_payment_method()
@@ -384,10 +322,10 @@ final class MAV2_Ajax_Admin
         // get user options
         $customer_id = get_user_meta(get_current_user_id(), 'wp__stripe_customer_id', true);
 
-        if (!empty($customer_id)) {
+        if (! empty($customer_id)) {
 
             try {
-                // check customer in stripe account 
+                // check customer in stripe account
                 $customer = $stripe->customers->retrieve($customer_id);
             } catch (\Exception $ex) {
                 $customer_id = '';
@@ -399,7 +337,7 @@ final class MAV2_Ajax_Admin
             $customer = $stripe->customers->create([
                 'name' => $user->display_name,
                 'email' => $user->user_email,
-                'description' => 'Customer for ' . $user->display_name
+                'description' => 'Customer for '.$user->display_name,
             ]);
 
             update_user_meta(get_current_user_id(), 'wp__stripe_customer_id', $customer->id);
@@ -407,9 +345,8 @@ final class MAV2_Ajax_Admin
             $customer_id = $customer->id;
         }
 
-        error_log('Customer ID: ' . $customer_id);
-        error_log('Token ID: ' . $payment_method_id);
-
+        error_log('Customer ID: '.$customer_id);
+        error_log('Token ID: '.$payment_method_id);
 
         // attach payment method to customer
         error_log('Attaching payment method to customer');
@@ -421,7 +358,7 @@ final class MAV2_Ajax_Admin
 
         // getting payment method form stripe
         $pm = $stripe->paymentMethods->retrieve($payment_method_id);
-        error_log('Payment method form stripe: ' . print_r($pm, true));
+        error_log('Payment method form stripe: '.print_r($pm, true));
 
         // add payment method to woocommerce
         error_log('Adding payment method to woocommerce');
@@ -438,7 +375,7 @@ final class MAV2_Ajax_Admin
             error_log('Removed Stripe woocommerce_get_customer_payment_tokens action.');
         }
 
-        $pt = new WC_Payment_Token_CC();
+        $pt = new WC_Payment_Token_CC;
         $pt->set_token($payment_method_id);
         $pt->set_gateway_id(WC_Stripe_UPE_Payment_Gateway::ID);
         $pt->set_card_type(strtolower($card['brand']));
@@ -448,7 +385,6 @@ final class MAV2_Ajax_Admin
         $pt->set_user_id($user->ID);
         $pt->set_default(true);
 
-
         if ($pt->validate()) {
             error_log('Saving payment method to woocommerce');
             $pt->save();
@@ -457,8 +393,7 @@ final class MAV2_Ajax_Admin
         }
 
         $stripe_customer = new WC_Stripe_Customer($user->ID);
-        $stripe_sources  = $stripe_customer->get_sources();
-
+        $stripe_sources = $stripe_customer->get_sources();
 
         if (class_exists('WC_Stripe_Payment_Tokens')) {
             $stripe_tokens_instance = WC_Stripe_Payment_Tokens::get_instance();
@@ -472,10 +407,8 @@ final class MAV2_Ajax_Admin
             error_log('Add Stripe woocommerce_get_customer_payment_tokens action.');
         }
 
-        wp_send_json_success($stripe_sources);
+        wp_send_json($this->user_get_payment_methods());
     }
-
-
 
     public function user_delete_payment_method()
     {
@@ -487,16 +420,13 @@ final class MAV2_Ajax_Admin
 
         $pt = WC_Payment_Tokens::get($token_id);
 
-
         // delete token
 
         $stripe->paymentMethods->detach($pt->get_token());
 
-
         $pt->delete();
 
-
-        wp_send_json_success();
+        wp_send_json($this->user_get_payment_methods());
     }
 
     private function get_stripe_keys()
@@ -510,18 +440,18 @@ final class MAV2_Ajax_Admin
             }
         }
 
-        if (!$has_stripe) {
+        if (! $has_stripe) {
             return [
                 'has_stripe' => $has_stripe,
                 'secret_key' => false,
-                'publishable_key' => false
+                'publishable_key' => false,
             ];
         }
 
         $strip_options = get_option('woocommerce_stripe_settings');
         $test_mode = $strip_options['testmode'] == 'yes' ? true : false;
-        $secret_key = "";
-        $publishable_key = "";
+        $secret_key = '';
+        $publishable_key = '';
 
         if ($test_mode) {
             $secret_key = $strip_options['test_secret_key'];
@@ -534,7 +464,7 @@ final class MAV2_Ajax_Admin
         return [
             'has_stripe' => $has_stripe,
             'secret_key' => $secret_key,
-            'publishable_key' => $publishable_key
+            'publishable_key' => $publishable_key,
         ];
     }
 }

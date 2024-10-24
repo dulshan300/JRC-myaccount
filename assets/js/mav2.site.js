@@ -32,8 +32,6 @@ async function _file_download(data) {
 }
 
 
-
-
 (function async($) {
 
     function mav2_show_success(form) {
@@ -42,6 +40,14 @@ async function _file_download(data) {
         setTimeout(() => {
             $(form).find('.mav2_success_alert').fadeOut();
         }, 3000);
+    }
+
+    function show_processing(parent) {
+        $(parent).find('.processing').fadeIn();
+    }
+
+    function hide_processing(parent) {
+        $(parent).find('.processing').fadeOut();
     }
 
     $(document).on('click', '.sub_plan_cancel_sub', async function () {
@@ -192,5 +198,7 @@ async function _file_download(data) {
             $(this).find('button').prop('disabled', false);
         }
     })
+
+
 
 })(jQuery)

@@ -6,6 +6,7 @@ $user_id = $user->ID;
 
 if (empty($user_id)) {
     echo 'Please login';
+
     return;
 }
 

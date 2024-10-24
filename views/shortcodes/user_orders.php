@@ -3,6 +3,7 @@ $user_id = get_current_user_id();
 
 if (empty($user_id)) {
     echo 'Please login to see your orders';
+
     return;
 }
 
@@ -24,22 +25,20 @@ foreach ($rows as $row) {
     $orders[$row->id]['product'] = $row->product;
     $orders[$row->id]['product_image'] = $row->product_image_url;
 
-
     $orders[$row->id]['discount_amount'] = number_format(floatval($row->discount_amount), 2);
-    $orders[$row->id]['coupon'] = $row->coupon ? "( " . $row->coupon . " )" : '';
+    $orders[$row->id]['coupon'] = $row->coupon ? '( '.$row->coupon.' )' : '';
 
     if (array_search($row->order_item_id, $_itmes_value) === false) {
         $orders[$row->id]['items_value'] += floatval($row->product_net_revenue);
-        $_itmes_value[] =  $row->order_item_id;
+        $_itmes_value[] = $row->order_item_id;
     }
-
 
     $orders[$row->id]['total'] = number_format(floatval($row->total_amount), 2);
     $orders[$row->id]['currency'] = get_woocommerce_currency_symbol($row->currency);
 
     // clean meta key
     $key = $row->meta_key;
-    $key  = str_replace("-", " ", $key);
+    $key = str_replace('-', ' ', $key);
     $key = ucwords($key);
 
     $orders[$row->id]['items'][$row->order_item_id][$key] = $row->meta_value;
@@ -48,8 +47,6 @@ foreach ($rows as $row) {
 $meta_order = ['First Name', 'Last Name', 'Email Address', 'Ticket Type', 'Participation Date', 'Date Of Birth', 'Country'];
 
 // format items data
-
-
 
 foreach ($orders as $oid => $order) {
     $order_items = $order['items'];
@@ -65,7 +62,7 @@ foreach ($orders as $oid => $order) {
         }
 
         $full_name = [$new_order['First Name'], $new_order['Last Name']];
-        $full_name  = implode(" ", $full_name);
+        $full_name = implode(' ', $full_name);
         unset($new_order['First Name']);
         unset($new_order['Last Name']);
         $_temp = [];
@@ -82,7 +79,7 @@ foreach ($orders as $oid => $order) {
 ?>
 
 <div id="order_cards">
-    <?php foreach ($orders as $order): ?>
+    <?php foreach ($orders as $order) { ?>
 
         <div class="order_card">
 
@@ -94,22 +91,22 @@ foreach ($orders as $oid => $order) {
                     <h4>Ticket Details:</h4>
                     <div class="oc_items">
 
-                        <?php foreach ($order['items'] as $item_id => $meta): ?>
+                        <?php foreach ($order['items'] as $item_id => $meta) { ?>
 
                             <div class="oc_item">
                                 <ul>
-                                    <?php foreach ($meta as $key => $value): ?>
+                                    <?php foreach ($meta as $key => $value) { ?>
 
                                         <li><?= $key ?> : <?= $value ?> </li>
 
-                                    <?php endforeach ?>
+                                    <?php } ?>
 
                                 </ul>
 
 
                             </div>
 
-                        <?php endforeach ?>
+                        <?php } ?>
 
                     </div>
 
@@ -129,12 +126,12 @@ foreach ($orders as $oid => $order) {
 
         </div>
 
-    <?php endforeach; ?>
+    <?php } ?>
 
     <!-- if no subscriptions -->
-    <?php if (empty($orders)): ?>
+    <?php if (empty($orders)) { ?>
 
         <p>No Order Found</p>
 
-    <?php endif; ?>
+    <?php } ?>
 </div>

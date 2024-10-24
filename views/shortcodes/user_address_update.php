@@ -3,6 +3,7 @@ $user_id = get_current_user_id();
 
 if (empty($user_id)) {
     echo 'Please login';
+
     return;
 }
 
@@ -18,9 +19,8 @@ $billing_city = get_user_meta($user_id, 'billing_city', true);
 $billing_postcode = get_user_meta($user_id, 'billing_postcode', true);
 $billing_country = get_user_meta($user_id, 'billing_country', true);
 
-$countries_obj = new WC_Countries(); // Initialize the WC_Countries class
+$countries_obj = new WC_Countries; // Initialize the WC_Countries class
 $countries = $countries_obj->get_countries(); // Get the list of countries
-
 
 ?>
 
@@ -73,9 +73,9 @@ $countries = $countries_obj->get_countries(); // Get the list of countries
                 <label for="billing_country">Country / Region *</label>
                 <select name="billing_country" id="billing_country" required>
                     <option value="">Select a country / region…</option>
-                    <?php foreach ($countries as $key => $value): ?>
+                    <?php foreach ($countries as $key => $value) { ?>
                         <option value="<?= $key; ?>" <?= $key == $billing_country ? 'selected' : ''; ?>><?= $value; ?></option>
-                    <?php endforeach; ?>
+                    <?php } ?>
                 </select>
                 <span id="billing_country_error" style="display: none;" class="mav2_error"></span>
             </div>

@@ -22,6 +22,50 @@
   color: red;
 }
 
+.mav2-custom-loader {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  border: 8px solid;
+  border-color: #E4E4ED;
+  border-right-color: #051a44;
+  -webkit-animation: mav2_s2 1s infinite linear;
+          animation: mav2_s2 1s infinite linear;
+}
+
+.processing {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+.processing .loader {
+  background: #fff;
+  padding: 30px;
+  border-radius: 7px;
+}
+
+@-webkit-keyframes mav2_s2 {
+  to {
+    -webkit-transform: rotate(1turn);
+            transform: rotate(1turn);
+  }
+}
+
+@keyframes mav2_s2 {
+  to {
+    -webkit-transform: rotate(1turn);
+            transform: rotate(1turn);
+  }
+}
 #order_cards {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -31,6 +75,7 @@
       -ms-flex-direction: column;
           flex-direction: column;
   gap: 20px;
+  position: relative;
 }
 #order_cards .order_card {
   background: #fff;
@@ -39,6 +84,7 @@
   -webkit-box-shadow: 6px 6px 5px rgba(0, 0, 0, 0.01);
           box-shadow: 6px 6px 5px rgba(0, 0, 0, 0.01);
   color: #001A43;
+  border: 1px solid #d3d3d3;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -131,6 +177,7 @@
       -ms-flex-direction: column;
           flex-direction: column;
   gap: 20px;
+  position: relative;
 }
 #sub_cards .sub_card {
   background: #fff;
@@ -138,6 +185,8 @@
   border-radius: 14px;
   -webkit-box-shadow: 6px 6px 5px rgba(0, 0, 0, 0.01);
           box-shadow: 6px 6px 5px rgba(0, 0, 0, 0.01);
+  color: #001A43;
+  border: 1px solid #d3d3d3;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -285,8 +334,15 @@
   color: rgba(128, 128, 128, 0.8);
 }
 
+#user_address_update,
+#account_details,
+#payment_methods,
+#user_password_update {
+  position: relative;
+}
 #user_address_update form,
 #account_details form,
+#payment_methods form,
 #user_password_update form {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -299,6 +355,7 @@
 }
 #user_address_update form *,
 #account_details form *,
+#payment_methods form *,
 #user_password_update form * {
   margin: 0;
   padding: 0;
@@ -315,6 +372,7 @@
 }
 #user_address_update form .mav2_success_alert,
 #account_details form .mav2_success_alert,
+#payment_methods form .mav2_success_alert,
 #user_password_update form .mav2_success_alert {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -336,6 +394,7 @@
 }
 #user_address_update form .mav2_fg_row,
 #account_details form .mav2_fg_row,
+#payment_methods form .mav2_fg_row,
 #user_password_update form .mav2_fg_row {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -350,6 +409,7 @@
 @media screen and (min-width: 768px) {
   #user_address_update form .mav2_fg_row,
   #account_details form .mav2_fg_row,
+  #payment_methods form .mav2_fg_row,
   #user_password_update form .mav2_fg_row {
     -webkit-box-orient: horizontal;
     -webkit-box-direction: normal;
@@ -359,6 +419,7 @@
 }
 #user_address_update form .mav2_fg,
 #account_details form .mav2_fg,
+#payment_methods form .mav2_fg,
 #user_password_update form .mav2_fg {
   -webkit-box-flex: 1;
       -ms-flex: 1;
@@ -374,6 +435,7 @@
 }
 #user_address_update form .mav2_fg label,
 #account_details form .mav2_fg label,
+#payment_methods form .mav2_fg label,
 #user_password_update form .mav2_fg label {
   display: block;
   font-size: 1rem;
@@ -383,6 +445,7 @@
 }
 #user_address_update form .mav2_fg .with_icon,
 #account_details form .mav2_fg .with_icon,
+#payment_methods form .mav2_fg .with_icon,
 #user_password_update form .mav2_fg .with_icon {
   position: relative;
   display: -webkit-box;
@@ -394,6 +457,7 @@
 }
 #user_address_update form .mav2_fg .with_icon span,
 #account_details form .mav2_fg .with_icon span,
+#payment_methods form .mav2_fg .with_icon span,
 #user_password_update form .mav2_fg .with_icon span {
   position: absolute;
   right: 15px;
@@ -401,6 +465,7 @@
 }
 #user_address_update form .mav2_fg .with_icon span:hover,
 #account_details form .mav2_fg .with_icon span:hover,
+#payment_methods form .mav2_fg .with_icon span:hover,
 #user_password_update form .mav2_fg .with_icon span:hover {
   opacity: 0.6;
 }
@@ -408,6 +473,8 @@
 #user_address_update form .mav2_fg select,
 #account_details form .mav2_fg input,
 #account_details form .mav2_fg select,
+#payment_methods form .mav2_fg input,
+#payment_methods form .mav2_fg select,
 #user_password_update form .mav2_fg input,
 #user_password_update form .mav2_fg select {
   width: 100%;
@@ -424,6 +491,8 @@
 #user_address_update form .mav2_fg select:focus,
 #account_details form .mav2_fg input:focus,
 #account_details form .mav2_fg select:focus,
+#payment_methods form .mav2_fg input:focus,
+#payment_methods form .mav2_fg select:focus,
 #user_password_update form .mav2_fg input:focus,
 #user_password_update form .mav2_fg select:focus {
   -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
@@ -432,6 +501,7 @@
 }
 #user_address_update form .mav2_fg select,
 #account_details form .mav2_fg select,
+#payment_methods form .mav2_fg select,
 #user_password_update form .mav2_fg select {
   -webkit-appearance: none;
      -moz-appearance: none;
@@ -444,9 +514,10 @@
 }
 #user_address_update form button,
 #account_details form button,
+#payment_methods form button,
 #user_password_update form button {
   cursor: pointer;
-  background: #fff;
+  background: var(--e-global-color-primary);
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -460,7 +531,7 @@
   font-size: var(--e-global-typography-secondary-font-size);
   font-weight: var(--e-global-typography-secondary-font-weight);
   line-height: var(--e-global-typography-secondary-line-height);
-  color: var(--e-global-color-primary);
+  color: #fff;
   border: 1px solid var(--e-global-color-primary);
   border-radius: 30px 30px 30px 30px;
   padding: 15px 25px 15px 25px;
@@ -470,14 +541,66 @@
 }
 #user_address_update form button:hover,
 #account_details form button:hover,
+#payment_methods form button:hover,
 #user_password_update form button:hover {
   background: #001A43;
   color: #fff;
 }
 #user_address_update form button:disabled,
 #account_details form button:disabled,
+#payment_methods form button:disabled,
 #user_password_update form button:disabled {
   background: rgba(128, 128, 128, 0.2);
   border: 1px solid rgba(128, 128, 128, 0.2);
   color: rgba(128, 128, 128, 0.8);
+}
+
+#payment_methods {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  gap: 20px;
+}
+#payment_methods .pm_tokens_table {
+  width: 100%;
+  background: #fff;
+  text-align: left;
+  border-collapse: collapse;
+}
+#payment_methods .pm_tokens_table th,
+#payment_methods .pm_tokens_table td {
+  font-weight: normal;
+  padding: 10px;
+}
+#payment_methods .pm_tokens_table th {
+  background: #051a44;
+  color: #fff;
+}
+#payment_methods .pm_tokens_table td {
+  border-bottom: 1px solid rgba(204, 204, 204, 0.2);
+}
+#payment_methods .pm_tokens_table button {
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: red;
+}
+#payment_methods .pm_tokens_table button:hover {
+  text-decoration: underline;
+}
+#payment_methods #new_payment_add {
+  background: #fff;
+  padding: 24px;
+  border-radius: 14px;
+  -webkit-box-shadow: 6px 6px 5px rgba(0, 0, 0, 0.01);
+          box-shadow: 6px 6px 5px rgba(0, 0, 0, 0.01);
+  color: #001A43;
+  border: 1px solid #d3d3d3;
 }
