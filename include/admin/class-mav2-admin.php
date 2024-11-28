@@ -8,7 +8,7 @@ final class MAV2_Admin
 {
     public function init()
     {
-        add_action('admin_menu', [$this, 'admin_menu']);
+        // add_action('admin_menu', [$this, 'admin_menu']);
 
         add_action('admin_enqueue_scripts', [$this, 'admin_enqueue_scripts']);
         add_action('wp_enqueue_scripts', [$this, 'site_enqueue_scripts']);

@@ -38,7 +38,7 @@ foreach ($tokens as $token) {
             <thead>
                 <tr>
                     <th>Card Type</th>
-                    <th>Last 4</th>
+                    <th>Last 4 digits</th>
                     <th>Expiry</th>
                     <th></th>
                 </tr>

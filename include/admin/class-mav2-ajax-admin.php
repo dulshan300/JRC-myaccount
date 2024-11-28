@@ -116,9 +116,9 @@ final class MAV2_Ajax_Admin
             $validation_erros['billing_address_1'] = 'Address is required';
         }
 
-        if (strlen($billing_city) < 3) {
-            $validation_erros['billing_city'] = 'City is required';
-        }
+        // if (strlen($billing_city) < 3) {
+        //     $validation_erros['billing_city'] = 'City is required';
+        // }
 
         $pattern = '/^[a-zA-Z0-9\s\-]{3,10}$/';
 
@@ -289,7 +289,7 @@ final class MAV2_Ajax_Admin
                 'id' => $token->get_id(),
                 'card_type' => ucfirst($token->get_card_type()),
                 'last4' => $token->get_last4(),
-                'expiry' => $token->get_expiry_month().'/'.$token->get_expiry_year(),
+                'expiry' => $token->get_expiry_month() . '/' . $token->get_expiry_year(),
                 'user_id' => $token->get_user_id(),
             ];
         }
@@ -337,7 +337,7 @@ final class MAV2_Ajax_Admin
             $customer = $stripe->customers->create([
                 'name' => $user->display_name,
                 'email' => $user->user_email,
-                'description' => 'Customer for '.$user->display_name,
+                'description' => 'Customer for ' . $user->display_name,
             ]);
 
             update_user_meta(get_current_user_id(), 'wp__stripe_customer_id', $customer->id);
@@ -345,8 +345,8 @@ final class MAV2_Ajax_Admin
             $customer_id = $customer->id;
         }
 
-        error_log('Customer ID: '.$customer_id);
-        error_log('Token ID: '.$payment_method_id);
+        error_log('Customer ID: ' . $customer_id);
+        error_log('Token ID: ' . $payment_method_id);
 
         // attach payment method to customer
         error_log('Attaching payment method to customer');
@@ -358,7 +358,7 @@ final class MAV2_Ajax_Admin
 
         // getting payment method form stripe
         $pm = $stripe->paymentMethods->retrieve($payment_method_id);
-        error_log('Payment method form stripe: '.print_r($pm, true));
+        error_log('Payment method form stripe: ' . print_r($pm, true));
 
         // add payment method to woocommerce
         error_log('Adding payment method to woocommerce');
@@ -421,8 +421,10 @@ final class MAV2_Ajax_Admin
         $pt = WC_Payment_Tokens::get($token_id);
 
         // delete token
-
-        $stripe->paymentMethods->detach($pt->get_token());
+        try {
+            $stripe->paymentMethods->detach($pt->get_token());
+        } catch (\Exception $e) {
+        }
 
         $pt->delete();
 
