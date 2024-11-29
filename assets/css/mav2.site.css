@@ -229,6 +229,36 @@
       -ms-flex-direction: column;
           flex-direction: column;
 }
+#sub_cards .sub_card .sub_card_header {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+}
+#sub_cards .sub_card .sub_card_header .traking {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 10px;
+  background: #71F690;
+  padding: 17px 20px !important;
+  border-radius: 10px;
+}
+#sub_cards .sub_card .sub_card_header .traking .tracking_number {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+}
+#sub_cards .sub_card .sub_card_header .traking .tracking_number span,
+#sub_cards .sub_card .sub_card_header .traking .tracking_number a {
+  font-weight: bold;
+}
 #sub_cards .sub_card .sub_id {
   color: #001A43;
   font-weight: 800;

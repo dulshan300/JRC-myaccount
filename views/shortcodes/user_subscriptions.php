@@ -107,112 +107,68 @@ foreach ($res as $sub) {
     $temp['status'] = $sub->prepaid_cancel === 'yes' ? 'wc-cancelled' : $sub->status;
     $temp['prepaid_cancel'] = $sub->prepaid_cancel;
     $temp['product'] = $sub->product;
-    $temp['plan'] = (intval($sub->plan) > 1 ? $sub->plan.' Months' : $sub->plan.' Month').' Plan';
+    $temp['plan'] = (intval($sub->plan) > 1 ? $sub->plan . ' Months' : $sub->plan . ' Month') . ' Plan';
 
     if ($sub->plan == 1) {
-        $temp['shipped'] = '1'.' of '.$sub->plan;
+        $temp['shipped'] = '1' . ' of ' . $sub->plan;
     } else {
 
-        $temp['shipped'] = intval($sub->plan) - intval($sub->to_ship).' of '.$sub->plan;
+        $temp['shipped'] = intval($sub->plan) - intval($sub->to_ship) . ' of ' . $sub->plan;
     }
 
     $temp['next_shipment_date'] = date('Y-m-03', strtotime($sub->next_shipment_date));
 
     $sub_orders = [$sub->parent_order_id];
+    // if renewal orders
     $sub_orders = array_merge($sub_orders, unserialize($sub->renewal_ids));
     $last_sub = end($sub_orders);
 
     // getting order details
-    $osql = "SELECT
-    od.id,
-    od.currency as currency,
-    od.date_created_gmt as created_at,
-    (
-        SELECT
-            om.meta_value * omm.meta_value
-        FROM
-            wp_woocommerce_order_items oi
-            left JOIN wp_woocommerce_order_itemmeta om ON om.order_item_id = oi.order_item_id
-            left JOIN wp_wc_orders_meta omm ON omm.order_id = oi.order_id
-            AND omm.meta_key = 'yay_currency_order_rate'
-        WHERE
-            oi.order_id = od.id
-            AND om.meta_key = '_line_subtotal'
-    ) as subtotal,
-    COALESCE(
-        (
-            SELECT
-                sum(oim.meta_value)
-            FROM
-                wp_woocommerce_order_items oi
-                LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = oi.order_item_id
-                AND oim.meta_key = 'cost'
-            WHERE
-                oi.order_id = od.id
-                AND oi.order_item_type = 'shipping'
-        ),
-        0
-    ) as 'shipping',
-    COALESCE(
-        ABS(
-            (
-                SELECT
-                    meta_value
-                from
-                    wp_woocommerce_order_itemmeta
-                WHERE
-                    order_item_id =(
-                        SELECT
-                            order_item_id
-                        FROM
-                            wp_woocommerce_order_items oi
-                        WHERE
-                            (
-                                oi.order_item_type = 'coupon'
-                                OR oi.order_item_type = 'fee'
-                            )
-                            AND order_id = od.id
-                        LIMIT
-                            1
-                    )
-                    AND (
-                        meta_key = 'discount_amount'
-                        OR meta_key = '_fee_amount'
-                    )
-            )
-        ),
-        0
-    ) as 'discount',
-    od.total_amount,
-    COALESCE(
-        REPLACE (
-            (
-                SELECT
-                    item.order_item_name
-                FROM
-                    wp_wc_orders orders
-                    LEFT JOIN wp_woocommerce_order_items item ON item.order_id = orders.id
-                WHERE
-                    item.order_id = od.parent_order_id
-                    AND item.order_item_type IN ('coupon', 'fee')
-                LIMIT
-                    1
-            ), 'Discount: ', ''
-        ), ''
-    ) AS 'coupon'
-    from
-        wp_wc_orders od
-    WHERE
-        od.id = $last_sub
-    ";
+    $osql = "SELECT od.id, od.currency as currency, od.date_created_gmt as created_at, ( SELECT om.meta_value*omm.meta_value FROM wp_woocommerce_order_items oi left JOIN wp_woocommerce_order_itemmeta om ON om.order_item_id = oi.order_item_id left JOIN wp_wc_orders_meta omm ON omm.order_id = oi.order_id AND omm.meta_key ='yay_currency_order_rate'WHERE oi.order_id = od.id AND om.meta_key ='_line_subtotal') as subtotal, COALESCE( ( SELECT sum(oim.meta_value) FROM wp_woocommerce_order_items oi LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = oi.order_item_id AND oim.meta_key ='cost'WHERE oi.order_id = od.id AND oi.order_item_type ='shipping'), 0 ) as'shipping', COALESCE( ABS( ( SELECT meta_value from wp_woocommerce_order_itemmeta WHERE order_item_id =( SELECT order_item_id FROM wp_woocommerce_order_items oi WHERE ( oi.order_item_type ='coupon'OR oi.order_item_type ='fee') AND order_id = od.id LIMIT 1 ) AND ( meta_key ='discount_amount'OR meta_key ='_fee_amount') ) ), 0 ) as'discount', od.total_amount, COALESCE( REPLACE ( ( SELECT item.order_item_name FROM wp_wc_orders orders LEFT JOIN wp_woocommerce_order_items item ON item.order_id = orders.id WHERE item.order_id = od.parent_order_id AND item.order_item_type IN ('coupon','fee') LIMIT 1 ),'Discount: ',''),'') AS'coupon'from wp_wc_orders od WHERE od.id = $last_sub";
 
     $odata = $wpdb->get_row($osql);
-    $temp['created_at'] = date('d F Y', strtotime($odata->created_at.' + 8 hours'));
+    $temp['created_at'] = date('d F Y', strtotime($odata->created_at . ' + 8 hours'));
     $temp['product_value'] = number_format(floatval($odata->subtotal), 2);
     $temp['shipping'] = number_format(floatval($odata->shipping), 2);
-    $temp['discount'] = floatval($odata->discount) > 0 ? number_format(floatval($odata->discount), 2)." ({$odata->coupon})" : '0.00';
+    $temp['discount'] = floatval($odata->discount) > 0 ? number_format(floatval($odata->discount), 2) . " ({$odata->coupon})" : '0.00';
     $temp['total'] = number_format(floatval($odata->total_amount), 2);
     $temp['currency'] = get_woocommerce_currency_symbol($odata->currency);
+
+    // get last order status
+    $last_order_id = end($sub_orders);
+    if ($sub->plan != 1) {
+        $last_order_id = end(unserialize($sub->fullfilled));
+    }
+
+    $lo_sql = "SELECT od.id, od.status, COALESCE( ( SELECT comment_content from wp_comments WHERE comment_post_ID = od.id AND comment_content LIKE '%Tracking number%'LIMIT 1 ),404) as tracking, (SELECT country FROM wp_wc_order_addresses WHERE order_id=od.id LIMIT 1) country from wp_wc_orders od WHERE od.id=$last_order_id";
+
+    $lo_data = $wpdb->get_row($lo_sql);
+
+    if ($lo_data->tracking == 404) {
+        $lo_data->tracking = 'Tracking not available';
+    } else {
+        // some of traking code is here
+        $traking = $lo_data->tracking;
+        $search = "Tracking number(s):";
+        $traking = str_replace("<br/>", '', $traking);
+
+        $str_pos = strpos($traking, $search);
+        $traking = substr($traking, $str_pos);
+        $traking = str_replace($search, '', $traking);
+        $traking = str_replace("<br/>", '', $traking);
+        $traking = trim($traking);
+
+        $lo_data->tracking = $traking;
+
+        if ($lo_data->country == 'US') {
+            $us_link = 'https://parcelsapp.com/en/tracking/' . $traking;
+            $lo_data->tracking = "<a href='{$us_link}' target='_blank'>{$lo_data->tracking}</a>";
+        }
+    }
+
+    $temp['last_order_details'] = $lo_data;
+
+
 
     // get order shipping address
     $shppng_sql = "SELECT
@@ -251,78 +207,20 @@ foreach ($res as $sub) {
     $fullfilled = unserialize($sub->fullfilled);
     $last_box = end($fullfilled);
 
-    $last_date = strtotime($odata->created_at.' + 8 hours');
+    $last_date = strtotime($odata->created_at . ' + 8 hours');
     $order = wc_get_order($last_box);
 
     if ($order) {
         $last_date = $order->get_date_paid()->date;
     }
 
-    $temp['next_payment'] = date('03 F Y', strtotime(date('Y-m-03', $last_date).' +'.($sub->plan > 1 ? $sub->to_ship + 1 : 1).' month'));
+    $temp['next_payment'] = date('03 F Y', strtotime(date('Y-m-03', $last_date) . ' +' . ($sub->plan > 1 ? $sub->to_ship + 1 : 1) . ' month'));
 
     $out_data[] = $temp;
 }
 
 ?>
 
-<!-- default sass
-
-.sub_card {
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        list-style: none;
-    }
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-
-    .sub_card_details {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .sub_plan_details,.sub_product_values,.sub_plan_status {
-        display: flex;
-        flex-direction: column;
-    }
-}
-
-
-
--->
-
-
-<!-- default style -->
-<!-- <style>
-    .sub_card {
-        margin-bottom: 20px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .sub_card * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        list-style: none;
-    }
-
-    .sub_card .sub_card_details {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .sub_card .sub_plan_details,
-    .sub_card .sub_product_values,
-    .sub_card .sub_plan_status {
-        display: flex;
-        flex-direction: column;
-    }
-</style> -->
 
 <!-- generate html -->
 <div id="sub_cards">
@@ -330,9 +228,29 @@ foreach ($res as $sub) {
 
         <div class="sub_card">
             <div class="sub_card_header">
-                <span class="sub_id">Subscription ID: #<?php echo $sub['id']; ?></span>
-                <h3 class="sub_product_name"><?php echo $sub['product']; ?></h3>
-                <h4 class="sub_plan_name"><?php echo $sub['plan']; ?></h4>
+                <div class="left">
+                    <span class="sub_id">Subscription ID: #<?php echo $sub['id']; ?></span>
+                    <h3 class="sub_product_name"><?php echo $sub['product']; ?></h3>
+                    <h4 class="sub_plan_name"><?php echo $sub['plan']; ?></h4>
+                </div>
+                <div class="right">
+                    <div class="traking">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16 3H1V16H16V3Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M16 8H20L23 11V16H16V8Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M5.5 21C6.88071 21 8 19.8807 8 18.5C8 17.1193 6.88071 16 5.5 16C4.11929 16 3 17.1193 3 18.5C3 19.8807 4.11929 21 5.5 21Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M18.5 21C19.8807 21 21 19.8807 21 18.5C21 17.1193 19.8807 16 18.5 16C17.1193 16 16 17.1193 16 18.5C16 19.8807 17.1193 21 18.5 21Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+
+                        <div class="tracking_number">
+                            <span>Track My Latest Order:</span>
+                            <span>
+                                <?= $sub['last_order_details']->tracking; ?>
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
             </div>
 
             <div class="sub_card_details">
@@ -360,11 +278,11 @@ foreach ($res as $sub) {
 
                 <!-- product values -->
                 <div class="sub_product_values">
-                    <span class="sub_product_value">Product Value: <?php echo $sub['currency'].$sub['product_value']; ?></span>
-                    <span class="sub_product_subtotal">Subtotal: <?php echo $sub['currency'].$sub['product_value']; ?></span>
-                    <span class="sub_product_shipping">Shipping: <?php echo $sub['currency'].$sub['shipping']; ?></span>
-                    <span class="sub_product_discount">Discount: <?php echo $sub['currency'].$sub['discount']; ?></span>
-                    <span class="sub_product_total">Total: <?php echo $sub['currency'].$sub['total']; ?></span>
+                    <span class="sub_product_value">Product Value: <?php echo $sub['currency'] . $sub['product_value']; ?></span>
+                    <span class="sub_product_subtotal">Subtotal: <?php echo $sub['currency'] . $sub['product_value']; ?></span>
+                    <span class="sub_product_shipping">Shipping: <?php echo $sub['currency'] . $sub['shipping']; ?></span>
+                    <span class="sub_product_discount">Discount: <?php echo $sub['currency'] . $sub['discount']; ?></span>
+                    <span class="sub_product_total">Total: <?php echo $sub['currency'] . $sub['total']; ?></span>
                 </div>
 
                 <!-- address details -->

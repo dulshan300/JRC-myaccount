@@ -278,6 +278,7 @@ final class MAV2_Ajax_Admin
 
     private function user_get_payment_methods()
     {
+        
         $user = wp_get_current_user();
         $tokens = WC_Payment_Tokens::get_customer_tokens($user->ID);
 
