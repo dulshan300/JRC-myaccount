@@ -200,5 +200,11 @@ async function _file_download(data) {
     })
 
 
+    $(document).on('click', '.arrow', function () {
+        $(this).toggleClass('flip');
+        $(this).parent().parent().find('.order_history_list').slideToggle();
+    })
+
+
 
 })(jQuery)

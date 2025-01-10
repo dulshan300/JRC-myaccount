@@ -1,5 +1,8 @@
 <?php
 $user_id = get_current_user_id();
+// $user_id = 1446;
+
+
 
 if (empty($user_id)) {
     echo 'Please login to see your subscription';
@@ -101,6 +104,38 @@ $out_data = [];
 $w_countries = new WC_Countries;
 $all_countries = $w_countries->get_countries();
 
+$orders_history = [];
+
+function get_tracking($order)
+{
+    if ($order->tracking == 404) {
+        $order->tracking = 'Tracking pending';
+    } else {
+        // some of traking code is here
+        $traking = $order->tracking;
+        $search = "Tracking number(s):";
+        $traking = str_replace("<br/>", '', $traking);
+
+        $str_pos = strpos($traking, $search);
+        $traking = substr($traking, $str_pos);
+        $traking = str_replace($search, '', $traking);
+        $traking = str_replace("<br/>", '', $traking);
+        $traking = trim($traking);
+
+        $order->tracking = $traking;
+
+        if ($order->country == 'US') {
+            $us_link = 'https://parcelsapp.com/en/tracking/' . $traking;
+            $order->tracking = "<a href='{$us_link}' target='_blank'>{$order->tracking}</a>";
+        } else {
+            $link = 'https://trackings.post.japanpost.jp/services/srv/search/?requestNo1=%20' . $traking . '&search.x=68&search.y=17&search=Tracking+start&locale=ja&startingUrlPatten=';
+            $order->tracking = "<a href='{$link}' target='_blank'>{$order->tracking}</a>";
+        }
+    }
+
+    return $order->tracking;
+}
+
 foreach ($res as $sub) {
     $temp = [];
     $temp['id'] = $sub->id;
@@ -108,6 +143,7 @@ foreach ($res as $sub) {
     $temp['prepaid_cancel'] = $sub->prepaid_cancel;
     $temp['product'] = $sub->product;
     $temp['plan'] = (intval($sub->plan) > 1 ? $sub->plan . ' Months' : $sub->plan . ' Month') . ' Plan';
+    $temp['order_history'] = [];
 
     if ($sub->plan == 1) {
         $temp['shipped'] = '1' . ' of ' . $sub->plan;
@@ -124,7 +160,7 @@ foreach ($res as $sub) {
     $last_sub = end($sub_orders);
 
     // getting order details
-    $osql = "SELECT od.id, od.currency as currency, od.date_created_gmt as created_at, ( SELECT om.meta_value*omm.meta_value FROM wp_woocommerce_order_items oi left JOIN wp_woocommerce_order_itemmeta om ON om.order_item_id = oi.order_item_id left JOIN wp_wc_orders_meta omm ON omm.order_id = oi.order_id AND omm.meta_key ='yay_currency_order_rate'WHERE oi.order_id = od.id AND om.meta_key ='_line_subtotal') as subtotal, COALESCE( ( SELECT sum(oim.meta_value) FROM wp_woocommerce_order_items oi LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = oi.order_item_id AND oim.meta_key ='cost'WHERE oi.order_id = od.id AND oi.order_item_type ='shipping'), 0 ) as'shipping', COALESCE( ABS( ( SELECT meta_value from wp_woocommerce_order_itemmeta WHERE order_item_id =( SELECT order_item_id FROM wp_woocommerce_order_items oi WHERE ( oi.order_item_type ='coupon'OR oi.order_item_type ='fee') AND order_id = od.id LIMIT 1 ) AND ( meta_key ='discount_amount'OR meta_key ='_fee_amount') ) ), 0 ) as'discount', od.total_amount, COALESCE( REPLACE ( ( SELECT item.order_item_name FROM wp_wc_orders orders LEFT JOIN wp_woocommerce_order_items item ON item.order_id = orders.id WHERE item.order_id = od.parent_order_id AND item.order_item_type IN ('coupon','fee') LIMIT 1 ),'Discount: ',''),'') AS'coupon'from wp_wc_orders od WHERE od.id = $last_sub";
+    $osql = "SELECT od.id, od.currency as currency, od.date_created_gmt as created_at, ( SELECT om.meta_value*omm.meta_value FROM wp_woocommerce_order_items oi left JOIN wp_woocommerce_order_itemmeta om ON om.order_item_id = oi.order_item_id left JOIN wp_wc_orders_meta omm ON omm.order_id = oi.order_id AND omm.meta_key ='yay_currency_order_rate'WHERE oi.order_id = od.id AND om.meta_key ='_line_subtotal') as subtotal, COALESCE( ( SELECT sum(oim.meta_value) FROM wp_woocommerce_order_items oi LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = oi.order_item_id AND oim.meta_key ='cost'WHERE oi.order_id = od.id AND oi.order_item_type ='shipping'), 0 ) as'shipping', COALESCE( ABS( ( SELECT meta_value from wp_woocommerce_order_itemmeta WHERE order_item_id =( SELECT order_item_id FROM wp_woocommerce_order_items oi WHERE ( oi.order_item_type ='coupon'OR oi.order_item_type ='fee') AND order_id = od.id LIMIT 1 ) AND ( meta_key ='discount_amount'OR meta_key ='_fee_amount') ) ), 0 ) as'discount', od.total_amount, COALESCE( REPLACE ( ( SELECT item.order_item_name FROM wp_wc_orders orders LEFT JOIN wp_woocommerce_order_items item ON item.order_id = orders.id WHERE item.order_id = od.id AND item.order_item_type IN ('coupon','fee') LIMIT 1 ),'Discount: ',''),'') AS'coupon'from wp_wc_orders od WHERE od.id = $last_sub";
 
     $odata = $wpdb->get_row($osql);
     $temp['created_at'] = date('d F Y', strtotime($odata->created_at . ' + 8 hours'));
@@ -136,35 +172,46 @@ foreach ($res as $sub) {
 
     // get last order status
     $last_order_id = end($sub_orders);
+
+    $orders_history = $sub_orders;
+
     if ($sub->plan != 1) {
-        $last_order_id = end(unserialize($sub->fullfilled));
+        $al = unserialize($sub->fullfilled);
+        $last_order_id = end($al);
+        $orders_history = unserialize($sub->fullfilled);
     }
 
-    $lo_sql = "SELECT od.id, od.status, COALESCE( ( SELECT comment_content from wp_comments WHERE comment_post_ID = od.id AND comment_content LIKE '%Tracking number%'LIMIT 1 ),404) as tracking, (SELECT country FROM wp_wc_order_addresses WHERE order_id=od.id LIMIT 1) country from wp_wc_orders od WHERE od.id=$last_order_id";
+    $lo_sql = "SELECT od.id, od.status,od.date_created_gmt, COALESCE( ( SELECT comment_content from wp_comments WHERE comment_post_ID = od.id AND comment_content LIKE '%%Tracking number%%'LIMIT 1 ),404) as tracking, (SELECT country FROM wp_wc_order_addresses WHERE order_id=od.id LIMIT 1) country from wp_wc_orders od WHERE od.id=%s";
 
-    $lo_data = $wpdb->get_row($lo_sql);
+    $lo_q = $wpdb->prepare($lo_sql, $last_order_id);
 
-    if ($lo_data->tracking == 404) {
-        $lo_data->tracking = 'Tracking not available';
-    } else {
-        // some of traking code is here
-        $traking = $lo_data->tracking;
-        $search = "Tracking number(s):";
-        $traking = str_replace("<br/>", '', $traking);
+    $lo_data = $wpdb->get_row($lo_q);
 
-        $str_pos = strpos($traking, $search);
-        $traking = substr($traking, $str_pos);
-        $traking = str_replace($search, '', $traking);
-        $traking = str_replace("<br/>", '', $traking);
-        $traking = trim($traking);
+    $lo_data->tracking = get_tracking($lo_data);
 
-        $lo_data->tracking = $traking;
+    $temp_history = [];
 
-        if ($lo_data->country == 'US') {
-            $us_link = 'https://parcelsapp.com/en/tracking/' . $traking;
-            $lo_data->tracking = "<a href='{$us_link}' target='_blank'>{$lo_data->tracking}</a>";
-        }
+    // process order history
+    foreach ($orders_history as $order_id) {
+        $q = $wpdb->prepare($lo_sql, $order_id);
+        $q_data = $wpdb->get_row($q);
+
+        $format      = "Y-m-d h:s a";
+        $check_stamp = date_i18n($format, $q_data->date_created_gmt);
+
+        $hd = [
+            'id' => $q_data->id,
+            'status' => str_replace('wc-', '', $q_data->status),
+            'date' => $q_data->date_created_gmt,
+            'date_loc' => $check_stamp,
+            'tracking' => get_tracking($q_data)
+        ];
+
+        $temp_history[] = $hd;
     }
+
+
+    $temp['order_history'] = array_reverse($temp_history);
 
     $temp['last_order_details'] = $lo_data;
 
@@ -211,7 +258,7 @@ foreach ($res as $sub) {
     $order = wc_get_order($last_box);
 
     if ($order) {
-        $last_date = $order->get_date_paid()->date;
+        // $last_date = $order->get_date_paid()->date;
     }
 
     $temp['next_payment'] = date('03 F Y', strtotime(date('Y-m-03', $last_date) . ' +' . ($sub->plan > 1 ? $sub->to_ship + 1 : 1) . ' month'));
@@ -225,6 +272,8 @@ foreach ($res as $sub) {
 <!-- generate html -->
 <div id="sub_cards">
     <?php foreach ($out_data as $sub) { ?>
+
+
 
         <div class="sub_card">
             <div class="sub_card_header">
@@ -295,6 +344,36 @@ foreach ($res as $sub) {
                     </ul>
                 </div>
 
+            </div>
+
+            <div class="order_history">
+                <div class="oh_header">
+                    <span class="oh_title">Order History</span>
+                    <button class="arrow">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M11.9999 13.1714L16.9497 8.22168L18.3639 9.63589L11.9999 15.9999L5.63599 9.63589L7.0502 8.22168L11.9999 13.1714Z"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div style="display: none;" class="order_history_list">
+                    <table>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date (GMT)</th>
+                            <th>Tracking</th>
+                        </tr>
+                        <?php foreach ($sub['order_history'] as $order) { ?>
+                            <tr class="order_history_item">
+                                <td class="order_status"><?= $order['id'] ?></td>
+                                <td class="order_date"><?= $order['date'] ?></td>
+                                <td class="order_tracking"><?= $order['tracking'] ?></td>
+                            </tr>
+                        <?php } ?>
+
+                    </table>
+
+                </div>
             </div>
 
 

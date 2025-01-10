@@ -14,7 +14,7 @@ define('MAV2_PATH', plugin_dir_path(__FILE__));
 define('MAV2_URL', plugin_dir_url(__FILE__));
 define('MAV2_ASSETS_URL', MAV2_URL . 'assets/');
 define('MAV2_VERSION', '1.0');
-define('MAV2_ASSIST_VER', '1.2.1.0');
+define('MAV2_ASSIST_VER', '1.2.1.6');
 
 // autoload classess
 spl_autoload_register(function ($class_name) {
@@ -49,6 +49,8 @@ add_action('plugins_loaded', 'mav2_init');
 
 // subcription time hook
 
+
+
 // Add a custom monthly cron schedule
 add_filter('cron_schedules', 'add_monthly_cron_schedule');
 
@@ -73,7 +75,7 @@ function schedule_monthly_subscription_update()
         $now = new DateTime('now', new DateTimeZone('UTC'));
         $next_month = new DateTime('first day of next month', new DateTimeZone('UTC'));
         $next_month->setDate($next_month->format('Y'), $next_month->format('m'), 1);
-        $next_month->setTime(6, 0, 0); // 6 AM
+        $next_month->setTime(0, 0, 0); // 8 A SGT
 
         // Schedule the event
         wp_schedule_event($next_month->getTimestamp(), 'monthly', 'update_subscription_renewal_time_monthly');
@@ -87,13 +89,13 @@ function update_all_subscription_renewal_times()
 {
     global $wpdb;
     $sub_sql = "SELECT ID FROM wp_wc_orders WHERE type = 'shop_subscription' AND status = 'wc-active'";
+
     $sub_ids = $wpdb->get_results($sub_sql);
+
     // Get all active subscriptions
 
-
-    error_log(print_r($sub_ids, true));
-
     foreach ($sub_ids as $post) {
+
         $subscription = wcs_get_subscription($post->ID);
 
         // Get the next payment date
@@ -111,3 +113,5 @@ function update_all_subscription_renewal_times()
         }
     }
 }
+
+

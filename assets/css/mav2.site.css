@@ -363,6 +363,66 @@
   border: 1px solid rgba(128, 128, 128, 0.2);
   color: rgba(128, 128, 128, 0.8);
 }
+#sub_cards .sub_card .order_history {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+}
+#sub_cards .sub_card .order_history .oh_header {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 100%;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  padding: 5px !important;
+  background-color: #e5e5f7;
+  opacity: 0.8;
+  background-size: 10px 10px;
+  background-image: repeating-linear-gradient(45deg, #e3e3e3 0, #878787 1px, #ffffff 0, #f6f6f6 50%);
+}
+#sub_cards .sub_card .order_history .oh_header .oh_title {
+  font-weight: bold !important;
+  font-size: 1.3em !important;
+}
+#sub_cards .sub_card .order_history .oh_header .arrow {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 24px;
+  border-radius: 50%;
+  border: none;
+  background: #000;
+  cursor: pointer;
+  -webkit-transition: all 0.3s;
+  transition: all 0.3s;
+}
+#sub_cards .sub_card .order_history .oh_header .arrow.flip {
+  -webkit-transform: rotate(180deg);
+      -ms-transform: rotate(180deg);
+          transform: rotate(180deg);
+}
+#sub_cards .sub_card .order_history .oh_header .arrow svg {
+  fill: #fff;
+}
+#sub_cards .sub_card .order_history .order_history_list table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+#sub_cards .sub_card .order_history .order_history_list table th {
+  font-weight: bold !important;
+  border-bottom: 1px solid gray;
+}
+#sub_cards .sub_card .order_history .order_history_list table td,
+#sub_cards .sub_card .order_history .order_history_list table th {
+  padding: 10px !important;
+}
 
 #user_address_update,
 #account_details,

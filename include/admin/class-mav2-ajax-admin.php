@@ -56,10 +56,12 @@ final class MAV2_Ajax_Admin
             // prepaid cancel
             $subscription->set_status('active');
             $subscription->update_meta_data('_ps_scheduled_to_be_cancelled', 'yes');
+            $subscription->add_order_note('Subscription scheduled to be cancelled by the user.');
             $subscription->save();
         } else {
             // sub cancel
             $subscription->set_status('cancelled');
+            $subscription->add_order_note('Subscription cancelled by the user.');
             $subscription->save();
         }
 
@@ -278,7 +280,7 @@ final class MAV2_Ajax_Admin
 
     private function user_get_payment_methods()
     {
-        
+
         $user = wp_get_current_user();
         $tokens = WC_Payment_Tokens::get_customer_tokens($user->ID);
 
@@ -309,6 +311,7 @@ final class MAV2_Ajax_Admin
         woocommerce_get_customer_payment_tokens_legacy
         line: 160
         */
+        global $wpdb;
 
         $keys = $this->get_stripe_keys();
 
@@ -407,6 +410,24 @@ final class MAV2_Ajax_Admin
             // Optionally, log or confirm that the action has been removed
             error_log('Add Stripe woocommerce_get_customer_payment_tokens action.');
         }
+
+        // update existing subscriptions with new payment method
+        $sql = "SELECT * FROM wp_wc_orders
+        WHERE type = 'shop_subscription' 
+        AND customer_id = %d";
+
+        $subscriptions = $wpdb->get_results($wpdb->prepare($sql, get_current_user_id()));
+
+        foreach ($subscriptions as $subscription) {
+            $order = wc_get_order($subscription->id);
+            $order->set_payment_method('stripe');
+            $order->update_meta_data('_payment_method_title', 'Credit Card (Stripe)');
+            $order->update_meta_data('_stripe_customer_id', $customer_id);
+            $order->update_meta_data('_stripe_source_id', $payment_method_id);
+            $order->set_requires_manual_renewal(false);
+            $order->save();
+        }
+
 
         wp_send_json($this->user_get_payment_methods());
     }
