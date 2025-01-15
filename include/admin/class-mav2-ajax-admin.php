@@ -26,6 +26,7 @@ final class MAV2_Ajax_Admin
         global $wpdb;
 
         $subId = $_POST['id'];
+        $note = sanitize_text_field($_POST['r_text']);
 
         $sql = "SELECT
                 od.id,
@@ -52,18 +53,22 @@ final class MAV2_Ajax_Admin
 
         $subscription = wcs_get_subscription($subId);
 
+        $note_text = "";
+
         if (intval($sub->plan) > 1) {
             // prepaid cancel
             $subscription->set_status('active');
             $subscription->update_meta_data('_ps_scheduled_to_be_cancelled', 'yes');
-            $subscription->add_order_note('Subscription scheduled to be cancelled by the user.');
-            $subscription->save();
+            $note_text = 'Subscription scheduled to be cancelled by the user.';
         } else {
             // sub cancel
             $subscription->set_status('cancelled');
-            $subscription->add_order_note('Subscription cancelled by the user.');
-            $subscription->save();
+            $note_text = 'Subscription cancelled by the user.';
         }
+
+        $subscription->add_order_note($note_text . ' Reason: ' . $note);
+
+        $subscription->save();
 
         wp_send_json_success('Successfully Cancelled');
     }

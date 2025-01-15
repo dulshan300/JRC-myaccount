@@ -1,3 +1,5 @@
+
+
 async function _ajax(data) {
     const fd = new FormData();
 
@@ -32,7 +34,23 @@ async function _file_download(data) {
 }
 
 
+let selected_subscription_id = null;
+let selected_cancle_option = null;
+
+const reasons = [
+    { id: 1, text: "The subscription cost is too high", action: "switch-plan" },
+    { id: 2, text: "Limited variety of snacks", action: null },
+    { id: 3, text: "Too many snacks delivered each month", action: null },
+    { id: 4, text: "Poor snack quality", action: "feedback" },
+    { id: 5, text: "I only wanted a one-time subscription", action: "discount" },
+    { id: 6, text: "Frequent delivery delays", action: null },
+    { id: 7, text: "I've lost interest in receiving regular snacks", action: null },
+    { id: 8, text: "I've moved to a new address", action: "address" },
+    { id: 9, text: "Others", action: "feedback" }
+];
+
 (function async($) {
+
 
     function mav2_show_success(form) {
         $(form).find('.mav2_success_alert').fadeIn();
@@ -50,19 +68,77 @@ async function _file_download(data) {
         $(parent).find('.processing').fadeOut();
     }
 
+    $(document).on('click', '.close-popup, .btn-cancel', function () {
+        $('.sub_cancel_popup').fadeOut();
+    });
+
+    $(window).on('click', function (e) {
+        if ($(e.target).hasClass('sub_cancel_popup')) {
+            $('.sub_cancel_popup').fadeOut();
+            selected_cancle_option = null;
+            selected_subscription_id = null;
+
+            $('.sub_plan_cancel_sub').prop('disabled', false);
+        }
+    });
+
     $(document).on('click', '.sub_plan_cancel_sub', async function () {
 
-        $(this).prop('disabled', true);
+        $('#reasons_container').empty();
+
+        reasons.forEach(r => {
+            const html = $(`<label class="reason-item">
+                        <input type="radio" name="cancel_reason" value="${r.id}">
+                        <span>${r.text}</span>
+                        </label>`)
+            $(html).on('click', function () {
+
+                selected_cancle_option = r.id;
+
+                if (r.id == 9) {
+                    $('.feedback-box').fadeIn();
+                } else {
+                    $('.feedback-box').fadeOut();
+                }
+
+            });
+
+            $('#reasons_container').append(html);
+
+        })
+
+        $('.sub_cancel_popup').fadeIn();
+        selected_subscription_id = $(this).data('sub');
+
+    })
+
+    $(document).on('submit', '#cancellationForm', async function (e) {
+        e.preventDefault();
+
+        if (!selected_cancle_option || !selected_subscription_id) {
+            return;
+        }
+
+        if (selected_cancle_option == 9 && $('#feedback_box').val() == "") {
+            return;
+        }
+
+        const reson = reasons.find(r => r.id == selected_cancle_option);
+
         try {
+            $('.btn-confirm').prop('disabled', true);
             const data = {
                 'action': 'mav2_cancel_subscription',
-                'id': $(this).data('sub')
+                id: selected_subscription_id,
+                rid: selected_cancle_option,
+                r_text: selected_cancle_option == 9 ? $('#feedback_box').val() : reson.text
             };
             let res = await _ajax(data)
             location.reload();
         } catch (error) {
-            $(this).prop('disabled', false);
+            $('.btn-confirm').prop('disabled', false);
         }
+
     })
 
     // user_address_update_form

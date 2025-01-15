@@ -272,9 +272,6 @@ foreach ($res as $sub) {
 <!-- generate html -->
 <div id="sub_cards">
     <?php foreach ($out_data as $sub) { ?>
-
-
-
         <div class="sub_card">
             <div class="sub_card_header">
                 <div class="left">
@@ -314,7 +311,7 @@ foreach ($res as $sub) {
 
                     <div class="sub_plan_status">
                         <?php if ($sub['status'] === 'wc-active') { ?>
-                            <button data-sub="<?php echo $sub['id']; ?>" class="sub_button sub_plan_cancel_sub">Cancel Subscription</button>
+                            <button type="button" data-sub="<?php echo $sub['id']; ?>" class="sub_button sub_plan_cancel_sub">Cancel Subscription</button>
                         <?php } elseif ($sub['status'] === 'wc-cancelled') { ?>
                             <span class="sub_status sub_plan_inactive">Cancelled</span>
                         <?php } else { ?>
@@ -349,7 +346,7 @@ foreach ($res as $sub) {
             <div class="order_history">
                 <div class="oh_header">
                     <span class="oh_title">Order History</span>
-                    <button class="arrow">
+                    <button type="button" class="arrow">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M11.9999 13.1714L16.9497 8.22168L18.3639 9.63589L11.9999 15.9999L5.63599 9.63589L7.0502 8.22168L11.9999 13.1714Z"></path>
                         </svg>
@@ -377,6 +374,8 @@ foreach ($res as $sub) {
             </div>
 
 
+
+
         </div>
 
     <?php } ?>
@@ -388,3 +387,76 @@ foreach ($res as $sub) {
 
     <?php } ?>
 </div>
+
+<!-- subcription cancel notes -->
+<div class="sub_cancel_popup">
+    <div class="popup_wrapper">
+        <div class="cancel-popup-content">
+            <div class="popup-header">
+                <h3>Please select your reason for cancellation</h3>
+                <button class="close-popup">&times;</button>
+            </div>
+
+            <form id="cancellationForm">
+                <div id="reasons_container" class="reasons-container">
+                    <label class="reason-item">
+                        <input type="radio" name="cancel_reason" value="1">
+                        <span>The subscription cost is too high.</span>
+                    </label>
+
+                    <label class="reason-item">
+                        <input type="radio" name="cancel_reason" value="2">
+                        <span>Limited variety of snacks</span>
+                    </label>
+
+                    <label class="reason-item">
+                        <input type="radio" name="cancel_reason" value="3">
+                        <span>Too many snacks delivered each month</span>
+                    </label>
+
+                    <label class="reason-item">
+                        <input type="radio" name="cancel_reason" value="4">
+                        <span>Poor snack quality</span>
+
+                    </label>
+
+                    <label class="reason-item">
+                        <input type="radio" name="cancel_reason" value="5">
+                        <span>I only wanted a one-time subscription</span>
+                    </label>
+
+                    <label class="reason-item">
+                        <input type="radio" name="cancel_reason" value="6">
+                        <span>Frequent delivery delays</span>
+                    </label>
+
+                    <label class="reason-item">
+                        <input type="radio" name="cancel_reason" value="7">
+                        <span>I've lost interest in receiving regular snacks</span>
+                    </label>
+
+                    <label class="reason-item">
+                        <input type="radio" name="cancel_reason" value="8">
+                        <span>I've moved to a new address</span>
+                    </label>
+
+                    <label class="reason-item">
+                        <input type="radio" name="cancel_reason" value="9">
+                        <span>Others</span>
+                    </label>
+                </div>
+
+                <div class="feedback-box" style="display:none;">
+                    <textarea id="feedback_box" placeholder="Please share your reasons"></textarea>
+                </div>
+
+                <div class="popup-footer">
+                    <button type="button" class="btn-cancel">Cancel</button>
+                    <button type="submit" class="btn-confirm">Confirm Cancellation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- end subcription cancel notes -->
