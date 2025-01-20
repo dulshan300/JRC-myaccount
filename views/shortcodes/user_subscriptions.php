@@ -13,8 +13,10 @@ if (empty($user_id)) {
 // get all the subs with id, plan,prepaid_data and renewal
 
 global $wpdb;
+
 // _subscription_renewal | wp_wc_orders_meta | for renewal orders
 // _ps_scheduled_to_be_cancelled | wp_wc_orders_meta | for cancelled orders
+
 $sql = "SELECT
     od.id,
     od.status,
@@ -111,6 +113,24 @@ function get_tracking($order)
     if ($order->tracking == 404) {
         $order->tracking = 'Tracking pending';
     } else {
+
+        // $pattern_JP = '/\b([A-Z0-9]{13})\b/';
+        $pattern_JP = '/RN([\d+]+)JP/';
+        $pattern_US = '/\b(\d+)\b/';
+
+        if (preg_match($pattern_JP, $order->tracking, $matches)) {
+            $trackingNumber = $matches[0]; // The captured tracking number            
+            $link = 'https://trackings.post.japanpost.jp/services/srv/search/?requestNo1=%20' . $trackingNumber . '&search.x=68&search.y=17&search=Tracking+start&locale=ja&startingUrlPatten=';
+            $order->tracking = "<a href='{$link}' target='_blank'>{$trackingNumber}</a>";
+        } else if (preg_match($pattern_US, $order->tracking, $matches)) {
+            // us
+            $trackingNumber = $matches[1]; // The captured tracking number            
+            $us_link = 'https://parcelsapp.com/en/tracking/' . $trackingNumber;
+            $order->tracking = "<a href='{$us_link}' target='_blank'>{$trackingNumber}</a>";
+        }
+
+        /*
+
         // some of traking code is here
         $traking = $order->tracking;
         $search = "Tracking number(s):";
@@ -131,6 +151,7 @@ function get_tracking($order)
             $link = 'https://trackings.post.japanpost.jp/services/srv/search/?requestNo1=%20' . $traking . '&search.x=68&search.y=17&search=Tracking+start&locale=ja&startingUrlPatten=';
             $order->tracking = "<a href='{$link}' target='_blank'>{$order->tracking}</a>";
         }
+            */
     }
 
     return $order->tracking;
@@ -181,7 +202,7 @@ foreach ($res as $sub) {
         $orders_history = unserialize($sub->fullfilled);
     }
 
-    $lo_sql = "SELECT od.id, od.status,od.date_created_gmt, COALESCE( ( SELECT comment_content from wp_comments WHERE comment_post_ID = od.id AND comment_content LIKE '%%Tracking number%%'LIMIT 1 ),404) as tracking, (SELECT country FROM wp_wc_order_addresses WHERE order_id=od.id LIMIT 1) country from wp_wc_orders od WHERE od.id=%s";
+    $lo_sql = "SELECT od.id, od.status,od.date_created_gmt, COALESCE( ( SELECT comment_content from wp_comments WHERE comment_post_ID = od.id AND comment_content LIKE '%%Tracking number%%'ORDER BY comment_date_gmt DESC LIMIT 1 ),404) as tracking, (SELECT country FROM wp_wc_order_addresses WHERE order_id=od.id LIMIT 1) country from wp_wc_orders od WHERE od.id=%s";
 
     $lo_q = $wpdb->prepare($lo_sql, $last_order_id);
 
@@ -281,12 +302,16 @@ foreach ($res as $sub) {
                 </div>
                 <div class="right">
                     <div class="traking">
+                        <!-- truck svg -->
+
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M16 3H1V16H16V3Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                            <path d="M16 8H20L23 11V16H16V8Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                            <path d="M5.5 21C6.88071 21 8 19.8807 8 18.5C8 17.1193 6.88071 16 5.5 16C4.11929 16 3 17.1193 3 18.5C3 19.8807 4.11929 21 5.5 21Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                            <path d="M18.5 21C19.8807 21 21 19.8807 21 18.5C21 17.1193 19.8807 16 18.5 16C17.1193 16 16 17.1193 16 18.5C16 19.8807 17.1193 21 18.5 21Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M16 3H1V16H16V3Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M16 8H20L23 11V16H16V8Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M5.5 21C6.88071 21 8 19.8807 8 18.5C8 17.1193 6.88071 16 5.5 16C4.11929 16 3 17.1193 3 18.5C3 19.8807 4.11929 21 5.5 21Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M18.5 21C19.8807 21 21 19.8807 21 18.5C21 17.1193 19.8807 16 18.5 16C17.1193 16 16 17.1193 16 18.5C16 19.8807 17.1193 21 18.5 21Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
+
+                        <!-- end truck svg -->
 
                         <div class="tracking_number">
                             <span>Track My Latest Order:</span>
@@ -318,7 +343,7 @@ foreach ($res as $sub) {
                             <span class="sub_status sub_plan_pending">Pending</span>
                         <?php } ?>
 
-                        <span class="sub_plan_cancel_note">Note: Cancellation will take effect after your plan ends</span>
+                        <span class="sub_plan_cancel_note">Note: Cancellation will take effect only after your current cycle ends.</span>
                     </div>
                 </div>
 
@@ -358,7 +383,7 @@ foreach ($res as $sub) {
                         <tr>
                             <th>Order ID</th>
                             <th>Date (GMT)</th>
-                            <th>Tracking</th>
+                            <th>Tracking No.</th>
                         </tr>
                         <?php foreach ($sub['order_history'] as $order) { ?>
                             <tr class="order_history_item">
@@ -392,70 +417,101 @@ foreach ($res as $sub) {
 <div class="sub_cancel_popup">
     <div class="popup_wrapper">
         <div class="cancel-popup-content">
-            <div class="popup-header">
-                <h3>Please select your reason for cancellation</h3>
-                <button class="close-popup">&times;</button>
-            </div>
+            <div data-panel="1" class="panel">
 
-            <form id="cancellationForm">
-                <div id="reasons_container" class="reasons-container">
-                    <label class="reason-item">
-                        <input type="radio" name="cancel_reason" value="1">
-                        <span>The subscription cost is too high.</span>
-                    </label>
-
-                    <label class="reason-item">
-                        <input type="radio" name="cancel_reason" value="2">
-                        <span>Limited variety of snacks</span>
-                    </label>
-
-                    <label class="reason-item">
-                        <input type="radio" name="cancel_reason" value="3">
-                        <span>Too many snacks delivered each month</span>
-                    </label>
-
-                    <label class="reason-item">
-                        <input type="radio" name="cancel_reason" value="4">
-                        <span>Poor snack quality</span>
-
-                    </label>
-
-                    <label class="reason-item">
-                        <input type="radio" name="cancel_reason" value="5">
-                        <span>I only wanted a one-time subscription</span>
-                    </label>
-
-                    <label class="reason-item">
-                        <input type="radio" name="cancel_reason" value="6">
-                        <span>Frequent delivery delays</span>
-                    </label>
-
-                    <label class="reason-item">
-                        <input type="radio" name="cancel_reason" value="7">
-                        <span>I've lost interest in receiving regular snacks</span>
-                    </label>
-
-                    <label class="reason-item">
-                        <input type="radio" name="cancel_reason" value="8">
-                        <span>I've moved to a new address</span>
-                    </label>
-
-                    <label class="reason-item">
-                        <input type="radio" name="cancel_reason" value="9">
-                        <span>Others</span>
-                    </label>
+                <div class="popup-header">
+                    <h3>Wait! Are You Sure You Want to Cancel?</h3>
+                    <button class="close-popup">&times;</button>
                 </div>
 
-                <div class="feedback-box" style="display:none;">
-                    <textarea id="feedback_box" placeholder="Please share your reasons"></textarea>
+                <div class="popup-content">
+                    <p>You're about to miss out on:</p>
+
+                    <div class="icon-text"><span>🎁</span>
+                        <p>Exclusive Monthly Omiyage Boxes filled with unique Japanese snacks and treats.</p>
+                    </div>
+                    <div class="icon-text"><span>🌸</span>
+                        <p>Access to Exclusive Events featuring authentic Japanese experiences.</p>
+                    </div>
+                    <div class="icon-text"><span>🚄</span> Special JR EAST Deals curated just for members.</div>
                 </div>
 
                 <div class="popup-footer">
-                    <button type="button" class="btn-cancel">Cancel</button>
-                    <button type="submit" class="btn-confirm">Confirm Cancellation</button>
+                    <button type="button" class="btn-close btn-blue">Back to account</button>
+                    <button type="button" data-current="1" data-next="2" class="btn-next btn-gray">Proceed to cancel</button>
                 </div>
-            </form>
+
+            </div>
+            <div data-panel="2" style="display: none;" class="panel">
+                <div class="popup-header">
+                    <div class="">
+                        <h3>We are sad to see you go!</h3>
+                        <p>Please select your reason for cancellation:</p>
+                    </div>
+                    <button class="close-popup">&times;</button>
+                </div>
+
+                <form id="cancellationForm">
+                    <div id="reasons_container" class="reasons-container">
+                        <label class="reason-item">
+                            <input type="radio" name="cancel_reason" value="1">
+                            <span>The subscription cost is too high.</span>
+                        </label>
+
+                        <label class="reason-item">
+                            <input type="radio" name="cancel_reason" value="2">
+                            <span>Limited variety of snacks</span>
+                        </label>
+
+                        <label class="reason-item">
+                            <input type="radio" name="cancel_reason" value="3">
+                            <span>Too many snacks delivered each month</span>
+                        </label>
+
+                        <label class="reason-item">
+                            <input type="radio" name="cancel_reason" value="4">
+                            <span>Poor snack quality</span>
+
+                        </label>
+
+                        <label class="reason-item">
+                            <input type="radio" name="cancel_reason" value="5">
+                            <span>I only wanted a one-time subscription</span>
+                        </label>
+
+                        <label class="reason-item">
+                            <input type="radio" name="cancel_reason" value="6">
+                            <span>Frequent delivery delays</span>
+                        </label>
+
+                        <label class="reason-item">
+                            <input type="radio" name="cancel_reason" value="7">
+                            <span>I've lost interest in receiving regular snacks</span>
+                        </label>
+
+                        <label class="reason-item">
+                            <input type="radio" name="cancel_reason" value="8">
+                            <span>I've moved to a new address</span>
+                        </label>
+
+                        <label class="reason-item">
+                            <input type="radio" name="cancel_reason" value="9">
+                            <span>Others</span>
+                        </label>
+                    </div>
+
+                    <div class="feedback-box" style="display:none;">
+                        <textarea id="feedback_box" placeholder="Please share with us your thoughts"></textarea>
+                    </div>
+
+                    <div class="popup-footer">
+                        <button type="button" class="btn-close btn-cancel">Cancel</button>
+                        <button type="submit" class="btn-confirm">Confirm Cancellation</button>
+                    </div>
+                </form>
+            </div>
         </div>
+
     </div>
 </div>
 

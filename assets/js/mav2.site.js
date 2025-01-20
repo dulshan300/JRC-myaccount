@@ -39,14 +39,14 @@ let selected_cancle_option = null;
 
 const reasons = [
     { id: 1, text: "The subscription cost is too high", action: "switch-plan" },
-    { id: 2, text: "Limited variety of snacks", action: null },
+    { id: 2, text: "The variety of snacks is limited", action: null },
     { id: 3, text: "Too many snacks delivered each month", action: null },
     { id: 4, text: "Poor snack quality", action: "feedback" },
     { id: 5, text: "I only wanted a one-time subscription", action: "discount" },
     { id: 6, text: "Frequent delivery delays", action: null },
     { id: 7, text: "I've lost interest in receiving regular snacks", action: null },
     { id: 8, text: "I've moved to a new address", action: "address" },
-    { id: 9, text: "Others", action: "feedback" }
+    { id: 9, text: "Others or additional feedback", action: "feedback" }
 ];
 
 (function async($) {
@@ -68,8 +68,14 @@ const reasons = [
         $(parent).find('.processing').fadeOut();
     }
 
-    $(document).on('click', '.close-popup, .btn-cancel', function () {
+    $(document).on('click', '.close-popup, .btn-close', function () {
         $('.sub_cancel_popup').fadeOut();
+        $('.panel').hide();
+        $('.panel').each(function (i) {
+            if (i == 0) {
+                $(this).show();
+            }
+        });
     });
 
     $(window).on('click', function (e) {
@@ -81,6 +87,15 @@ const reasons = [
             $('.sub_plan_cancel_sub').prop('disabled', false);
         }
     });
+
+    $(document).on('click', '.btn-next', function () {
+
+        const current_panel = $(this).data('current');
+        const next_panel = $(this).data('next');
+
+        $(`[data-panel=${current_panel}]`).hide();
+        $(`[data-panel=${next_panel}]`).show();
+    })
 
     $(document).on('click', '.sub_plan_cancel_sub', async function () {
 

@@ -1,5 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
 
+@mixin break() {
+    @media only screen and (max-width: 768px) {
+        @content;
+    }
+}
+
 .mav2_icon {
     display: inline-flex;
     width: 24px;
@@ -84,9 +90,17 @@
         justify-content: space-between;
         gap: 15px;
 
+        @include break() {
+            flex-direction: column;
+        }
+
         .oc_left {
             display: flex;
             gap: 26px;
+
+            @include break() {
+                flex-direction: column;
+            }
 
             img {
                 width: 132px;
@@ -173,6 +187,11 @@
             display: flex;
             align-items: start;
             justify-content: space-between;
+
+            @include break() {
+                flex-direction: column-reverse;
+                gap: 20px;
+            }
         }
 
         .sub_plan_details,
@@ -186,12 +205,32 @@
             display: flex;
             justify-content: space-between;
 
+            @include break() {
+                flex-direction: column;
+
+                .left {
+
+                    h3,
+                    h4 {
+                        font-size: 1.3em !important;
+                    }
+                }
+
+            }
+
             .traking {
                 display: flex;
                 gap: 10px;
-                background: #71F690;
-                padding: 17px 20px !important;
+                background: #001A43;
+                padding: 17px 20px;
                 border-radius: 10px;
+                color: #ffffff;
+
+                @include break() {
+                    padding: 5px 5px;
+                    margin: 10px 0;
+                    border-radius: 7px;
+                }
 
                 .tracking_number {
                     display: flex;
@@ -303,12 +342,12 @@
                 display: flex;
                 width: 100%;
                 justify-content: space-between;
-                padding: 5px !important;
+                padding: 1% !important;
 
-                background-color: #e5e5f7;
-                opacity: 0.8;
-                background-size: 10px 10px;
-                background-image: repeating-linear-gradient(45deg, #e3e3e3 0, #878787 1px, #ffffff 0, #f6f6f6 50%);
+                padding: 1%;
+                border: 1px solid #eee;
+                border-radius: 8px;
+                background-color: transparent;
 
                 .oh_title {
                     font-weight: bold !important;
@@ -320,7 +359,7 @@
                     width: 24px;
                     border-radius: 50%;
                     border: none;
-                    background: #000;
+                    background: #001A43;
                     cursor: pointer;
                     transition: all 0.3s;
 
@@ -574,16 +613,26 @@
     padding: 20px;
 }
 
+.icon-text {
+    display: flex;
+    gap: 5px;
+}
+
 .popup-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0;
+    margin-bottom: 7px;
 
     h3 {
         font-family: var(--e-global-typography-secondary-font-family), Sans-serif !important;
         font-size: 1.3em !important;
         font-weight: bold !important;
+        margin: 0;
+
+        @include break() {
+            font-size: 1em !important;
+        }
     }
 }
 
@@ -606,6 +655,14 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     cursor: pointer;
+
+    @include break() {
+        padding: 8px;
+
+        span {
+            font-size: 0.8em !important;
+        }
+    }
 }
 
 .action-trigger {
@@ -633,10 +690,23 @@
 }
 
 .btn-cancel,
+.btn-blue,
+.btn-gray,
 .btn-confirm {
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
+    border: none;
+}
+
+.btn-blue {
+    background: #051a44;
+    color: #fff;
+}
+
+.btn-gray {
+    background: gray;
+    color: #fff;
 }
 
 .btn-cancel {
