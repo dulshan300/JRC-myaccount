@@ -177,7 +177,9 @@ foreach ($res as $sub) {
 
     $sub_orders = [$sub->parent_order_id];
     // if renewal orders
-    $sub_orders = array_merge($sub_orders, unserialize($sub->renewal_ids));
+    $renew_orders = unserialize($sub->renewal_ids);
+    $renew_orders= array_reverse($renew_orders);
+    $sub_orders = array_merge($sub_orders, $renew_orders);
     $last_sub = end($sub_orders);
 
     // getting order details
@@ -296,7 +298,7 @@ foreach ($res as $sub) {
         <div class="sub_card">
             <div class="sub_card_header">
                 <div class="left">
-                    <span class="sub_id">Subscription ID: #<?php echo $sub['id']; ?></span>
+                    <span class="sub_id"><span>Subscription ID:</span> #<?php echo $sub['id']; ?></span>
                     <h3 class="sub_product_name"><?php echo $sub['product']; ?></h3>
                     <h4 class="sub_plan_name"><?php echo $sub['plan']; ?></h4>
                 </div>
@@ -328,32 +330,38 @@ foreach ($res as $sub) {
 
                 <!-- plan details -->
                 <div class="sub_plan_details">
-                    <span class="sub_plan_shipped">No. of Boxes Shipped: <?php echo $sub['shipped']; ?></span>
-                    <span class="sub_plan_created">Subscription Date: <?php echo $sub['created_at']; ?></span>
+                    <span class="sub_plan_shipped"><span>No. of Boxes Shipped:</span> <?php echo $sub['shipped']; ?></span>
+                    <span class="sub_plan_created"><span>Subscription Date:</span> <?php echo $sub['created_at']; ?></span>
                     <?php if ($sub['status'] != 'wc-cancelled') { ?>
-                        <span class="sub_plan_next_renew">Next Payment Renewal Date: <?php echo $sub['next_payment']; ?></span>
+                        <span class="sub_plan_next_renew"><span>Next Payment Renewal Date:</span> <?php echo $sub['next_payment']; ?></span>
                     <?php } ?>
 
                     <div class="sub_plan_status">
-                        <?php if ($sub['status'] === 'wc-active') { ?>
-                            <button type="button" data-sub="<?php echo $sub['id']; ?>" class="sub_button sub_plan_cancel_sub">Cancel Subscription</button>
-                        <?php } elseif ($sub['status'] === 'wc-cancelled') { ?>
-                            <span class="sub_status sub_plan_inactive">Cancelled</span>
-                        <?php } else { ?>
-                            <span class="sub_status sub_plan_pending">Pending</span>
-                        <?php } ?>
+                        <div class="sub_action_buttons">
 
-                        <span class="sub_plan_cancel_note">Note: Cancellation will take effect only after your current cycle ends.</span>
+
+                            <?php if ($sub['status'] === 'wc-active') { ?>
+                                <button type="button" data-sub="<?php echo $sub['id']; ?>" class="sub_button sub_plan_cancel_sub">Cancel Subscription</button>
+                            <?php } elseif ($sub['status'] === 'wc-cancelled') { ?>
+                                <span class="sub_status sub_plan_inactive">Cancelled</span>
+                            <?php } else { ?>
+                                <span class="sub_status sub_plan_pending">Pending</span>
+                            <?php } ?>
+
+                            <button type="button" data-popup="sub_update" data-sub="<?php echo $sub['id']; ?>" class="sub_button sub_update_button">Update Subscription</button>
+                        </div>
+
+                        <span class="sub_plan_cancel_note">Note: Cancellation & Update will take effect only after your current cycle ends.</span>
                     </div>
                 </div>
 
                 <!-- product values -->
                 <div class="sub_product_values">
-                    <span class="sub_product_value">Product Value: <?php echo $sub['currency'] . $sub['product_value']; ?></span>
-                    <span class="sub_product_subtotal">Subtotal: <?php echo $sub['currency'] . $sub['product_value']; ?></span>
-                    <span class="sub_product_shipping">Shipping: <?php echo $sub['currency'] . $sub['shipping']; ?></span>
-                    <span class="sub_product_discount">Discount: <?php echo $sub['currency'] . $sub['discount']; ?></span>
-                    <span class="sub_product_total">Total: <?php echo $sub['currency'] . $sub['total']; ?></span>
+                    <span class="sub_product_value"><span>Product Value:</span> <?php echo $sub['currency'] . $sub['product_value']; ?></span>
+                    <span class="sub_product_subtotal"><span>Subtotal:</span> <?php echo $sub['currency'] . $sub['product_value']; ?></span>
+                    <span class="sub_product_shipping"><span>Shipping:</span> <?php echo $sub['currency'] . $sub['shipping']; ?></span>
+                    <span class="sub_product_discount"><span>Discount:</span> <?php echo $sub['currency'] . $sub['discount']; ?></span>
+                    <span class="sub_product_total"><span>Total:</span> <?php echo $sub['currency'] . $sub['total']; ?></span>
                 </div>
 
                 <!-- address details -->
@@ -413,8 +421,9 @@ foreach ($res as $sub) {
     <?php } ?>
 </div>
 
+
 <!-- subcription cancel notes -->
-<div class="sub_cancel_popup">
+<div id="sub_cancel" class="sub_cancel_popup">
     <div class="popup_wrapper">
         <div class="cancel-popup-content">
             <div data-panel="1" class="panel">
@@ -513,6 +522,22 @@ foreach ($res as $sub) {
         </div>
 
     </div>
+</div>
+
+<div id="sub_update" class="mav2_popup">
+    <div class="popup_wrapper">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3>Update Subscription</h3>
+                <button class="close-popup">&times;</button>
+            </div>
+            <div class="popup-body">
+
+
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <!-- end subcription cancel notes -->

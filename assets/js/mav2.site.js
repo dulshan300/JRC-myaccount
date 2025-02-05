@@ -52,6 +52,20 @@ const reasons = [
 (function async($) {
 
 
+    // init models
+    $('.mav2_popup').each(function () {
+        const popup = $(this);
+        $(this).find('.close-popup').on('click', function () {
+            $(popup).fadeOut();
+        })
+    });
+
+    $(document).on('click', '[data-popup]', function () {
+        const popup = $(this).data('popup');
+        $(`#${popup}`).fadeIn();
+    })
+
+
     function mav2_show_success(form) {
         $(form).find('.mav2_success_alert').fadeIn();
 
@@ -294,6 +308,27 @@ const reasons = [
     $(document).on('click', '.arrow', function () {
         $(this).toggleClass('flip');
         $(this).parent().parent().find('.order_history_list').slideToggle();
+    })
+
+
+    $(document).on('click', '.sub_update_button', async function () {
+        const id = $(this).data('sub');
+        // get update details
+        try {
+            let data = {
+                'action': 'mav2_get_subscription_update',
+                id: id
+            };
+
+            let res = await _ajax(data);
+
+            console.log(res.data);
+
+
+
+        } catch (error) {
+            console.log(error);
+        }
     })
 
 

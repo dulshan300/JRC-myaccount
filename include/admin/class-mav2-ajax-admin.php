@@ -62,7 +62,8 @@ final class MAV2_Ajax_Admin
             $note_text = 'Subscription scheduled to be cancelled by the user.';
         } else {
             // sub cancel
-            $subscription->set_status('cancelled');
+            // $subscription->set_status('cancelled');
+            $subscription->set_status('pending-cancel');
             $note_text = 'Subscription cancelled by the user.';
         }
 
@@ -495,5 +496,60 @@ final class MAV2_Ajax_Admin
             'secret_key' => $secret_key,
             'publishable_key' => $publishable_key,
         ];
+    }
+
+    public function get_subscription_update()
+    {
+
+        global $wpdb;
+
+        // get available prepaid pieces
+        $product_id = 198;
+        $prepaid_plans = get_post_meta($product_id, '_ps_prepaid_plans', true);
+
+        $plans = [
+            [
+                'plan' => 1,
+                'name' => '1 Month',
+            ]
+        ];
+
+        $p_plans = array_map(function ($v) {
+            return [
+                'plan' => $v['prepaid_pieces'],
+                'name' => $v['plan_name'],
+            ];
+        }, $prepaid_plans);
+
+        $plans = array_merge($plans, $p_plans);
+
+        $sub_id = 16820; //$_POST['id'];
+        $subscription = wcs_get_subscription($sub_id);
+
+        $current_plan = $subscription->get_meta('_ps_prepaid_pieces');
+        $current_plan = max(1, intval($current_plan));
+
+        $available_plans = array_values(array_filter($plans, function ($v) use ($current_plan) {
+            return $v['plan'] != $current_plan;
+        }));
+
+        $sub_start_date = $subscription->get_date('start');
+
+        $available_plans = array_map(function ($v) use ($sub_start_date) {
+            $_p = $v['plan'];
+            $v['start_date'] = date('Y-m-03', strtotime($sub_start_date . ' + ' . $_p . ' month'));
+            return $v;
+        }, $available_plans);
+
+        $current_plan = array_values(array_filter($plans, function ($v) use ($current_plan) {
+            return $v['plan'] == $current_plan;
+        }))[0];
+
+        wp_send_json([
+            'last_payment' => $subscription->get_date('start'),
+            'current_plan' => $current_plan,
+            'plans' => $plans,
+            'available_plans' => $available_plans,
+        ]);
     }
 }

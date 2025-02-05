@@ -295,6 +295,12 @@
             margin-top: 32px;
             gap: 5px;
 
+            .sub_action_buttons {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+
             .sub_button,
             .sub_status {
                 background: transparent;
@@ -319,6 +325,7 @@
 
             .sub_button {
                 cursor: pointer;
+                padding: 0 20px;
 
                 &:hover {
                     background: #001A43;
@@ -584,6 +591,25 @@
         box-shadow: 6px 6px 5px rgba(#000, 0.01);
         color: #001A43;
         border: 1px solid #d3d3d3;
+    }
+}
+
+.mav2_popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+
+    .popup-content{
+        background: white;
+        width: 90%;
+        max-width: 500px;
+        border-radius: 8px;
+        padding: 20px;
     }
 }
 

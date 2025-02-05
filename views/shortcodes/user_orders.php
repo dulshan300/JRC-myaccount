@@ -115,12 +115,12 @@ foreach ($orders as $oid => $order) {
             </div>
 
             <div class="oc_price_details">
-                <h4 class="order_id">Order ID: #<?= $order['id'] ?> | Order Status: <?= $order['status'] ?></h4>
+                <h4 class="order_id"><span>Order ID:</span> #<?= $order['id'] ?> | <span>Order Status:</span> <?= $order['status'] ?></h4>
 
-                <span class="order_product_value">Product Price: <?= $order['currency'] ?><?= $order['items_value'] ?> </span>
-                <span class="order_subtotal">Subtotal: <?= $order['currency'] ?><?= $order['items_value'] ?> </span>
-                <span class="order_discount">Discount: <?= $order['currency'] ?><?= $order['discount_amount'] ?> &nbsp; <?= $order['coupon'] ?></span>
-                <span class="order_total">Total: <?= $order['currency'] ?><?= $order['total'] ?> </span>
+                <span class="order_product_value"><span>Product Price:</span> <?= $order['currency'] ?><?= $order['items_value'] ?> </span>
+                <span class="order_subtotal"><span>Subtotal:</span> <?= $order['currency'] ?><?= $order['items_value'] ?> </span>
+                <span class="order_discount"><span>Discount:</span> <?= $order['currency'] ?><?= $order['discount_amount'] ?> &nbsp; <?= $order['coupon'] ?></span>
+                <span class="order_total"><span>Total:</span> <?= $order['currency'] ?><?= $order['total'] ?> </span>
             </div>
 
 

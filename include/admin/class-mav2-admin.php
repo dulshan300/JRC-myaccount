@@ -49,11 +49,11 @@ final class MAV2_Admin
 
         error_log('Loading Admin Scripts for MAV2');
 
-        wp_enqueue_style('mav2-admin-css', MAV2_ASSETS_URL.'css/mav2.admin.css', [], MAV2_VERSION);
+        wp_enqueue_style('mav2-admin-css', MAV2_ASSETS_URL . 'css/mav2.admin.css', [], MAV2_VERSION);
 
-        wp_enqueue_script('mav2-vuejs', MAV2_ASSETS_URL.'vendors/vue.js', ['jquery'], MAV2_VERSION, true);
-        wp_enqueue_script('mav2-axios', MAV2_ASSETS_URL.'vendors/axios.js', ['mav2-vuejs'], MAV2_VERSION, true);
-        wp_enqueue_script('mav2-admin-js', MAV2_ASSETS_URL.'js/mav2.admin.js', ['mav2-vuejs', 'mav2-axios'], MAV2_VERSION, true);
+        wp_enqueue_script('mav2-vuejs', MAV2_ASSETS_URL . 'vendors/vue.js', ['jquery'], MAV2_VERSION, true);
+        wp_enqueue_script('mav2-axios', MAV2_ASSETS_URL . 'vendors/axios.js', ['mav2-vuejs'], MAV2_VERSION, true);
+        wp_enqueue_script('mav2-admin-js', MAV2_ASSETS_URL . 'js/mav2.admin.js', ['mav2-vuejs', 'mav2-axios'], MAV2_VERSION, true);
 
         wp_localize_script('mav2-admin-js', 'JRCAnalytics', [
             'ajaxurl' => admin_url('admin-ajax.php'),
@@ -61,8 +61,17 @@ final class MAV2_Admin
         ]);
 
         error_log('Scripts and styles enqueued');
-        error_log('MAV2_ASSETS_URL: '.MAV2_ASSETS_URL);
-        error_log('MAV2_VERSION: '.MAV2_VERSION);
+        error_log('MAV2_ASSETS_URL: ' . MAV2_ASSETS_URL);
+        error_log('MAV2_VERSION: ' . MAV2_VERSION);
+    }
+
+    private function get_timestamp($file)
+    {
+        $file_path = MAV2_ASSETS_DIR . $file;
+        if (file_exists($file_path)) {
+            return filemtime($file_path);
+        }
+        return MAV2_VERSION;
     }
 
     public function site_enqueue_scripts($hook)
@@ -70,10 +79,10 @@ final class MAV2_Admin
 
         if (is_page('short-code-test') || is_page('my-account')) {
 
-            wp_enqueue_style('mav2-site-css', MAV2_ASSETS_URL.'css/mav2.site.css', [], MAV2_ASSIST_VER);
+            wp_enqueue_style('mav2-site-css', MAV2_ASSETS_URL . 'css/mav2.site.css', [], $this->get_timestamp('css/mav2.site.css'));
 
-            wp_enqueue_script('mav2-axios', MAV2_ASSETS_URL.'vendors/axios.js', [], MAV2_ASSIST_VER, true);
-            wp_enqueue_script('mav2-site-js', MAV2_ASSETS_URL.'js/mav2.site.js', ['jquery', 'mav2-axios'], MAV2_ASSIST_VER, true);
+            wp_enqueue_script('mav2-axios', MAV2_ASSETS_URL . 'vendors/axios.js', [], $this->get_timestamp('vendors/axios.js'), true);
+            wp_enqueue_script('mav2-site-js', MAV2_ASSETS_URL . 'js/mav2.site.js', ['jquery', 'mav2-axios'], $this->get_timestamp('js/mav2.site.js'), true);
 
             wp_localize_script('mav2-site-js', 'mav2', [
                 'ajaxurl' => admin_url('admin-ajax.php'),
@@ -129,10 +138,10 @@ final class MAV2_Admin
         $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
 
         foreach ($methods as $method) {
-            $action = 'wp_ajax_mav2_'.$method->name;
+            $action = 'wp_ajax_mav2_' . $method->name;
             add_action($action, [$ajax_instance, $method->name]);
 
-            $action_nopriv = 'wp_ajax_nopriv_mav2_'.$method->name;
+            $action_nopriv = 'wp_ajax_nopriv_mav2_' . $method->name;
             add_action($action_nopriv, [$ajax_instance, $method->name]);
         }
     }
@@ -144,7 +153,7 @@ final class MAV2_Admin
         $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
 
         foreach ($methods as $method) {
-            $action = 'mav2_'.$method->name;
+            $action = 'mav2_' . $method->name;
             add_shortcode($action, [$short_codes, $method->name]);
         }
     }
@@ -152,7 +161,7 @@ final class MAV2_Admin
     public function admin_page()
     {
         ob_start();
-        include_once MAV2_PATH.'views/admin.php';
+        include_once MAV2_PATH . 'views/admin.php';
         echo ob_get_clean();
         ob_flush();
     }
