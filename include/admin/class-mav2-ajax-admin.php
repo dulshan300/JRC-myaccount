@@ -498,58 +498,177 @@ final class MAV2_Ajax_Admin
         ];
     }
 
-    public function get_subscription_update()
+    private function get_prepaid_details()
+    {
+        global $wpdb;
+        $product_id = 198;
+
+        $wc_product = wc_get_product($product_id);
+        $prepaid_plans = get_post_meta($product_id, '_ps_prepaid_plans', true);
+        $per_month_price = floatval($wc_product->price);
+
+        $final_v_list = [];
+
+        $default_plan =  [
+            'id' => 'XPCgf',
+            'product_id' => $product_id,
+            'type' => 1, // 1 = simple 2 = prepaid
+            'name' => '1 Month',
+            'plan' => 1,
+            'price' => number_format($per_month_price, 2, '.', ''),
+            'price_per_month' => number_format($per_month_price, 2, '.', ''),
+            'has_saving' => false,
+            'save' => '0.00',
+            'discount' => number_format(0, 0, '.', '')
+        ];
+
+        $final_v_list[] = $default_plan;
+
+        foreach ($prepaid_plans as $v) {
+            $pieces = intval($v['prepaid_pieces']);
+            $discount = floatval($v['discount']);
+            $factor = 1.00 - ($discount / 100);
+            $price = $per_month_price * $pieces * $factor;
+            $save = round($per_month_price * $pieces - $price, 2);
+
+            $final_v_list[] =  [
+                'id' => $v['slug'],
+                'type' => 2,
+                'product_id' => $product_id,
+                'name' => $v['plan_name'],
+                'price' => number_format($price, 2, '.', ''),
+                'price_per_month' => number_format($per_month_price * $factor, 2, '.', ''),
+                'has_saving' => $save > 0,
+                'save' => number_format($save, 2, '.', ''),
+                'discount' => number_format($discount, 0, '.', ''),
+                'price_no_discount' => number_format(round($per_month_price * $pieces), 2),
+                'plan' => $pieces
+            ];
+        }
+
+        $final_v_list = array_reverse($final_v_list);
+        return $final_v_list;
+    }
+
+    public function get_subscription_details()
     {
 
         global $wpdb;
 
-        // get available prepaid pieces
-        $product_id = 198;
-        $prepaid_plans = get_post_meta($product_id, '_ps_prepaid_plans', true);
+        $name = do_shortcode('[yaycurrency-currency]', true);
+        $symbol = do_shortcode('[yaycurrency-symbol]', true);
 
-        $plans = [
-            [
-                'plan' => 1,
-                'name' => '1 Month',
-            ]
-        ];
+        $currency = $symbol;
 
-        $p_plans = array_map(function ($v) {
-            return [
-                'plan' => $v['prepaid_pieces'],
-                'name' => $v['plan_name'],
-            ];
-        }, $prepaid_plans);
+        if ($name != 'TWD') $currency = $name . $currency;
 
-        $plans = array_merge($plans, $p_plans);
-
-        $sub_id = 16820; //$_POST['id'];
+        $sub_id = intval($_POST['id']);
         $subscription = wcs_get_subscription($sub_id);
 
-        $current_plan = $subscription->get_meta('_ps_prepaid_pieces');
-        $current_plan = max(1, intval($current_plan));
+        if (!$subscription) {
+            wp_send_json_error('Subscription not found');
+            return;
+        }
 
-        $available_plans = array_values(array_filter($plans, function ($v) use ($current_plan) {
-            return $v['plan'] != $current_plan;
-        }));
+        $plans = $this->get_prepaid_details();
 
-        $sub_start_date = $subscription->get_date('start');
+        $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
 
-        $available_plans = array_map(function ($v) use ($sub_start_date) {
-            $_p = $v['plan'];
-            $v['start_date'] = date('Y-m-03', strtotime($sub_start_date . ' + ' . $_p . ' month'));
+        $update_requests = get_option('webp_subscription_update_request', []);
+
+        if (isset($update_requests[$sub_id])) {
+            $update_requests = $update_requests[$sub_id];
+        } else {
+            $update_requests = null;
+        }
+
+        $available_plans = array_map(function ($v) use ($current_plan, $currency, $update_requests) {
+            $v['is_current'] = $v['plan'] == $current_plan;
+            $v['update_pending'] = $update_requests && $update_requests['new_plan'] == $v['plan'];
+            $v['price'] = $currency . $v['price'];
             return $v;
-        }, $available_plans);
+        }, $plans);
+
+        $sub_start_date = $subscription->get_date('last_order_date_paid');
 
         $current_plan = array_values(array_filter($plans, function ($v) use ($current_plan) {
             return $v['plan'] == $current_plan;
         }))[0];
 
         wp_send_json([
-            'last_payment' => $subscription->get_date('start'),
+            'next_renew_at' => date('Y-m-03', strtotime($sub_start_date . ' + ' . $current_plan['plan'] . ' month')),
             'current_plan' => $current_plan,
-            'plans' => $plans,
-            'available_plans' => $available_plans,
+            'plans' => $available_plans,
+            'meta' => $subscription->get_meta_data(),
+            'prepaid_plans' => $this->get_prepaid_details(),
         ]);
+    }
+
+    public function update_subscription_plan()
+    {
+        // check nonce
+        if (! check_ajax_referer('mav2-nonce', 'nonce', false)) {
+            wp_send_json_error('Invalid nonce');
+            return;
+        }
+
+        global $wpdb;
+
+        $sub_id = intval($_POST['id']);
+        $plan = $_POST['plan'];
+
+        $plans = $this->get_prepaid_details();
+        $selected_plan = array_values(array_filter($plans, function ($v) use ($plan) {
+            return $v['id'] == $plan;
+        }))[0];
+
+        if (!$selected_plan) {
+            wp_send_json_error('Invalid plan');
+            return;
+        }
+
+
+        $subscription = wcs_get_subscription($sub_id);
+        $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
+        $new_plan = $selected_plan['plan'];
+
+        if ($current_plan == $new_plan) {
+            wp_send_json_error('Already on this plan');
+            return;
+        }
+
+        $values = get_option('webp_subscription_update_request', []);
+        $values[$sub_id] = [
+            'sub_id' => $sub_id,
+            'current_plan' => $current_plan,
+            'new_plan' => $new_plan,
+        ];
+
+        update_option('webp_subscription_update_request', $values);
+
+
+
+
+        return wp_send_json_success('Subscription updated');
+    }
+
+    public function subscription_upgrade_cancel()
+    {
+
+        // check nonce
+        if (! check_ajax_referer('mav2-nonce', 'nonce', false)) {
+            wp_send_json_error('Invalid nonce');
+            return;
+        }
+
+        $sub_id = $_POST['id'];
+
+        $values = get_option('webp_subscription_update_request', []);
+        if (isset($values[$sub_id])) {
+            unset($values[$sub_id]);
+        }
+        update_option('webp_subscription_update_request', $values);
+
+        return wp_send_json_success('Subscription updated');
     }
 }

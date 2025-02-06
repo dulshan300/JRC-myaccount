@@ -24,3 +24,17 @@ AND om.meta_value = 'yes' ) as prepaid_cancel;
 SELECT COUNT(*) as cancelled
 FROM (SELECT customer_id  FROM wp_wc_orders WHERE type = 'shop_subscription' AND status = 'wc-cancelled' AND date_updated_gmt >='2024-08-01' GROUP BY customer_id) as new_subscribers;
 ```
+
+
+# Options Keys
+
+### webp_subscription_update_request
+This key will hold an array of subscription upgrade or downgrade data. Each entry in the array will represent a specific update request, including details such as the subscription ID, new plan, the date of the request, and any other relevant information related to the subscription change process.
+
+```
+$values[$sub_id] = [
+    'sub_id' => $sub_id,
+    'current_plan' => $current_plan,
+    'new_plan' => $new_plan,
+];
+```

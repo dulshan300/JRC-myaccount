@@ -108,7 +108,7 @@ $all_countries = $w_countries->get_countries();
 
 $orders_history = [];
 
-function get_tracking($order)
+function mav2_get_tracking($order)
 {
     if ($order->tracking == 404) {
         $order->tracking = 'Tracking pending';
@@ -178,8 +178,9 @@ foreach ($res as $sub) {
     $sub_orders = [$sub->parent_order_id];
     // if renewal orders
     $renew_orders = unserialize($sub->renewal_ids);
-    $renew_orders= array_reverse($renew_orders);
+    $renew_orders = array_reverse($renew_orders);
     $sub_orders = array_merge($sub_orders, $renew_orders);
+
     $last_sub = end($sub_orders);
 
     // getting order details
@@ -210,7 +211,7 @@ foreach ($res as $sub) {
 
     $lo_data = $wpdb->get_row($lo_q);
 
-    $lo_data->tracking = get_tracking($lo_data);
+    $lo_data->tracking = mav2_get_tracking($lo_data);
 
     $temp_history = [];
 
@@ -227,7 +228,7 @@ foreach ($res as $sub) {
             'status' => str_replace('wc-', '', $q_data->status),
             'date' => $q_data->date_created_gmt,
             'date_loc' => $check_stamp,
-            'tracking' => get_tracking($q_data)
+            'tracking' => mav2_get_tracking($q_data)
         ];
 
         $temp_history[] = $hd;
@@ -347,8 +348,9 @@ foreach ($res as $sub) {
                             <?php } else { ?>
                                 <span class="sub_status sub_plan_pending">Pending</span>
                             <?php } ?>
-
-                            <button type="button" data-popup="sub_update" data-sub="<?php echo $sub['id']; ?>" class="sub_button sub_update_button">Update Subscription</button>
+                            <?php if ($sub['status'] === 'wc-active') { ?>
+                                <button type="button" data-popup="sub_update" data-sub="<?php echo $sub['id']; ?>" class="sub_button sub_update_button">Update Subscription</button>
+                            <?php }; ?>
                         </div>
 
                         <span class="sub_plan_cancel_note">Note: Cancellation & Update will take effect only after your current cycle ends.</span>
@@ -387,7 +389,7 @@ foreach ($res as $sub) {
                 </div>
 
                 <div style="display: none;" class="order_history_list">
-                    <table>
+                    <table class="order_history_table">
                         <tr>
                             <th>Order ID</th>
                             <th>Date (GMT)</th>
@@ -511,6 +513,7 @@ foreach ($res as $sub) {
 
                     <div class="feedback-box" style="display:none;">
                         <textarea id="feedback_box" placeholder="Please share with us your thoughts"></textarea>
+                        <span id="va" style="display: none;"></span>
                     </div>
 
                     <div class="popup-footer">
@@ -526,16 +529,85 @@ foreach ($res as $sub) {
 
 <div id="sub_update" class="mav2_popup">
     <div class="popup_wrapper">
-        <div class="popup-content">
-            <div class="popup-header">
-                <h3>Update Subscription</h3>
-                <button class="close-popup">&times;</button>
+        <div id="sub_update_panels" class="panels" >
+            <div class="panel popup-content" style="max-width: 600px;">
+                <div class="popup-header">
+                    <h3>Update Subscription</h3>
+                    <button class="close-popup">&times;</button>
+                </div>
+                <div class="popup-body">
+
+                    <div id="sub_update_loading">
+                        <div class="mva2_spinner spinner_sm"></div>
+                        <span>Loading Data</span>
+                    </div>
+
+                    <div id="sub_update_content" style="display: none;">
+
+                        <div class="note">
+                            <p>Note: Subscription updates will take effect only after your current cycle ends (<b id="cycle_end"></b>).</p>
+                        </div>
+
+                        <div id="sub_update_content_details">
+
+                        </div>
+
+                    </div>
+
+                </div>
             </div>
-            <div class="popup-body">
+
+            <div class="panel popup-content" style="max-width: 600px;">
+                <div class="popup-header">
+                    <h3>Confirm Update</h3>
+                    <button class="close-popup">&times;</button>
+                </div>
+                <div class="popup-body">
+                    <div id="confirm_process">
+                        <div class="confirm_plan_details">
+                            <h4>Summary of Your Subscription Update</h4>
+                            <table class="plans-table">
+                                <tr>
+                                    <td>You have selected the</td>
+                                    <td><b id="selected_plan_name"></b> plan</td>
+                                </tr>
+                                <tr>
+                                    <td>This plan will be active from</td>
+                                    <td><b id="active_date"></b></td>
+                                </tr>
+                                <tr>
+                                    <td>The cost of the selected plan is</td>
+                                    <td><b id="selected_plan_cost"></b></td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="popup-footer">
+                            <button type="button" data-to="1" class="up-go btn-blue">Back</button>
+                            <button id="confirm_update_plan" type="button" data-to="3" class="btn-gray">Confirm</button>
+                        </div>
+                    </div>
 
 
+                </div>
             </div>
+
+            <div class="panel popup-content" style="max-width: 600px;">
+                <div class="popup-header">
+                    <h3>Update Subscription</h3>
+                </div>
+                <div class="popup-body">
+                    <div id="sub_update_loading">
+                        <div class="mva2_spinner spinner_lg"></div>
+                        <span>Processing</span>
+                    </div>
+
+                </div>
+            </div>
+
+
         </div>
+
     </div>
 
 </div>

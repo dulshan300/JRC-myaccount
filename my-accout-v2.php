@@ -40,6 +40,7 @@ require_once MAV2_PATH . 'include/admin/class-mav2-short-code.php';
 
 function mav2_init()
 {
+
     $mav2 = new MAV2_Admin;
     $mav2->init();
 }

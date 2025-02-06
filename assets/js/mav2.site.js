@@ -33,9 +33,36 @@ async function _file_download(data) {
     document.body.removeChild(link);
 }
 
+// small jquery plugin for handle panels
+
+(function ($) {
+    $.fn.panels = function () {
+        const panels = this.find('.panel');
+        panels.hide();
+        panels.first().show();
+
+        return {
+            goTo: function (number) {
+                number = number - 1;
+
+                if (number < 0 || number >= panels.length) {
+                    console.error('Invalid panel number');
+                    return;
+                }
+                panels.hide();
+                $(panels[number]).show();
+            }
+        };
+    };
+})(jQuery);
+
+
+
 
 let selected_subscription_id = null;
 let selected_cancle_option = null;
+let selected_plan_id = null;
+let plan_list = null;
 
 const reasons = [
     { id: 1, text: "The subscription cost is too high", action: "switch-plan" },
@@ -148,7 +175,9 @@ const reasons = [
             return;
         }
 
-        if (selected_cancle_option == 9 && $('#feedback_box').val() == "") {
+        if (selected_cancle_option == 9 && $('#feedback_box').val().trim().length < 6) {
+            // need a feedback
+            $('#va').show().text('Feedback should contain atleast 6 characters');
             return;
         }
 
@@ -228,6 +257,7 @@ const reasons = [
 
             let res = await _ajax(data);
 
+
             // location.reload();
 
             mav2_show_success(this);
@@ -304,32 +334,166 @@ const reasons = [
         }
     })
 
+    async function get_update_data(id) {
 
-    $(document).on('click', '.arrow', function () {
-        $(this).toggleClass('flip');
-        $(this).parent().parent().find('.order_history_list').slideToggle();
-    })
+        $('#sub_update_loading').fadeIn();
+        $('#sub_update_content').hide();
+        $('#sub_update_content_details').empty();
 
-
-    $(document).on('click', '.sub_update_button', async function () {
-        const id = $(this).data('sub');
-        // get update details
         try {
             let data = {
-                'action': 'mav2_get_subscription_update',
+                'action': 'mav2_get_subscription_details',
                 id: id
             };
 
             let res = await _ajax(data);
 
             console.log(res.data);
+            plan_list = res.data;
 
+            $('#active_date').text(res.data.next_renew_at);
+
+            const plans = res.data.plans;
+
+            let table = $('<table></table>').addClass('plans-table');
+
+            plans.forEach(p => {
+                const row = $('<tr></tr>');
+                // add name
+                const nameCell = $('<td></td>').text(p.name);
+
+                // add price
+                const priceCell = $('<td></td>').html(p.price);
+
+
+                const actionCell = $('<td></td>');
+
+                if (p.is_current) {
+                    actionCell.html('<span>Current Plan</span>');
+                } else {
+                    if (p.update_pending) {
+                        actionCell.html('<span>Pending Request</span>');
+                        const cancelButton = $('<button type="button"></button>').text('Cancel').addClass('cancel-plan-button').data('plan', p.id);
+                        actionCell.append(cancelButton);
+                    } else {
+                        const button = $('<button type="button"></button>').text('Select').addClass('select-plan-button').data('plan', p.id);
+                        $(button).on('click', function () {
+                            $('#selected_plan_cost').html(p.price);
+                            $('#selected_plan_name').text(p.name);
+                            selected_plan_id = p.id;
+
+                            update_panel.goTo(2);
+                        })
+                        actionCell.append(button);
+                    }
+
+                }
+
+                row.append(nameCell).append(priceCell).append(actionCell);
+                $(table).append(row);
+            })
+
+            $('#cycle_end').text(res.data.next_renew_at);
+
+            $('#sub_update_content_details').append(table);
+
+            $('#sub_update_loading').hide();
+            $('#sub_update_content').fadeIn();
 
 
         } catch (error) {
             console.log(error);
         }
+
+    }
+
+    $(document).on('click', '.arrow', function () {
+        $(this).toggleClass('flip');
+        $(this).parent().parent().find('.order_history_list').slideToggle();
     })
+
+    const update_panel = $('#sub_update_panels').panels();
+
+    $(document).on('click', '.sub_update_button', async function () {
+        const id = $(this).data('sub');
+
+        // initiate first panel
+        update_panel.goTo(1);
+
+        // get update details
+
+
+        selected_subscription_id = id;
+
+        get_update_data(id);
+
+
+    })
+
+    $(document).on('click', '#confirm_update_plan', async function () {
+
+        if (selected_subscription_id == null || selected_plan_id == null) {
+            return;
+        }
+
+        update_panel.goTo(3);
+
+
+        try {
+            let data = {
+                'action': 'mav2_update_subscription_plan',
+                id: selected_subscription_id,
+                plan: selected_plan_id,
+                nonce: mav2.nonce
+            };
+
+            let res = await _ajax(data);
+
+            get_update_data(selected_subscription_id);
+
+        } catch (error) {
+            console.log(error);
+        }
+
+        update_panel.goTo(1);
+
+        $('.select-plan-button').prop('disabled', false);
+    })
+
+
+    $(document).on('click', '.cancel-plan-button', async function () {
+        if (selected_subscription_id == null || selected_plan_id == null) {
+            return;
+        }
+
+        update_panel.goTo(3);
+        try {
+            let data = {
+                'action': 'mav2_subscription_upgrade_cancel',
+                id: selected_subscription_id,
+                nonce: mav2.nonce
+            };
+
+            let res = await _ajax(data);
+
+            get_update_data(selected_subscription_id);
+
+        } catch (error) {
+            console.log(error);
+        }
+
+        update_panel.goTo(1);
+    });
+
+    $(document).on('click', '.up-go', function () {
+        const panel = $(this).data('to');
+        update_panel.goTo(panel);
+    })
+
+    
+
+
+
 
 
 

@@ -303,10 +303,11 @@
 
             .sub_button,
             .sub_status {
+                padding: 0 20px;
+                display: inline-flex;
                 background: transparent;
                 border: 1px solid #001A43;
                 border-radius: 8px;
-                display: flex;
                 justify-content: center;
                 align-items: center;
                 height: 44px;
@@ -325,7 +326,6 @@
 
             .sub_button {
                 cursor: pointer;
-                padding: 0 20px;
 
                 &:hover {
                     background: #001A43;
@@ -604,10 +604,17 @@
     background: rgba(0, 0, 0, 0.5);
     z-index: 1000;
 
-    .popup-content{
+    .popup_wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .popup-content {
         background: white;
-        width: 90%;
-        max-width: 500px;
+        width: 100%;
+        min-width: 450px;
         border-radius: 8px;
         padding: 20px;
     }
@@ -747,5 +754,102 @@
 
     &:disabled {
         background: #ddd;
+    }
+}
+
+.select-plan-button {
+    background-color: #051a44;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+        background-color: #001A43;
+    }
+
+    &:disabled {
+        background-color: #ddd;
+        cursor: not-allowed;
+    }
+}
+
+.cancel-plan-button {
+    color: red;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+#sub_update_loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    height: 10vh;
+}
+
+
+.mva2_spinner {
+
+    border-radius: 50%;
+    border-color: #dbdcef !important;
+    border-right-color: #051a44 !important;
+    animation: spinner-d3wgkg 1s infinite linear;
+
+    &.spinner_sm {
+        width: 24px;
+        height: 24px;
+        border: 3.8px solid;
+    }
+
+    &.spinner_lg {
+        width: 56px;
+        height: 56px;
+        border: 9px solid;
+    }
+}
+
+
+@keyframes spinner-d3wgkg {
+    to {
+        transform: rotate(1turn);
+    }
+}
+
+.popup-content {
+    .plans-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+
+        th,
+        td {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        tr td:last-child {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
     }
 }
