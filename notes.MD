@@ -34,7 +34,13 @@ This key will hold an array of subscription upgrade or downgrade data. Each entr
 ```
 $values[$sub_id] = [
     'sub_id' => $sub_id,
+
     'current_plan' => $current_plan,
     'new_plan' => $new_plan,
 ];
 ```
+
+### webp_subscription_creation_pending
+This key will hold an array of pending subscription upgrade or downgrade requests. Which will used to create a new subscription on 3rd day of the month.
+
+

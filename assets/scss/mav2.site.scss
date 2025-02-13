@@ -827,9 +827,10 @@
 
         th,
         td {
-            padding: 10px 15px;
-            border: 1px solid #ddd;
+            padding: 0 15px;
+            height: 60px;
             text-align: left;
+            vertical-align: middle;
         }
 
         th {
@@ -845,11 +846,51 @@
             background-color: #f1f1f1;
         }
 
-        tr td:last-child {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
 
+
+    }
+
+    .ac-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .discount {
+        font-size: 8px;
+        background: #e6b422;
+        padding: 0 5px;
+        border-radius: 20px;
+        font-weight: bold;
+        color: #fff;
+        line-height: 0;
+        height: 15px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .price {
+        font-weight: bold;
+        font-size: 18px;
+        font-family: "Plus Jakarta Sans";
+
+    }
+
+    .saving {
+        display: block;
+        font-size: 12px;
+        font-family: "Plus Jakarta Sans";
+    }
+
+    .error-message {
+        color: red;
+        display: flex;
+        padding: 20px 0;
+        gap: 15px;
+        align-items: start;
+
+        svg {
+            max-width: 32px;
+        }
     }
 }

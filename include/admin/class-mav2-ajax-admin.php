@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * Prevent direct access to the file.
+ */
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly.
+}
+
 // use mav2_{function_name} as action with js ajax
 
 final class MAV2_Ajax_Admin
@@ -498,6 +505,23 @@ final class MAV2_Ajax_Admin
         ];
     }
 
+    private function _get_exchange_rate($val = 0, $currency = 'SGD')
+    {
+        $currency_list = get_option('_transient_yay-currencies-transient', []);
+        $rates = [];
+        foreach ($currency_list as $c) {
+            $r = get_post_meta($c->ID, 'rate', true);
+            $rates[$c->post_title] = floatval($r);
+        }
+
+        $currency =  strtoupper($currency);
+        $val = floatval($val);
+        if (isset($rates[$currency])) {
+            return $val * $rates[$currency];
+        }
+        return $val;
+    }
+
     private function get_prepaid_details()
     {
         global $wpdb;
@@ -505,7 +529,10 @@ final class MAV2_Ajax_Admin
 
         $wc_product = wc_get_product($product_id);
         $prepaid_plans = get_post_meta($product_id, '_ps_prepaid_plans', true);
+        $currency = do_shortcode('[yaycurrency-currency]', true);
         $per_month_price = floatval($wc_product->price);
+        $per_month_price = $this->_get_exchange_rate($per_month_price, $currency);
+
 
         $final_v_list = [];
 
@@ -555,6 +582,14 @@ final class MAV2_Ajax_Admin
 
         global $wpdb;
 
+        // count($this->user_get_payment_methods()) == 0
+
+        if (count($this->user_get_payment_methods()) == 0) {
+            wp_send_json_error('Sorry, This feature is only available for users who have a payment method. Please add a payment method to your account.');
+            return;
+        }
+
+
         $name = do_shortcode('[yaycurrency-currency]', true);
         $symbol = do_shortcode('[yaycurrency-symbol]', true);
 
@@ -586,6 +621,8 @@ final class MAV2_Ajax_Admin
             $v['is_current'] = $v['plan'] == $current_plan;
             $v['update_pending'] = $update_requests && $update_requests['new_plan'] == $v['plan'];
             $v['price'] = $currency . $v['price'];
+            $v['price_per_month'] = $currency . $v['price_per_month'];
+            $v['save'] = $currency . $v['save'];
             return $v;
         }, $plans);
 
@@ -606,48 +643,62 @@ final class MAV2_Ajax_Admin
 
     public function update_subscription_plan()
     {
-        // check nonce
-        if (! check_ajax_referer('mav2-nonce', 'nonce', false)) {
-            wp_send_json_error('Invalid nonce');
-            return;
+
+        if (!check_ajax_referer('mav2-nonce', 'nonce', false)) {
+            return wp_send_json_error('Invalid nonce');
         }
 
         global $wpdb;
 
+        // getting post data
         $sub_id = intval($_POST['id']);
         $plan = $_POST['plan'];
+        $user_id = get_current_user_id();
 
+        // get selected plan from the prepaid plans
         $plans = $this->get_prepaid_details();
         $selected_plan = array_values(array_filter($plans, function ($v) use ($plan) {
             return $v['id'] == $plan;
         }))[0];
 
         if (!$selected_plan) {
-            wp_send_json_error('Invalid plan');
-            return;
+            return wp_send_json_error('Invalid plan');
         }
 
 
+        // check if the user has a default payment method
+        $sql_get_tokens = "SELECT * 
+            FROM wp_woocommerce_payment_tokens 
+            WHERE user_id = $user_id
+            AND gateway_id = 'stripe'                       
+            LIMIT 1";
+
+        $pm_token = $wpdb->get_row($sql_get_tokens);
+
+        if (!$pm_token) {
+            return wp_send_json_error('No default payment method found');
+        }
+
+        // check if the user selected same plan as the current plan
         $subscription = wcs_get_subscription($sub_id);
         $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
         $new_plan = $selected_plan['plan'];
 
         if ($current_plan == $new_plan) {
-            wp_send_json_error('Already on this plan');
-            return;
+            return wp_send_json_error('Already on this plan');
         }
 
+        // updating the subscription plan update request
         $values = get_option('webp_subscription_update_request', []);
+
         $values[$sub_id] = [
             'sub_id' => $sub_id,
             'current_plan' => $current_plan,
             'new_plan' => $new_plan,
+            'pm_token' => $pm_token->token_id,
         ];
 
         update_option('webp_subscription_update_request', $values);
-
-
-
 
         return wp_send_json_success('Subscription updated');
     }
@@ -655,20 +706,25 @@ final class MAV2_Ajax_Admin
     public function subscription_upgrade_cancel()
     {
 
-        // check nonce
-        if (! check_ajax_referer('mav2-nonce', 'nonce', false)) {
+        // Check nonce and handle potential errors
+        if (!check_ajax_referer('mav2-nonce', 'nonce', false)) {
             wp_send_json_error('Invalid nonce');
             return;
         }
 
+        // Retrieve the subscription ID from the POST request
         $sub_id = $_POST['id'];
 
+        // Get the current update requests
         $values = get_option('webp_subscription_update_request', []);
+
+        // Remove the subscription update request if it exists
         if (isset($values[$sub_id])) {
             unset($values[$sub_id]);
+            update_option('webp_subscription_update_request', $values);
         }
-        update_option('webp_subscription_update_request', $values);
 
-        return wp_send_json_success('Subscription updated');
+        // Return a success response
+        wp_send_json_success('Subscription updated');
     }
 }

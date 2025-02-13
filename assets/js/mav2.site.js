@@ -349,6 +349,15 @@ const reasons = [
             let res = await _ajax(data);
 
             console.log(res.data);
+
+            if (res.data.success == false) {
+                update_panel.goTo(4);
+                $('#error_text').text(res.data.data);
+                return;
+
+            }
+
+            console.log(res.data);
             plan_list = res.data;
 
             $('#active_date').text(res.data.next_renew_at);
@@ -360,11 +369,20 @@ const reasons = [
             plans.forEach(p => {
                 const row = $('<tr></tr>');
                 // add name
-                const nameCell = $('<td></td>').text(p.name);
+
+                const nameCell = $('<td></td>').html(`${p.name} ${p.has_saving ? `<span class="discount">${p.discount}%</span>` : ''}`);
 
                 // add price
-                const priceCell = $('<td></td>').html(p.price);
+                const priceCell = $('<td></td>');
+                const price_wrap = $('<div class="price-wrap"></div>');
+                const price = $('<span class="price"></span>').html(p.price_per_month + (p.plan > 1 ? '/mo' : ''));
+                price_wrap.append(price);
+                if (p.has_saving) {
+                    const saving = ($('<span class="saving"></span>').html(`<span>your saving</span> ${p.save}</span>`));
+                    price_wrap.append(saving);
+                }
 
+                priceCell.append(price_wrap);
 
                 const actionCell = $('<td></td>');
 
@@ -372,9 +390,12 @@ const reasons = [
                     actionCell.html('<span>Current Plan</span>');
                 } else {
                     if (p.update_pending) {
-                        actionCell.html('<span>Pending Request</span>');
+                        const action_wrap = $('<span class="ac-wrap"></span>');
+
+                        action_wrap.append('<span>Pending Request</span>');
                         const cancelButton = $('<button type="button"></button>').text('Cancel').addClass('cancel-plan-button').data('plan', p.id);
-                        actionCell.append(cancelButton);
+                        action_wrap.append(cancelButton);
+                        actionCell.append(action_wrap);
                     } else {
                         const button = $('<button type="button"></button>').text('Select').addClass('select-plan-button').data('plan', p.id);
                         $(button).on('click', function () {
@@ -462,7 +483,7 @@ const reasons = [
 
 
     $(document).on('click', '.cancel-plan-button', async function () {
-        if (selected_subscription_id == null || selected_plan_id == null) {
+        if (selected_subscription_id == null) {
             return;
         }
 
@@ -489,12 +510,6 @@ const reasons = [
         const panel = $(this).data('to');
         update_panel.goTo(panel);
     })
-
-    
-
-
-
-
 
 
 })(jQuery)
