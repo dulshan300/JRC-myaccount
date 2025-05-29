@@ -15,7 +15,7 @@ define('MAV2_URL', plugin_dir_url(__FILE__));
 define('MAV2_ASSETS_URL', MAV2_URL . 'assets/');
 define('MAV2_ASSETS_DIR', MAV2_PATH . 'assets/');
 define('MAV2_VERSION', '1.0');
-define('MAV2_ASSIST_VER', '1.2.1.37');
+define('MAV2_ASSIST_VER', '1.2.1.39');
 
 // autoload classess
 spl_autoload_register(function ($class_name) {

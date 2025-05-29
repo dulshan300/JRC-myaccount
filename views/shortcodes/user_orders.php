@@ -13,20 +13,36 @@ global $wpdb;
 
 $sql = "SELECT od.id,od.currency, pl.order_item_id, od.customer_id, pl.product_id, od.status, ( SELECT post_title FROM wp_posts WHERE ID = pl.product_id ) as product, ( SELECT guid FROM wp_posts WHERE ID = ( SELECT meta_value FROM wp_postmeta WHERE post_id = pl.product_id AND meta_key ='_thumbnail_id') ) AS product_image_url, COALESCE(cl.discount_amount, 0) as discount_amount, ( SELECT post_title FROM wp_posts WHERE ID = cl.coupon_id ) as coupon, pl.product_net_revenue, pl.product_gross_revenue, od.total_amount, oim.meta_key, oim.meta_value FROM wp_wc_orders od LEFT JOIN wp_wc_order_product_lookup pl ON pl.order_id = od.id LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = pl.order_item_id LEFT JOIN wp_wc_order_coupon_lookup cl ON cl.order_id = od.id WHERE pl.product_id != 198 AND oim.meta_key in ('Participation Date','First Name','Last Name','Email Address','Date Of Birth','Country','Telephone Number','Gender','ticket-type') AND od.customer_id = $user_id ORDER BY pl.variation_id ASC";
 
+$sql = "SELECT od.id, od.currency, pl.order_item_id, od.customer_id, pl.product_id, od.status, ( SELECT post_title FROM wp_posts WHERE ID = pl.product_id ) AS product, ( SELECT guid FROM wp_posts WHERE ID = ( SELECT meta_value FROM wp_postmeta WHERE post_id = pl.product_id AND meta_key ='_thumbnail_id') ) AS product_image_url, COALESCE(cl.discount_amount, 0) AS discount_amount, ( SELECT post_title FROM wp_posts WHERE ID = cl.coupon_id ) AS coupon, pl.product_net_revenue, pl.product_gross_revenue, od.total_amount, -- Extract individual meta values
+ MAX( CASE WHEN oim.meta_key ='Participation Date'THEN oim.meta_value END ) AS participation_date, MAX( CASE WHEN oim.meta_key ='First Name'THEN oim.meta_value END ) AS first_name, MAX( CASE WHEN oim.meta_key ='Last Name'THEN oim.meta_value END ) AS last_name, MAX( CASE WHEN oim.meta_key ='Email Address'THEN oim.meta_value END ) AS email_address, MAX( CASE WHEN oim.meta_key ='Date Of Birth'THEN oim.meta_value END ) AS date_of_birth, MAX( CASE WHEN oim.meta_key ='Country'THEN oim.meta_value END ) AS country, MAX( CASE WHEN oim.meta_key ='Telephone Number'THEN oim.meta_value END ) AS telephone_number, MAX( CASE WHEN oim.meta_key ='Gender'THEN oim.meta_value END ) AS gender, MAX( CASE WHEN oim.meta_key ='ticket-type'THEN oim.meta_value END ) AS ticket_type FROM wp_wc_orders od LEFT JOIN wp_wc_order_product_lookup pl ON pl.order_id = od.id LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = pl.order_item_id LEFT JOIN wp_wc_order_coupon_lookup cl ON cl.order_id = od.id WHERE pl.product_id != 198 AND od.customer_id = $user_id GROUP BY od.id, od.currency, pl.order_item_id, od.customer_id, pl.product_id, od.status, pl.product_net_revenue, pl.product_gross_revenue, od.total_amount, cl.discount_amount, cl.coupon_id, pl.variation_id ORDER BY pl.variation_id ASC";
+
 $rows = $wpdb->get_results($sql);
 
 $orders = [];
 
 $_itmes_value = [];
 
+$tickets_meta = [
+    "first_name" => "First Name",
+    "participation_date" => "Participation Date",
+    "last_name" => "Last Name",
+    "email_address" => "Email Address",
+    "date_of_birth" => "Date Of Birth",
+    "country" => "Country",
+    "telephone_number" => "Telephone Number",
+    "gender" => 'Gender',
+    "ticket_type" => 'Ticket Type'
+];
+
 foreach ($rows as $row) {
     $orders[$row->id]['id'] = $row->id;
     $orders[$row->id]['status'] = ucwords(str_replace('wc-', '', $row->status));
     $orders[$row->id]['product'] = $row->product;
     $orders[$row->id]['product_image'] = $row->product_image_url;
+    $orders[$row->id]['type'] = is_null($row->ticket_type) ? 'General' : 'ticket';
 
     $orders[$row->id]['discount_amount'] = number_format(floatval($row->discount_amount), 2);
-    $orders[$row->id]['coupon'] = $row->coupon ? '( '.$row->coupon.' )' : '';
+    $orders[$row->id]['coupon'] = $row->coupon ? '( ' . $row->coupon . ' )' : '';
 
     if (array_search($row->order_item_id, $_itmes_value) === false) {
         $orders[$row->id]['items_value'] += floatval($row->product_net_revenue);
@@ -41,7 +57,16 @@ foreach ($rows as $row) {
     $key = str_replace('-', ' ', $key);
     $key = ucwords($key);
 
-    $orders[$row->id]['items'][$row->order_item_id][$key] = $row->meta_value;
+    // TODO: check if key is in the list of tickets meta
+    $items = [];
+
+    foreach ($tickets_meta as $key => $value) {
+        if (!is_null($row->$key)) {
+            $items[$value] = $row->$key;
+        }
+    }
+
+    $orders[$row->id]['items'][$row->order_item_id] = $items;
 }
 
 $meta_order = ['First Name', 'Last Name', 'Email Address', 'Ticket Type', 'Participation Date', 'Date Of Birth', 'Country'];
@@ -88,27 +113,31 @@ foreach ($orders as $oid => $order) {
 
                 <div class="oc_data">
                     <h3 class="oc_product_name"><?= $order['product'] ?></h3>
-                    <h4>Ticket Details:</h4>
-                    <div class="oc_items">
+                    <?php if ($order['type'] == 'ticket') : ?>
 
-                        <?php foreach ($order['items'] as $item_id => $meta) { ?>
+                        <h4>Ticket Details:</h4>
+                        <div class="oc_items">
 
-                            <div class="oc_item">
-                                <ul>
-                                    <?php foreach ($meta as $key => $value) { ?>
+                            <?php foreach ($order['items'] as $item_id => $meta) { ?>
 
-                                        <li><?= $key ?> : <?= $value ?> </li>
+                                <div class="oc_item">
+                                    <ul>
+                                        <?php foreach ($meta as $key => $value) { ?>
 
-                                    <?php } ?>
+                                            <li><?= $key ?> : <?= $value ?> </li>
 
-                                </ul>
+                                        <?php } ?>
+
+                                    </ul>
 
 
-                            </div>
+                                </div>
 
-                        <?php } ?>
+                            <?php } ?>
 
-                    </div>
+                        </div>
+
+                    <?php endif; ?>
 
 
                 </div>

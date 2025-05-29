@@ -64,16 +64,20 @@ final class MAV2_Ajax_Admin
 
         if (intval($sub->plan) > 1) {
             // prepaid cancel
-            $subscription->set_status('active');
+            // $subscription->set_status('active');
             $subscription->update_meta_data('_ps_scheduled_to_be_cancelled', 'yes');
             $note_text = 'Subscription scheduled to be cancelled by the user.';
         } else {
             // sub cancel
             // $subscription->set_status('cancelled');
-            $subscription->set_status('pending-cancel');
+            $subscription->update_status('pending-cancel');
             $note_text = 'Subscription cancelled by the user.';
         }
 
+        // for system note saving
+        $subscription->save();
+
+        // for custom note saving
         $subscription->add_order_note($note_text . ' Reason: ' . $note);
 
         $subscription->save();
@@ -161,6 +165,18 @@ final class MAV2_Ajax_Admin
         update_user_meta($user_id, 'billing_city', $billing_city);
         update_user_meta($user_id, 'billing_postcode', $billing_postcode);
         update_user_meta($user_id, 'billing_country', $billing_country);
+
+
+
+        update_user_meta($user_id, 'shipping_first_name', $billing_first_name);
+        update_user_meta($user_id, 'shipping_last_name', $billing_last_name);
+        update_user_meta($user_id, 'shipping_email', $billing_email);
+        update_user_meta($user_id, 'shipping_phone', $billing_phone);
+        update_user_meta($user_id, 'shipping_address_1', $billing_address_1);
+        update_user_meta($user_id, 'shipping_address_2', $billing_address_2);
+        update_user_meta($user_id, 'shipping_city', $billing_city);
+        update_user_meta($user_id, 'shipping_postcode', $billing_postcode);
+        update_user_meta($user_id, 'shipping_country', $billing_country);
 
         // also need to update all the subscription billing / shipping address
 
@@ -447,6 +463,12 @@ final class MAV2_Ajax_Admin
 
     public function user_delete_payment_method()
     {
+
+        $tokens = $this->user_get_payment_methods();
+        if (count($tokens) < 2) {
+            return wp_send_json_error('You need at least two payment methods to delete one.');
+        }
+
         $keys = $this->get_stripe_keys();
         $stripe = new \Stripe\StripeClient($keys['secret_key']);
 
@@ -463,7 +485,7 @@ final class MAV2_Ajax_Admin
 
         $pt->delete();
 
-        wp_send_json($this->user_get_payment_methods());
+        wp_send_json_success($this->user_get_payment_methods());
     }
 
     private function get_stripe_keys()
@@ -530,7 +552,7 @@ final class MAV2_Ajax_Admin
         $wc_product = wc_get_product($product_id);
         $prepaid_plans = get_post_meta($product_id, '_ps_prepaid_plans', true);
         $currency = do_shortcode('[yaycurrency-currency]', true);
-        $per_month_price = floatval($wc_product->price);
+        $per_month_price = floatval($wc_product->get_price());
         $per_month_price = $this->_get_exchange_rate($per_month_price, $currency);
 
 
@@ -644,19 +666,26 @@ final class MAV2_Ajax_Admin
     public function update_subscription_plan()
     {
 
-        if (!check_ajax_referer('mav2-nonce', 'nonce', false)) {
+        $headers = getallheaders();
+        if (isset($headers['X-From']) && $headers['X-From'] === 'admin-support') {
+        } else if (!check_ajax_referer('mav2-nonce', 'nonce', false)) {
             return wp_send_json_error('Invalid nonce');
         }
+
 
         global $wpdb;
 
         // getting post data
         $sub_id = intval($_POST['id']);
+        $subscription = wcs_get_subscription($sub_id);
+
         $plan = $_POST['plan'];
-        $user_id = get_current_user_id();
+        $user_id = $subscription->customer_id;
+        $user = get_user_by('id', $user_id);
 
         // get selected plan from the prepaid plans
         $plans = $this->get_prepaid_details();
+
         $selected_plan = array_values(array_filter($plans, function ($v) use ($plan) {
             return $v['id'] == $plan;
         }))[0];
@@ -680,13 +709,29 @@ final class MAV2_Ajax_Admin
         }
 
         // check if the user selected same plan as the current plan
-        $subscription = wcs_get_subscription($sub_id);
+
         $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
         $new_plan = $selected_plan['plan'];
 
         if ($current_plan == $new_plan) {
             return wp_send_json_error('Already on this plan');
         }
+
+        $ch_list = ['TW', 'HK', 'CN'];
+        $country = $subscription->get_shipping_country();
+        $sub_start_date = $subscription->get_date('last_order_date_paid');
+
+        $user_data = [
+            'customer_name' => $subscription->get_shipping_first_name() . " " . $subscription->get_shipping_last_name(),
+            'customer_email' => $user->user_email,
+            'current_plan' => $current_plan,
+            'new_plan' => $new_plan,
+            'user_id' => $user_id,
+            'lang' => in_array($country, $ch_list) ? 'cn' : 'en',
+            'end_date' => date('Y-m-03', strtotime($sub_start_date . ' + ' . $current_plan . ' month')),
+        ];
+
+        $update_dir = $new_plan > $current_plan ? 'upgrade' : 'downgrade';
 
         // updating the subscription plan update request
         $values = get_option('webp_subscription_update_request', []);
@@ -696,9 +741,23 @@ final class MAV2_Ajax_Admin
             'current_plan' => $current_plan,
             'new_plan' => $new_plan,
             'pm_token' => $pm_token->token_id,
+            'email' => $user->user_email
         ];
 
         update_option('webp_subscription_update_request', $values);
+
+        $admin_email = get_option('admin_email');
+        $user_email = $subscription->billing_email;
+
+        // send notification mail to admin
+        $mail_sent = $this->send_html_email($admin_email, "Subscription $update_dir request", 'sub_upgrade_admin', $user_data);
+
+        // send notification mail to users
+        if (in_array($country, $ch_list)) {
+            $mail_sent = $this->send_html_email($user_email, "Subscription $update_dir request scheduled. ", 'sub_upgrade_customer_cn', $user_data);
+        } else {
+            $mail_sent = $this->send_html_email($user_email, "Subscription $update_dir request scheduled. ", 'sub_upgrade_customer_en', $user_data);
+        }
 
         return wp_send_json_success('Subscription updated');
     }
@@ -706,10 +765,10 @@ final class MAV2_Ajax_Admin
     public function subscription_upgrade_cancel()
     {
 
-        // Check nonce and handle potential errors
-        if (!check_ajax_referer('mav2-nonce', 'nonce', false)) {
-            wp_send_json_error('Invalid nonce');
-            return;
+        $headers = getallheaders();
+        if (isset($headers['X-From']) && $headers['X-From'] === 'admin-support') {
+        } else if (!check_ajax_referer('mav2-nonce', 'nonce', false)) {
+            return wp_send_json_error('Invalid nonce');
         }
 
         // Retrieve the subscription ID from the POST request
@@ -726,5 +785,29 @@ final class MAV2_Ajax_Admin
 
         // Return a success response
         wp_send_json_success('Subscription updated');
+    }
+
+
+    private function send_html_email($email, $subject, $template, $data = [])
+    {
+        // Get the template content
+        $template_path = MAV2_PATH . "views/emails/{$template}.php";
+
+        if (!file_exists($template_path)) {
+            return new WP_Error('email_template_missing', __('Email template not found.', 'your-plugin-textdomain'));
+        }
+
+        ob_start();
+        extract($data);
+        include $template_path;
+        $message = ob_get_clean();
+
+        // Set email headers
+        $headers = [
+            'Content-Type: text/html; charset=UTF-8',
+        ];
+
+        // Send email
+        return wp_mail($email, $subject, $message, $headers);
     }
 }

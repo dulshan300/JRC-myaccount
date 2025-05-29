@@ -1,5 +1,8 @@
 <?php
 // get current user
+
+use function PHPSTORM_META\type;
+
 $user = wp_get_current_user();
 
 if (empty($user)) {
@@ -8,25 +11,45 @@ if (empty($user)) {
     return;
 }
 
+$user_id = $user->ID;
+// $user_id = 1791;
+
 // get woocommerce customer
-$customer = new WC_Customer($user->ID);
+$customer = new WC_Customer($user_id);
 
 // get payment methods
-$tokens = WC_Payment_Tokens::get_customer_tokens($user->ID);
+$tokens = WC_Payment_Tokens::get_customer_tokens($user_id);
 
 $token_details = [];
 
 foreach ($tokens as $token) {
-    // delete token
-    $token_details[] = [
-        'id' => $token->get_id(),
-        'card_type' => ucfirst($token->get_card_type()),
-        'last4' => $token->get_last4(),
-        'expiry' => $token->get_expiry_month().'/'.$token->get_expiry_year(),
-        'user_id' => $token->get_user_id(),
-    ];
 
-    // $token->delete();
+    if (get_class($token) == 'WC_Stripe_Payment_Token_CC') {
+
+        $token_details[] = [
+            'id' => $token->get_id(),
+            'card_type' => ucfirst($token->get_card_type()),
+            'last4' => $token->get_last4(),
+            'expiry' => $token->get_expiry_month() . '/' . $token->get_expiry_year(),
+            'user_id' => $token->get_user_id(),
+        ];
+    } elseif (get_class($token) == 'WC_Payment_Token_Link') {
+
+        $token_details[] = [
+            'id' => $token->get_id(),
+            'card_type' => ucfirst($token->get_type()),
+            'last4' => "-",
+            'expiry' => '-',
+            'user_id' => $token->get_user_id(),
+        ];
+
+        // $token->delete();
+    } else {
+        error_log('[PMError]: Token class not recognized.' . print_r([
+            'uid' => $user_id,
+            'class_name' => get_class($token),
+        ], true));
+    }
 }
 
 ?>
@@ -183,20 +206,41 @@ foreach ($tokens as $token) {
 
                 show_processing('#payment_methods');
 
-                $.ajax({
-                    type: "POST",
-                    url: mav2.ajaxurl,
-                    data: {
-                        action: 'mav2_user_delete_payment_method',
-                        nonce: mav2.nonce,
-                        id: token_id
-                    },
-                    success: function(tokens) {
-                        hide_processing('#payment_methods');
-                        mav2_show_success_from('#payment_methods');
-                        fill_table(tokens)
-                    }
-                })
+                try {
+
+                    $.ajax({
+                        type: "POST",
+                        url: mav2.ajaxurl,
+                        data: {
+                            action: 'mav2_user_delete_payment_method',
+                            nonce: mav2.nonce,
+                            id: token_id
+                        },
+                        success: function(tokens) {
+                            hide_processing('#payment_methods');
+                            mav2_show_success_from('#payment_methods');
+
+                            if (tokens.success == false) {
+                                alert(tokens.data);
+                                return;
+                            }
+
+                            fill_table(tokens.data)
+                        },
+                        error: function(xhr, error) {
+                            hide_processing('#payment_methods');
+                            console.log([xhr, error]);
+
+                        }
+
+                    })
+
+                } catch (error) {
+                    console.log(error);
+
+                }
+
+
 
             })
 
