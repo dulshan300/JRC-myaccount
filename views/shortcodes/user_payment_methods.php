@@ -1,8 +1,5 @@
 <?php
 // get current user
-
-use function PHPSTORM_META\type;
-
 $user = wp_get_current_user();
 
 if (empty($user)) {

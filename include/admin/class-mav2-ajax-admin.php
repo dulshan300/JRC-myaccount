@@ -666,43 +666,61 @@ final class MAV2_Ajax_Admin
     public function update_subscription_plan()
     {
 
+        // Validate request
         $headers = getallheaders();
-        if (isset($headers['X-From']) && $headers['X-From'] === 'admin-support') {
-        } else if (!check_ajax_referer('mav2-nonce', 'nonce', false)) {
-            return wp_send_json_error('Invalid nonce');
+        if (!isset($headers['X-From'])) {
+            if (!check_ajax_referer('mav2-nonce', 'nonce', false)) {
+                return wp_send_json_error('Invalid nonce');
+            }
+        } elseif ($headers['X-From'] !== 'admin-support') {
+            return wp_send_json_error('Unauthorized');
         }
 
+        // Get currency information
+        $name = do_shortcode('[yaycurrency-currency]', true);
+        $symbol = do_shortcode('[yaycurrency-symbol]', true);
+        $currency = ($name != 'TWD') ? $name . $symbol : $symbol;
 
-        global $wpdb;
+        // Validate and get subscription data
+        if (!isset($_POST['id'], $_POST['plan'])) {
+            return wp_send_json_error('Missing required data');
+        }
 
         // getting post data
         $sub_id = intval($_POST['id']);
         $subscription = wcs_get_subscription($sub_id);
+        if (!$subscription) {
+            return wp_send_json_error('Invalid subscription');
+        }
 
-        $plan = $_POST['plan'];
         $user_id = $subscription->customer_id;
         $user = get_user_by('id', $user_id);
+        if (!$user) {
+            return wp_send_json_error('Invalid user');
+        }
 
-        // get selected plan from the prepaid plans
+        // Get and validate selected plan
         $plans = $this->get_prepaid_details();
+        $selected_plan = null;
 
-        $selected_plan = array_values(array_filter($plans, function ($v) use ($plan) {
-            return $v['id'] == $plan;
-        }))[0];
+        foreach ($plans as $plan) {
+            if ($plan['id'] == $_POST['plan']) {
+                $selected_plan = $plan;
+                break;
+            }
+        }
 
         if (!$selected_plan) {
             return wp_send_json_error('Invalid plan');
         }
 
-
-        // check if the user has a default payment method
-        $sql_get_tokens = "SELECT * 
-            FROM wp_woocommerce_payment_tokens 
-            WHERE user_id = $user_id
-            AND gateway_id = 'stripe'                       
-            LIMIT 1";
-
-        $pm_token = $wpdb->get_row($sql_get_tokens);
+        // Check payment method
+        global $wpdb;
+        $pm_token = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM wp_woocommerce_payment_tokens 
+         WHERE user_id = %d AND gateway_id = 'stripe' LIMIT 1",
+            $user_id
+        ));
 
         if (!$pm_token) {
             return wp_send_json_error('No default payment method found');
@@ -717,21 +735,22 @@ final class MAV2_Ajax_Admin
             return wp_send_json_error('Already on this plan');
         }
 
-        $ch_list = ['TW', 'HK', 'CN'];
+        // Prepare user data for emails
         $country = $subscription->get_shipping_country();
+        $ch_list = ['TW', 'HK', 'CN'];
+        $lang = in_array($country, $ch_list) ? 'cn' : 'en';
         $sub_start_date = $subscription->get_date('last_order_date_paid');
 
         $user_data = [
             'customer_name' => $subscription->get_shipping_first_name() . " " . $subscription->get_shipping_last_name(),
             'customer_email' => $user->user_email,
             'current_plan' => $current_plan,
-            'new_plan' => $new_plan,
+            'new_plan' => $new_plan . ' Month' . ($new_plan > 1 ? 's' : ''),
             'user_id' => $user_id,
-            'lang' => in_array($country, $ch_list) ? 'cn' : 'en',
-            'end_date' => date('Y-m-03', strtotime($sub_start_date . ' + ' . $current_plan . ' month')),
+            'lang' => $lang,
+            'end_date' => date('03-F-Y', strtotime($sub_start_date . ' + ' . $current_plan . ' month')),
+            'price' => $currency . $selected_plan['price']
         ];
-
-        $update_dir = $new_plan > $current_plan ? 'upgrade' : 'downgrade';
 
         // updating the subscription plan update request
         $values = get_option('webp_subscription_update_request', []);
@@ -746,18 +765,33 @@ final class MAV2_Ajax_Admin
 
         update_option('webp_subscription_update_request', $values);
 
+
+
+        // send notification mail to admin
+
+        $update_dir = $new_plan > $current_plan ? 'upgrade' : 'downgrade';
         $admin_email = get_option('admin_email');
         $user_email = $subscription->billing_email;
 
-        // send notification mail to admin
-        $mail_sent = $this->send_html_email($admin_email, "Subscription $update_dir request", 'sub_upgrade_admin', $user_data);
+        $this->send_html_email(
+            $admin_email,
+            "Subscription $update_dir request",
+            'sub_upgrade_admin',
+            $user_data
+        );
+
+        $subject = ($lang == 'cn') ? "Your Subscription Has Been Updated!" : "Your Subscription Has Been Updated!";
+        $template = "customer_sub_upgrade_confirm_$lang";
+
 
         // send notification mail to users
-        if (in_array($country, $ch_list)) {
-            $mail_sent = $this->send_html_email($user_email, "Subscription $update_dir request scheduled. ", 'sub_upgrade_customer_cn', $user_data);
-        } else {
-            $mail_sent = $this->send_html_email($user_email, "Subscription $update_dir request scheduled. ", 'sub_upgrade_customer_en', $user_data);
-        }
+
+        $this->send_html_email(
+            $user_email,
+            $subject,
+            $template,
+            $user_data
+        );
 
         return wp_send_json_success('Subscription updated');
     }
