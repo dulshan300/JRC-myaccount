@@ -184,7 +184,18 @@ foreach ($res as $sub) {
     $last_sub = end($sub_orders);
 
     // getting order details
-    $osql = "SELECT od.id, od.currency as currency, od.date_created_gmt as created_at, ( SELECT om.meta_value*omm.meta_value FROM wp_woocommerce_order_items oi left JOIN wp_woocommerce_order_itemmeta om ON om.order_item_id = oi.order_item_id left JOIN wp_wc_orders_meta omm ON omm.order_id = oi.order_id AND omm.meta_key ='yay_currency_order_rate'WHERE oi.order_id = od.id AND om.meta_key ='_line_subtotal') as subtotal, COALESCE( ( SELECT sum(oim.meta_value) FROM wp_woocommerce_order_items oi LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = oi.order_item_id AND oim.meta_key ='cost'WHERE oi.order_id = od.id AND oi.order_item_type ='shipping'), 0 ) as'shipping', COALESCE( ABS( ( SELECT meta_value from wp_woocommerce_order_itemmeta WHERE order_item_id =( SELECT order_item_id FROM wp_woocommerce_order_items oi WHERE ( oi.order_item_type ='coupon'OR oi.order_item_type ='fee') AND order_id = od.id LIMIT 1 ) AND ( meta_key ='discount_amount'OR meta_key ='_fee_amount') ) ), 0 ) as'discount', od.total_amount, COALESCE( REPLACE ( ( SELECT item.order_item_name FROM wp_wc_orders orders LEFT JOIN wp_woocommerce_order_items item ON item.order_id = orders.id WHERE item.order_id = od.id AND item.order_item_type IN ('coupon','fee') LIMIT 1 ),'Discount: ',''),'') AS'coupon'from wp_wc_orders od WHERE od.id = $last_sub";
+
+    /*
+        old version: subtoal calculation
+        wp_woocommerce_order_itemmeta _line_subtotal save as SGD and wp_wc_orders_meta has yay_currency_order_rate key
+        for save the rate of SGD to relevent currency at that time. so calculation was _line_subtotal * yay_currency_order_rate;
+
+        new version: subtotal calculation (2025-06-24)
+        wp_woocommerce_order_itemmeta _line_subtotal save as the selected currency
+        so subtotal calculation is _line_subtotal
+    */
+
+    $osql = "SELECT od.id, od.currency as currency, od.date_created_gmt as created_at, ( SELECT om.meta_value FROM wp_woocommerce_order_items oi left JOIN wp_woocommerce_order_itemmeta om ON om.order_item_id = oi.order_item_id WHERE oi.order_id = od.id AND om.meta_key ='_line_subtotal') as subtotal, COALESCE( ( SELECT sum(oim.meta_value) FROM wp_woocommerce_order_items oi LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = oi.order_item_id AND oim.meta_key ='cost'WHERE oi.order_id = od.id AND oi.order_item_type ='shipping'), 0 ) as'shipping', COALESCE( ABS( ( SELECT meta_value from wp_woocommerce_order_itemmeta WHERE order_item_id =( SELECT order_item_id FROM wp_woocommerce_order_items oi WHERE ( oi.order_item_type ='coupon'OR oi.order_item_type ='fee') AND order_id = od.id LIMIT 1 ) AND ( meta_key ='discount_amount'OR meta_key ='_fee_amount') ) ), 0 ) as'discount', od.total_amount, COALESCE( REPLACE ( ( SELECT item.order_item_name FROM wp_wc_orders orders LEFT JOIN wp_woocommerce_order_items item ON item.order_id = orders.id WHERE item.order_id = od.id AND item.order_item_type IN ('coupon','fee') LIMIT 1 ),'Discount: ',''),'') AS'coupon'from wp_wc_orders od WHERE od.id = $last_sub";
 
     $odata = $wpdb->get_row($osql);
     $temp['created_at'] = date('d F Y', strtotime($odata->created_at . ' + 8 hours'));
@@ -294,7 +305,7 @@ foreach ($res as $sub) {
 
 
 <div id="subscription_app">
-    
+
     <template v-if="true">
         {{ msg }}
     </template>
