@@ -1,4 +1,16 @@
 
+window.vueLoader = (properties) => {
+    console.log('vueLoader init...');
+
+    properties.forEach(prop => {
+        if (typeof window[prop] === 'undefined') {
+            window[prop] = Vue[prop];
+        }
+    });
+};
+
+
+
 
 async function _ajax(data) {
     const fd = new FormData();
@@ -400,6 +412,7 @@ const reasons = [
                         const button = $('<button type="button"></button>').text('Select').addClass('select-plan-button').data('plan', p.id);
                         $(button).on('click', function () {
                             $('#selected_plan_cost').html(p.price);
+                            $('#total_saving').html(p.save);
                             $('#selected_plan_name').text(p.name);
                             selected_plan_id = p.id;
 
@@ -513,3 +526,18 @@ const reasons = [
 
 
 })(jQuery)
+
+
+window.vueLoader(['createApp', 'computed', 'onMounted', 'onUpdated', 'watch', 'ref']);
+
+const subscription_app = createApp({
+    setup(){
+
+        const msg = ref('hello world');
+
+        return {
+            msg,
+        }
+
+    }
+}).mount('#subscription_app');

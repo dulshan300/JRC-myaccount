@@ -602,10 +602,6 @@ final class MAV2_Ajax_Admin
     public function get_subscription_details()
     {
 
-        global $wpdb;
-
-        // count($this->user_get_payment_methods()) == 0
-
         if (count($this->user_get_payment_methods()) == 0) {
             wp_send_json_error('Sorry, This feature is only available for users who have a payment method. Please add a payment method to your account.');
             return;
@@ -655,11 +651,12 @@ final class MAV2_Ajax_Admin
         }))[0];
 
         wp_send_json([
-            'next_renew_at' => date('Y-m-03', strtotime($sub_start_date . ' + ' . $current_plan['plan'] . ' month')),
+            'next_renew_at' => date('03-F-Y', strtotime($sub_start_date . ' + ' . $current_plan['plan'] . ' month')),
             'current_plan' => $current_plan,
             'plans' => $available_plans,
             'meta' => $subscription->get_meta_data(),
             'prepaid_plans' => $this->get_prepaid_details(),
+
         ]);
     }
 

@@ -293,6 +293,13 @@ foreach ($res as $sub) {
 ?>
 
 
+<div id="subscription_app">
+    
+    <template v-if="true">
+        {{ msg }}
+    </template>
+</div>
+
 <!-- generate html -->
 <div id="sub_cards">
     <?php foreach ($out_data as $sub) { ?>
@@ -565,21 +572,26 @@ foreach ($res as $sub) {
                 <div class="popup-body">
                     <div id="confirm_process">
                         <div class="confirm_plan_details">
-                            <h4>Summary of Your Subscription Update</h4>
+                            <h4>Please review your new plan details below:</h4>
                             <table class="plans-table">
                                 <tr>
-                                    <td>You have selected the</td>
+                                    <td>Selected Plan</td>
                                     <td><b id="selected_plan_name"></b> plan</td>
                                 </tr>
                                 <tr>
-                                    <td>This plan will be active from</td>
+                                    <td>Effective From</td>
                                     <td><b id="active_date"></b></td>
                                 </tr>
                                 <tr>
-                                    <td>The cost of the selected plan is</td>
+                                    <td>Updated Plan Price</td>
                                     <td><b id="selected_plan_cost"></b></td>
                                 </tr>
+                                <tr>
+                                    <td>Total Savings:</td>
+                                    <td><b id="total_saving"></b></td>
+                                </tr>
                             </table>
+                            <p>Your subscription will automatically switch to this plan on the stated date. </p>
                         </div>
 
                         <div class="popup-footer">
