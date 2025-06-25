@@ -1,6 +1,6 @@
 
 window.vueLoader = (properties) => {
-    console.log('vueLoader init...');
+    console.log(Vue.version + ' ' + 'vueLoader init...');
 
     properties.forEach(prop => {
         if (typeof window[prop] === 'undefined') {
@@ -71,22 +71,7 @@ async function _file_download(data) {
 
 
 
-let selected_subscription_id = null;
-let selected_cancle_option = null;
-let selected_plan_id = null;
-let plan_list = null;
 
-const reasons = [
-    { id: 1, text: "The subscription cost is too high", action: "switch-plan" },
-    { id: 2, text: "The variety of snacks is limited", action: null },
-    { id: 3, text: "Too many snacks delivered each month", action: null },
-    { id: 4, text: "Poor snack quality", action: "feedback" },
-    { id: 5, text: "I only wanted a one-time subscription", action: "discount" },
-    { id: 6, text: "Frequent delivery delays", action: null },
-    { id: 7, text: "I've lost interest in receiving regular snacks", action: null },
-    { id: 8, text: "I've moved to a new address", action: "address" },
-    { id: 9, text: "Others or additional feedback", action: "feedback" }
-];
 
 (function async($) {
 
@@ -148,67 +133,6 @@ const reasons = [
 
         $(`[data-panel=${current_panel}]`).hide();
         $(`[data-panel=${next_panel}]`).show();
-    })
-
-    $(document).on('click', '.sub_plan_cancel_sub', async function () {
-
-        $('#reasons_container').empty();
-
-        reasons.forEach(r => {
-            const html = $(`<label class="reason-item">
-                        <input type="radio" name="cancel_reason" value="${r.id}">
-                        <span>${r.text}</span>
-                        </label>`)
-            $(html).on('click', function () {
-
-                selected_cancle_option = r.id;
-
-                if (r.id == 9) {
-                    $('.feedback-box').fadeIn();
-                } else {
-                    $('.feedback-box').fadeOut();
-                }
-
-            });
-
-            $('#reasons_container').append(html);
-
-        })
-
-        $('.sub_cancel_popup').fadeIn();
-        selected_subscription_id = $(this).data('sub');
-
-    })
-
-    $(document).on('submit', '#cancellationForm', async function (e) {
-        e.preventDefault();
-
-        if (!selected_cancle_option || !selected_subscription_id) {
-            return;
-        }
-
-        if (selected_cancle_option == 9 && $('#feedback_box').val().trim().length < 6) {
-            // need a feedback
-            $('#va').show().text('Feedback should contain atleast 6 characters');
-            return;
-        }
-
-        const reson = reasons.find(r => r.id == selected_cancle_option);
-
-        try {
-            $('.btn-confirm').prop('disabled', true);
-            const data = {
-                'action': 'mav2_cancel_subscription',
-                id: selected_subscription_id,
-                rid: selected_cancle_option,
-                r_text: selected_cancle_option == 9 ? $('#feedback_box').val() : reson.text
-            };
-            let res = await _ajax(data)
-            location.reload();
-        } catch (error) {
-            $('.btn-confirm').prop('disabled', false);
-        }
-
     })
 
     // user_address_update_form
@@ -346,154 +270,10 @@ const reasons = [
         }
     })
 
-    async function get_update_data(id) {
-
-        $('#sub_update_loading').fadeIn();
-        $('#sub_update_content').hide();
-        $('#sub_update_content_details').empty();
-
-        try {
-            let data = {
-                'action': 'mav2_get_subscription_details',
-                id: id
-            };
-
-            let res = await _ajax(data);
-
-            console.log(res.data);
-
-            if (res.data.success == false) {
-                update_panel.goTo(4);
-                $('#error_text').text(res.data.data);
-                return;
-
-            }
-
-            console.log(res.data);
-            plan_list = res.data;
-
-            $('#active_date').text(res.data.next_renew_at);
-
-            const plans = res.data.plans;
-
-            let table = $('<table></table>').addClass('plans-table');
-
-            plans.forEach(p => {
-                const row = $('<tr></tr>');
-                // add name
-
-                const nameCell = $('<td></td>').html(`${p.name} ${p.has_saving ? `<span class="discount">${p.discount}%</span>` : ''}`);
-
-                // add price
-                const priceCell = $('<td></td>');
-                const price_wrap = $('<div class="price-wrap"></div>');
-                const price = $('<span class="price"></span>').html(p.price_per_month + (p.plan > 1 ? '/mo' : ''));
-                price_wrap.append(price);
-                if (p.has_saving) {
-                    const saving = ($('<span class="saving"></span>').html(`<span>your saving</span> ${p.save}</span>`));
-                    price_wrap.append(saving);
-                }
-
-                priceCell.append(price_wrap);
-
-                const actionCell = $('<td></td>');
-
-                if (p.is_current) {
-                    actionCell.html('<span>Current Plan</span>');
-                } else {
-                    if (p.update_pending) {
-                        const action_wrap = $('<span class="ac-wrap"></span>');
-
-                        action_wrap.append('<span>Pending Request</span>');
-                        const cancelButton = $('<button type="button"></button>').text('Cancel').addClass('cancel-plan-button').data('plan', p.id);
-                        action_wrap.append(cancelButton);
-                        actionCell.append(action_wrap);
-                    } else {
-                        const button = $('<button type="button"></button>').text('Select').addClass('select-plan-button').data('plan', p.id);
-                        $(button).on('click', function () {
-                            $('#selected_plan_cost').html(p.price);
-                            $('#total_saving').html(p.save);
-                            $('#selected_plan_name').text(p.name);
-                            selected_plan_id = p.id;
-
-                            update_panel.goTo(2);
-                        })
-                        actionCell.append(button);
-                    }
-
-                }
-
-                row.append(nameCell).append(priceCell).append(actionCell);
-                $(table).append(row);
-            })
-
-            $('#cycle_end').text(res.data.next_renew_at);
-
-            $('#sub_update_content_details').append(table);
-
-            $('#sub_update_loading').hide();
-            $('#sub_update_content').fadeIn();
-
-
-        } catch (error) {
-            console.log(error);
-        }
-
-    }
-
     $(document).on('click', '.arrow', function () {
         $(this).toggleClass('flip');
         $(this).parent().parent().find('.order_history_list').slideToggle();
     })
-
-    const update_panel = $('#sub_update_panels').panels();
-
-    $(document).on('click', '.sub_update_button', async function () {
-        const id = $(this).data('sub');
-
-        // initiate first panel
-        update_panel.goTo(1);
-
-        // get update details
-
-
-        selected_subscription_id = id;
-
-        get_update_data(id);
-
-
-    })
-
-    $(document).on('click', '#confirm_update_plan', async function () {
-
-        if (selected_subscription_id == null || selected_plan_id == null) {
-            return;
-        }
-
-        update_panel.goTo(3);
-
-
-        try {
-            let data = {
-                'action': 'mav2_update_subscription_plan',
-                id: selected_subscription_id,
-                plan: selected_plan_id,
-                nonce: mav2.nonce
-            };
-
-            let res = await _ajax(data);
-
-            get_update_data(selected_subscription_id);
-
-        } catch (error) {
-            console.log(error);
-        }
-
-        update_panel.goTo(1);
-
-        $('.select-plan-button').prop('disabled', false);
-    })
-
 
     $(document).on('click', '.cancel-plan-button', async function () {
         if (selected_subscription_id == null) {
@@ -530,14 +310,248 @@ const reasons = [
 
 window.vueLoader(['createApp', 'computed', 'onMounted', 'onUpdated', 'watch', 'ref']);
 
+/*
+
+panel numbers
+100 - loading
+404 - Error
+200 - change subscription plan
+201 - confirm view
+202 - success view
+
+*/
+
 const subscription_app = createApp({
-    setup(){
+    setup() {
+
+        const PANELS = {
+            LOADING: 100,
+            ERROR: 404,
+            CHANGE_PLAN: 200,
+            CHANGE_PLAN_CONFIRM: 201,
+            CANCEL_OPEN: 202,
+            CANCEL_WAIT: 203,
+            CANCEL_NOTE: 204,
+        }
+
+        const reasons = ref([
+            { id: 1, text: "The subscription cost is too high", action: "switch-plan" },
+            { id: 2, text: "The variety of snacks is limited", action: null },
+            { id: 3, text: "Too many snacks delivered each month", action: null },
+            { id: 4, text: "Poor snack quality", action: "feedback" },
+            { id: 5, text: "I only wanted a one-time subscription", action: "discount" },
+            { id: 6, text: "Frequent delivery delays", action: null },
+            { id: 7, text: "I've lost interest in receiving regular snacks", action: null },
+            { id: 8, text: "I've moved to a new address", action: "address" },
+            { id: 9, text: "Others or additional feedback", action: "feedback" }
+        ]);
 
         const msg = ref('hello world');
 
-        return {
-            msg,
+        const subscription_data = ref([..._subscription_data]);
+
+        const show_sub_edit_popup = ref(false);
+        const current_panel = ref(0);
+        const processing = ref(false);
+        const processing_text = ref('Processing...');
+        const error_text = ref('');
+
+        const next_renew_at = ref('');
+        const selected_subscription_id = ref(null);
+        const selected_plan_id = ref("");
+        const selected_plan = ref({});
+        const current_plan = ref({});
+        const plan_selection = ref([]);
+
+        const cancel_reason = ref('');
+        const other_reasons = ref('');
+        const other_reasons_error = ref(false);
+
+        const setProcessing = (status = false, text = 'Processing...',) => {
+            processing_text.value = text;
+            processing.value = status;
+            if (status) setPanel(PANELS.LOADING);
         }
 
+        const setPanel = (panel) => {
+            current_panel.value = panel;  // Update refs directly using .value
+            show_sub_edit_popup.value = true;
+        }
+
+        const closePopup = () => {
+            current_panel.value = 0;
+            show_sub_edit_popup.value = false;
+            next_renew_at.value = "";
+            selected_subscription_id.value = null;
+            selected_plan.value = {};
+            selected_plan_id.value = "";
+            current_plan.value = {};
+            plan_selection.value = [];
+        }
+
+        const selectPlan = (id) => {
+            selected_plan_id.value = id;
+        }
+
+        const showUpdatePopup = async (id) => {
+
+            if (!id && !selected_subscription_id.value) {
+                console.log('No subscription id found');
+                error_text.value = 'No subscription id found';
+                setPanel(PANELS.ERROR);
+                return;
+            }
+
+            if (id) {
+                selected_subscription_id.value = id;
+            } else {
+                id = selected_subscription_id.value;
+            }
+
+            current_plan.value = {};
+            plan_selection.value = [];
+
+
+            setProcessing(true, 'Loading...');
+
+            // get subscription data
+            let param = {
+                'action': 'mav2_get_subscription_details',
+                id: id
+            };
+
+            let { data } = await _ajax(param);
+
+            if (data.success == false) {
+                error_text.value = data.data;
+                setPanel(PANELS.ERROR);
+                return;
+            }
+
+            // get data
+            next_renew_at.value = data.data.next_renew_at;
+            const plans = data.data.plans;
+
+            for (let i = 0; i < plans.length; i++) {
+                if (plans[i].is_current) {
+                    current_plan.value = plans[i];
+                } else {
+                    plan_selection.value.push(plans[i])
+                }
+
+            }
+
+            setProcessing();
+
+            setPanel(PANELS.CHANGE_PLAN)
+
+            // You can also access other refs here if needed
+            // Example: show_sub_edit_popup.value = true;
+        }
+
+        const confirmUpdate = async () => {
+
+            setProcessing(true, 'Updating Plan...');
+
+            selected_plan.value = plan_selection.value.find(plan => plan.id == selected_plan_id.value);
+
+            try {
+                let data = {
+                    'action': 'mav2_update_subscription_plan',
+                    id: selected_subscription_id.value,
+                    plan: selected_plan_id.value,
+                    nonce: mav2.nonce
+                };
+
+                let res = await _ajax(data);
+
+                setPanel(PANELS.CHANGE_PLAN_CONFIRM);
+
+
+            } catch (error) {
+                console.log(error);
+            }
+
+        }
+
+        const showCancleOpenPopup = (id) => {
+
+            selected_subscription_id.value = id;
+            setPanel(PANELS.CANCEL_OPEN);
+        }
+
+        const processCancel = async () => {
+
+            if (selected_subscription_id.value == null) {
+                error_text.value = 'Invalid subscription id';
+                setPanel(PANELS.ERROR);
+                return;
+            }
+
+            other_reasons_error.value = false;
+            // get reason
+            const reason = reasons.value.find(r => r.id == cancel_reason.value);
+
+            if (reason.id == 9 && other_reasons.value.length < 6) {
+                other_reasons_error.value = true;
+                return;
+            }
+            try {
+
+                const data = {
+                    'action': 'mav2_cancel_subscription',
+                    id: selected_subscription_id.value,
+                    rid: cancel_reason.value,
+                    r_text: cancel_reason.value == 9 ? other_reasons.value : reason.text
+                };
+
+                setProcessing(true, 'Cancelling subscription...');
+
+                let res = await _ajax(data)
+                setProcessing(true, 'Cancellation successful. Wait for a moment...');
+                location.reload();
+
+
+            } catch (error) {
+                console.log(error);
+
+            }
+
+
+
+
+
+
+
+
+        }
+
+        return {
+            msg,
+            subscription_data,
+            show_sub_edit_popup,
+            current_panel,
+            processing,
+            processing_text,
+            selected_plan,
+            selected_plan_id,
+            error_text,
+            current_plan,
+            plan_selection,
+            next_renew_at,
+            cancel_reason,
+            PANELS,
+            reasons,
+            other_reasons,
+            other_reasons_error,
+            showCancleOpenPopup,
+            selectPlan,
+            setPanel,
+            closePopup,
+            showUpdatePopup,
+            confirmUpdate,
+            processCancel
+        }
     }
-}).mount('#subscription_app');
+});
+subscription_app.mount('#subscription_app');

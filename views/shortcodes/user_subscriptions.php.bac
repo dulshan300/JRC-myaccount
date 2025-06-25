@@ -312,10 +312,8 @@ foreach ($res as $sub) {
 
     <div v-if="false" class="loading" style="width: 100%;">
         <div class="spinner-mini"></div>
-        Loading subscriptions. please wait...
+        Loading...
     </div>
-
-
     <template v-if="true">
 
         <!-- generate html -->
@@ -326,9 +324,9 @@ foreach ($res as $sub) {
                 <div class="sub_card">
                     <div class="sub_card_header">
                         <div class="left">
-                            <span class="sub_id"><span>Subscription ID:</span> #{{sub.id}}</span>
-                            <h3 class="sub_product_name">{{sub.product}}</h3>
-                            <h4 class="sub_plan_name">{{sub.plan}}</h4>
+                            <span class="sub_id"><span>Subscription ID:</span> #<?php echo $sub['id']; ?></span>
+                            <h3 class="sub_product_name"><?php echo $sub['product']; ?></h3>
+                            <h4 class="sub_plan_name"><?php echo $sub['plan']; ?></h4>
                         </div>
                         <div class="right">
                             <div class="traking">
@@ -345,7 +343,9 @@ foreach ($res as $sub) {
 
                                 <div class="tracking_number">
                                     <span>Track My Latest Order:</span>
-                                    <span v-html="sub.last_order_details.tracking"> </span>
+                                    <span>
+                                        <?= $sub['last_order_details']->tracking; ?>
+                                    </span>
                                 </div>
 
                             </div>
@@ -356,22 +356,28 @@ foreach ($res as $sub) {
 
                         <!-- plan details -->
                         <div class="sub_plan_details">
-                            <span class="sub_plan_shipped"><span>No. of Boxes Shipped:</span> {{sub.shipped}}</span>
-                            <span class="sub_plan_created"><span>Subscription Date:</span> {{sub.created_at}}</span>
-                            <span v-if="sub.status != 'wc-cancelled'" class="sub_plan_next_renew"><span>Next Payment Renewal Date:</span> {{sub.next_payment}}</span>
-
+                            <span class="sub_plan_shipped"><span>No. of Boxes Shipped:</span> <?php echo $sub['shipped']; ?></span>
+                            <span class="sub_plan_created"><span>Subscription Date:</span> <?php echo $sub['created_at']; ?></span>
+                            <?php if ($sub['status'] != 'wc-cancelled') { ?>
+                                <span class="sub_plan_next_renew"><span>Next Payment Renewal Date:</span> <?php echo $sub['next_payment']; ?></span>
+                            <?php } ?>
 
                             <div class="sub_plan_status">
                                 <div class="sub_action_buttons">
-                                    <button v-if="sub.status == 'wc-active'" type="button" @click.prevent="showCancleOpenPopup(sub.id)" class="sub_button sub_plan_cancel_sub">Cancel Subscription</button>
-
-                                    <span v-else-if="sub.status == 'wc-cancelled'" class="sub_status sub_plan_inactive">Cancelled</span>
-
-                                    <span v-else class="sub_status sub_plan_pending">Pending</span>
-
-                                    <button v-if="sub.status == 'wc-active'" @click.prevent="showUpdatePopup(sub.id)" type="button" class="sub_button sub_update_button">Update Subscription</button>
 
 
+                                    <?php if ($sub['status'] === 'wc-active') { ?>
+                                        <button type="button" @click.prevent="showCancleOpenPopup(<?php echo $sub['id']; ?>)" class="sub_button sub_plan_cancel_sub">Cancel Subscription</button>
+                                        <!-- <button type="button"  data-sub="<?php echo $sub['id']; ?>" class="sub_button sub_plan_cancel_sub">Cancel Subscription</button> -->
+                                    <?php } elseif ($sub['status'] === 'wc-cancelled') { ?>
+                                        <span class="sub_status sub_plan_inactive">Cancelled</span>
+                                    <?php } else { ?>
+                                        <span class="sub_status sub_plan_pending">Pending</span>
+                                    <?php } ?>
+                                    <?php if ($sub['status'] === 'wc-active') { ?>
+                                        <button @click.prevent="showUpdatePopup(<?php echo $sub['id']; ?>)" type="button" class="sub_button sub_update_button">Update Subscription</button>
+                                        <!-- <button @click.prevent="showUpdatePopup(<?php echo $sub['id']; ?>)" type="button" data-popup="sub_update" data-sub="<?php echo $sub['id']; ?>" class="sub_button sub_update_button">Update Subscription</button> -->
+                                    <?php }; ?>
                                 </div>
 
                                 <span class="sub_plan_cancel_note">Note: Cancellation & Update will take effect only after your current cycle ends.</span>
@@ -380,24 +386,30 @@ foreach ($res as $sub) {
 
                         <!-- product values -->
                         <div class="sub_product_values">
-                            <span class="sub_product_value"><span>Product Value:</span> <span v-html="sub.currency + sub.product_value"> </span></span>
-                            <span class="sub_product_subtotal"><span>Subtotal:</span> <span v-html="sub.currency + sub.product_value"> </span></span>
-                            <span class="sub_product_shipping"><span>Shipping:</span> <span v-html="sub.currency + sub.shipping"> </span></span>
-                            <span class="sub_product_discount"><span>Discount:</span> <span v-html="sub.currency + sub.discount"> </span></span>
-                            <span class="sub_product_total"><span>Total:</span> <span v-html="sub.currency + sub.total"> </span></span>
+                            <span class="sub_product_value"><span>Product Value:</span> <?php echo $sub['currency'] . $sub['product_value']; ?></span>
+                            <span class="sub_product_subtotal"><span>Subtotal:</span> <?php echo $sub['currency'] . $sub['product_value']; ?></span>
+                            <span class="sub_product_shipping"><span>Shipping:</span> <?php echo $sub['currency'] . $sub['shipping']; ?></span>
+                            <span class="sub_product_discount"><span>Discount:</span> <?php echo $sub['currency'] . $sub['discount']; ?></span>
+                            <span class="sub_product_total"><span>Total:</span> <?php echo $sub['currency'] . $sub['total']; ?></span>
                         </div>
 
                         <!-- address details -->
 
                         <div class="sub_plan_shipping">
                             <ul>
-
-                                <li v-for="link in sub.address" class="sub_address_line">{{line}}</li>
-
+                                <?php foreach ($sub['address'] as $line) { ?>
+                                    <li class="sub_address_line"><?= $line ?></li>
+                                <?php } ?>
                             </ul>
                         </div>
 
                     </div>
+
+                    <textarea
+                        v-model="other_reasons"
+                        id="feedback_box"
+                        placeholder="Please share with us your thoughts"></textarea>
+
                     <div class="order_history">
                         <div class="oh_header">
                             <span class="oh_title">Order History</span>
@@ -415,13 +427,13 @@ foreach ($res as $sub) {
                                     <th>Date (GMT)</th>
                                     <th>Tracking No.</th>
                                 </tr>
-
-                                <tr v-for="order in sub.order_history" class="order_history_item">
-                                    <td class="order_status">{{ order.id }}</td>
-                                    <td class="order_date">{{ order.date }}</td>
-                                    <td class="order_tracking" v-html="order.tracking"></td>
-                                </tr>
-
+                                <?php foreach ($sub['order_history'] as $order) { ?>
+                                    <tr class="order_history_item">
+                                        <td class="order_status"><?= $order['id'] ?></td>
+                                        <td class="order_date"><?= $order['date'] ?></td>
+                                        <td class="order_tracking"><?= $order['tracking'] ?></td>
+                                    </tr>
+                                <?php } ?>
 
                             </table>
 
@@ -438,7 +450,7 @@ foreach ($res as $sub) {
             <!-- if no subscriptions -->
 
 
-            <p v-if="!subscription_data.length">No Subscriptions Found</p>
+            <p v-if="!subscriptions.length">No Subscriptions Found</p>
 
 
         </div>
@@ -775,12 +787,9 @@ foreach ($res as $sub) {
                             <!-- for other reason   -->
                             <div v-if="cancel_reason === 9" class="feedback-box">
                                 <textarea
-                                    :value="other_reasons"
-                                    @input="other_reasons = $event.target.value"
+                                    v-model="other_reasons"
                                     id="feedback_box"
                                     placeholder="Please share with us your thoughts"></textarea>
-
-                                <div v-if="other_reasons_error" style="color:#fd4747;font-size:12px">Feedback should contain atleast 6 characters</div>
                             </div>
 
                         </div>

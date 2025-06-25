@@ -635,10 +635,18 @@ final class MAV2_Ajax_Admin
             $update_requests = null;
         }
 
-        $available_plans = array_map(function ($v) use ($current_plan, $currency, $update_requests) {
+        $notes = [
+            1=>"",
+            3=>"",
+            12=>'✅ Enjoy a full year of authentic Japanese snacks at the lowest monthly rate!',
+            6=>'✅ Great option for flexibility and savings.',
+        ];
+
+        $available_plans = array_map(function ($v) use ($current_plan, $currency, $update_requests,$notes) {
             $v['is_current'] = $v['plan'] == $current_plan;
             $v['update_pending'] = $update_requests && $update_requests['new_plan'] == $v['plan'];
             $v['price'] = $currency . $v['price'];
+            $v['note'] = $notes[$v['plan']];
             $v['price_per_month'] = $currency . $v['price_per_month'];
             $v['save'] = $currency . $v['save'];
             return $v;
@@ -650,7 +658,7 @@ final class MAV2_Ajax_Admin
             return $v['plan'] == $current_plan;
         }))[0];
 
-        wp_send_json([
+        wp_send_json_success([
             'next_renew_at' => date('03-F-Y', strtotime($sub_start_date . ' + ' . $current_plan['plan'] . ' month')),
             'current_plan' => $current_plan,
             'plans' => $available_plans,
