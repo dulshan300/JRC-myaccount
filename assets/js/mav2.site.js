@@ -68,11 +68,6 @@ async function _file_download(data) {
     };
 })(jQuery);
 
-
-
-
-
-
 (function async($) {
 
 
