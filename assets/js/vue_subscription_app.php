@@ -82,6 +82,7 @@
         setup() {
 
             const PANELS = {
+                NONE: 0,
                 LOADING: 100,
                 ERROR: 404,
                 CHANGE_PLAN: 200,
@@ -143,7 +144,7 @@
             const subscription_data = ref([..._subscription_data]);
 
             const show_sub_edit_popup = ref(false);
-            const current_panel = ref(0);
+            const current_panel = ref(PANELS.NONE);
             const processing = ref(false);
             const processing_text = ref('Processing...');
             const error_text = ref('');
@@ -166,14 +167,12 @@
             }
 
             const setPanel = (panel) => {
-                console.log(panel);
-
                 current_panel.value = panel; // Update refs directly using .value
                 show_sub_edit_popup.value = true;
             }
 
             const closePopup = () => {
-                current_panel.value = 0;
+                current_panel.value = PANELS.NONE;
                 setTimeout(() => {
 
                     show_sub_edit_popup.value = false;
@@ -184,7 +183,7 @@
                     current_plan.value = {};
                     plan_selection.value = [];
 
-                }, 2000);
+                }, 500);
 
             }
 
@@ -193,9 +192,6 @@
             }
 
             const showUpdatePopup = async (id) => {
-
-                console.log(id);
-
 
                 if (!id && !selected_subscription_id.value) {
                     console.log('No subscription id found');

@@ -971,6 +971,7 @@
             &_close {
                 position: absolute;
                 right: 16px;
+                z-index: 1;
                 cursor: pointer;
                 appearance: none;
                 border: none;
