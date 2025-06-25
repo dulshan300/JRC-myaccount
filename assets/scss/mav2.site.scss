@@ -964,17 +964,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: relative;
-
-            &.floating {
-                position: absolute;
-                width: 100%;
-                left: -16px;
-            }
+            position: relative;            
 
             i.icon {}
 
             &_close {
+                position: absolute;
+                right: 16px;
                 cursor: pointer;
                 appearance: none;
                 border: none;
@@ -1154,7 +1150,7 @@
         }
     }
 
-    #upgrade_plan_success {
+    &#upgrade_plan_success {
         .jrc_popup_panel_content {
             display: flex;
             flex-direction: column;
@@ -1176,7 +1172,7 @@
         }
     }
 
-    #cancel_open {
+    &#cancel_open {
         button.cancel {
             font-size: 14px;
             text-decoration: underline;
@@ -1195,7 +1191,7 @@
         }
     }
 
-    #cancel_wait {
+    &#cancel_wait {
         p {
             font-family: Plus Jakarta Sans;
             font-weight: 400;
@@ -1218,7 +1214,7 @@
         }
     }
 
-    #cancel_note {
+    &#cancel_note {
 
         .reasons-container {
             max-height: 70vh;
@@ -1235,7 +1231,7 @@
             border-radius: 4px;
             cursor: pointer;
 
-            
+
         }
     }
 }
@@ -1249,4 +1245,40 @@
 .fade-enter-from,
 .fade-leave-to {
     opacity: 0;
+}
+
+.slide-fade-enter-active {
+    transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+    transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+    transform: translateX(20px);
+    opacity: 0;
+}
+
+.bounce-enter-active {
+    animation: bounce-in 0.5s;
+}
+
+.bounce-leave-active {
+    animation: bounce-in 0.5s reverse;
+}
+
+@keyframes bounce-in {
+    0% {
+        transform: scale(0);
+    }
+
+    50% {
+        transform: scale(1.25);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }

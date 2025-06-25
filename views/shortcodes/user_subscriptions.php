@@ -307,7 +307,6 @@ foreach ($res as $sub) {
     const _subscription_data = <?php echo json_encode($out_data); ?>;
 </script>
 
-
 <div id="subscription_app">
 
     <div v-if="false" class="loading" style="width: 100%;">
@@ -432,380 +431,267 @@ foreach ($res as $sub) {
 
             </template>
 
-
-
-
             <!-- if no subscriptions -->
-
-
             <p v-if="!subscription_data.length">No Subscriptions Found</p>
 
 
         </div>
 
-        <!-- popup set -->
-        <template v-if="show_sub_edit_popup">
+        <!-- Data processing and loading panel -->
+        <Transition name="fade">
+            <v-popup id="loading_data" v-show="current_panel==PANELS.LOADING" :can-close="false">
+                <div class="loading" style="width: 100%;height:100px">
+                    <div class="spinner-mini"></div>
+                    <p>{{processing_text}}</p>
+                </div>
+            </v-popup>
+        </Transition>
 
-            <div class="jrc_popup">
+        <Transition name="fade">
+            <v-popup v-show="current_panel==PANELS.ERROR" @close="closePopup" id="erro_view">
 
-                <!-- Data processing and loading panel -->
+                <div class="loading error" style="width: 100%;height:100px">
 
-                <div v-if="current_panel==PANELS.LOADING" id="loading_data" class="jrc_popup_panel">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48px" height="48px">
+                        <path fill="#f44336" d="M44,24c0,11.045-8.955,20-20,20S4,35.045,4,24S12.955,4,24,4S44,12.955,44,24z" />
+                        <path fill="#fff" d="M29.656,15.516l2.828,2.828l-14.14,14.14l-2.828-2.828L29.656,15.516z" />
+                        <path fill="#fff" d="M32.484,29.656l-2.828,2.828l-14.14-14.14l2.828-2.828L32.484,29.656z" />
+                    </svg>
 
-                    <div class="jrc_popup_panel_content">
+                    <p>{{error_text}}</p>
+                </div>
+            </v-popup>
+        </Transition>
 
-                        <div class="loading" style="width: 100%;height:100px">
-                            <div class="spinner-mini"></div>
-                            <p>{{processing_text}}</p>
+        <!-- Change Plan Panle -->
+        <Transition name="fade">
+            <v-popup v-show="current_panel==PANELS.CHANGE_PLAN" id="change_plan" @close="closePopup">
+
+                <template v-slot:icon>
+                    <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g filter="url(#filter0_d_2770_14901)">
+                            <rect x="2" y="1" width="48" height="48" rx="10" fill="white" />
+                            <rect x="2.5" y="1.5" width="47" height="47" rx="9.5" stroke="#E9EAEB" />
+                            <path d="M36 23H16M25 32L32.8 32C33.9201 32 34.4802 32 34.908 31.782C35.2843 31.5903 35.5903 31.2843 35.782 30.908C36 30.4802 36 29.9201 36 28.8V21.2C36 20.0799 36 19.5198 35.782 19.092C35.5903 18.7157 35.2843 18.4097 34.908 18.218C34.4802 18 33.9201 18 32.8 18H31M25 32L27 34M25 32L27 30M21 32H19.2C18.0799 32 17.5198 32 17.092 31.782C16.7157 31.5903 16.4097 31.2843 16.218 30.908C16 30.4802 16 29.9201 16 28.8V21.2C16 20.0799 16 19.5198 16.218 19.092C16.4097 18.7157 16.7157 18.4097 17.092 18.218C17.5198 18 18.0799 18 19.2 18H27M27 18L25 20M27 18L25 16" stroke="#414651" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </g>
+                        <defs>
+                            <filter id="filter0_d_2770_14901" x="0" y="0" width="52" height="52" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                                <feFlood flood-opacity="0" result="BackgroundImageFix" />
+                                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
+                                <feOffset dy="1" />
+                                <feGaussianBlur stdDeviation="1" />
+                                <feColorMatrix type="matrix" values="0 0 0 0 0.0392157 0 0 0 0 0.0509804 0 0 0 0 0.0705882 0 0 0 0.05 0" />
+                                <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_2770_14901" />
+                                <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2770_14901" result="shape" />
+                            </filter>
+                        </defs>
+                    </svg>
+                </template>
+
+                <template v-slot:title>
+                    <h3 class="header_text_title">Change Your plan</h3>
+                    <p class="header_text_sub_title">If your needs have changed, there's a plan that fits just right.</p>
+                </template>
+
+                <ul class="jrc_plans">
+                    <li class="jrc_plan current_plan">
+                        <p class="plan_summery"><strong>{{current_plan.name}}</strong> <span v-html="current_plan.price_per_month"></span>/month</p>
+                        <span>Current Plan</span>
+
+                        <div class="plan_check">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check">
+                                <path d="M20 6 9 17l-5-5" />
+                            </svg>
                         </div>
 
+                    </li>
+
+                    <li @click.prevent="selected_plan_id=plan.id" :key="plan.id" :class="{'selected_plan': selected_plan_id==plan.id}" v-for="plan in plan_selection" class="jrc_plan">
+                        <p class="plan_summery"><strong>{{plan.name}}</strong> <span v-html="plan.price_per_month"></span>/month</p>
+                        <p v-if="plan.note !=''" class="plan_note">{{plan.note}}</p>
+                        <span v-if="plan.has_saving" v-html="`You save ${plan.save}`"></span>
+                        <div class="plan_check">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check">
+                                <path d="M20 6 9 17l-5-5" />
+                            </svg>
+                        </div>
+                    </li>
+
+
+                </ul>
+
+                <template v-slot:footer>
+                    <p><strong>IMPORTANT</strong>: Changes to your subscription will take effect after your current cycle ends on {{next_renew_at}}.</p>
+                    <div class="jrc_popup_panel_footer_buttons">
+                        <button type="button" @click.prevent="closePopup" class="jrc_popup_panel_btn jrc_popup_panel_btn_secondary">Cancel</button>
+                        <button type="button" @click.prevent="confirmUpdate" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Confirm</button>
+
+                    </div>
+
+                </template>
+
+            </v-popup>
+        </Transition>
+
+        <!-- Upgrade Plan Success Panel -->
+        <Transition name="fade">
+            <v-popup v-show="current_panel==PANELS.CHANGE_PLAN_CONFIRM" id="upgrade_plan_success" @close="closePopup">
+
+
+                <template v-slot:icon>
+                    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="4" y="4" width="48" height="48" rx="24" fill="#D1FADF" />
+                        <rect x="4" y="4" width="48" height="48" rx="24" stroke="#ECFDF3" stroke-width="8" />
+                        <path d="M23.5 28L26.5 31L32.5 25M38 28C38 33.5228 33.5228 38 28 38C22.4772 38 18 33.5228 18 28C18 22.4772 22.4772 18 28 18C33.5228 18 38 22.4772 38 28Z" stroke="#039855" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </template>
+
+
+
+                <template v-slot:title>
+                    <h3 class="header_text_title">Your Subscription Has Been Updated!</h3>
+                    <p class="header_text_sub_title">Thank you for updating your Omiyage Snack Box plan. Here are the details of your new subscription:</p>
+                </template>
+
+
+
+                <ul>
+                    <li>📦 <strong> Selected Plan</strong>: {{selected_plan.name}} Plan</li>
+                    <li>📅 <strong> Effective From</strong>: {{next_renew_at}}</li>
+                    <li>💳 <strong> Updated Plan Price</strong>: <span v-html="selected_plan.price"></span></li>
+                    <li v-if="selected_plan.has_saving">💰 <strong> Total Savings</strong>: <span v-html="selected_plan.saving"></span></li>
+                </ul>
+
+                <p>You'll also receive an email confirmation with these details for your records.</p>
+
+                <p>If you have any questions or want to make further changes, you can manage your subscription anytime from your account page.</p>
+
+                <p>Thank you for being part of the Japan Rail Club family!</p>
+
+
+
+                <template v-slot:footer>
+                    <div class="jrc_popup_panel_footer_buttons">
+                        <button @click.prevent="closePopup" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_secondary">Back to My Account</button>
+
+                    </div>
+                </template>
+
+            </v-popup>
+        </Transition>
+
+        <!-- Cancel Open Panel -->
+        <Transition name="fade">
+            <v-popup v-show="current_panel==PANELS.CANCEL_OPEN" id="cancel_open" @close="closePopup">
+
+                <template v-slot:title>
+                    <h3 class="header_text_title">Wait! Before You Cancel...</h3>
+                </template>
+
+                <p>Did you know you can change your Omiyage Snack Box <br> subscription anytime?</p>
+                <p>Would you like to upgrade or downgrade <br>your plan instead?</p>
+
+
+
+                <template v-slot:footer>
+                    <div class="jrc_popup_panel_footer_buttons col">
+                        <button @click.prevent="showUpdatePopup()" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Change Plans & Save</button>
+                        <button @click.prevent="current_panel=PANELS.CANCEL_WAIT" type="button" class="jrc_popup_panel_btn cancel">Cancel anyways</button>
+
+                    </div>
+
+                </template>
+
+            </v-popup>
+        </Transition>
+
+        <!-- Cancel Wait -->
+        <Transition name="fade">
+            <v-popup v-show="current_panel==PANELS.CANCEL_WAIT" id="cancel_wait" @close="closePopup">
+
+                <template v-slot:title>
+                    <h3 class="header_text_title">Wait! Are You Sure You Want to Cancel?</h3>
+                    <p class="header_text_sub_title">You're about to miss out on:</p>
+                </template>
+
+
+
+                <div class="icon-text">
+                    <span>🎁</span>
+                    <p>Exclusive Monthly Omiyage Boxes filled with unique Japanese snacks and treats.</p>
+                </div>
+                <div class="icon-text">
+                    <span>🌸</span>
+                    <p>Access to Exclusive Events featuring authentic Japanese experiences.</p>
+                </div>
+                <div class="icon-text">
+                    <span>🚄</span>
+                    <p>Special JR EAST Deals curated just for members.</p>
+                </div>
+
+
+
+                <template v-slot:footer>
+                    <div class="jrc_popup_panel_footer_buttons">
+                        <button @click.prevent="closePopup" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Back to My Account</button>
+                        <button @click.prevent="current_panel=PANELS.CANCEL_NOTE" class="jrc_popup_panel_btn jrc_popup_panel_btn_secondary">Proceed to cancel</button>
+
+                    </div>
+
+                </template>
+
+            </v-popup>
+        </Transition>
+
+        <!-- Cancel Note -->
+        <Transition name="fade">
+            <v-popup v-show="current_panel==PANELS.CANCEL_NOTE" id="cancel_note" @close="closePopup">
+
+                <template v-slot:title>
+                    <h3 class="header_text_title">We are sad to see you go!</h3>
+                    <p class="header_text_sub_title">Please select your reason for cancellation:</p>
+                </template>
+
+                <div id="reasons_container" class="reasons-container">
+                    <template v-for="reason in reasons" :key="reason.id">
+
+                        <label :for="'r_' + reason.id" class="reason-item">
+                            <input
+                                type="radio"
+                                :id="'r_' + reason.id"
+                                v-model="cancel_reason"
+                                :value="reason.id" />
+                            <span>{{ reason.text }}</span>
+                        </label>
+
+                    </template>
+
+                    <!-- for other reason   -->
+                    <div v-if="cancel_reason === 9" class="feedback-box">
+                        <textarea
+                            v-model="other_reasons"
+                            id="feedback_box"
+                            placeholder="Please share with us your thoughts"></textarea>
+
+                        <div v-if="other_reasons_error" style="color:#fd4747;font-size:12px">Feedback should contain atleast 6 characters</div>
                     </div>
 
                 </div>
 
-
-                <div v-if="current_panel==PANELS.ERROR" id="erro_view" class="jrc_popup_panel">
-
-                    <div class="jrc_popup_panel_header_control floating">
-
-                        <i class="icon">
-                        </i>
-
-                        <button @click.prevent="closePopup" type="button" class="jrc_popup_panel_header_control_close">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x">
-                                <path d="M18 6 6 18" />
-                                <path d="m6 6 12 12" />
-                            </svg>
-                        </button>
-                    </div>
-
-
-                    <div class="jrc_popup_panel_content">
-
-                        <div class="loading error" style="width: 100%;height:100px">
-
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48px" height="48px">
-                                <path fill="#f44336" d="M44,24c0,11.045-8.955,20-20,20S4,35.045,4,24S12.955,4,24,4S44,12.955,44,24z" />
-                                <path fill="#fff" d="M29.656,15.516l2.828,2.828l-14.14,14.14l-2.828-2.828L29.656,15.516z" />
-                                <path fill="#fff" d="M32.484,29.656l-2.828,2.828l-14.14-14.14l2.828-2.828L32.484,29.656z" />
-                            </svg>
-
-                            <p>{{error_text}}</p>
-                        </div>
+                <template v-slot:footer>
+                    <div class="jrc_popup_panel_footer_buttons">
+                        <button @click.prevent="closePopup" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Back to My Account</button>
+                        <button @click.prevent="processCancel" class="jrc_popup_panel_btn jrc_popup_panel_btn_secondary">Proceed to cancel</button>
 
                     </div>
 
-                </div>
+                </template>
 
-
-
-                <!-- Change Plan Panle -->
-                <div v-if="current_panel==PANELS.CHANGE_PLAN" id="change_plan" class="jrc_popup_panel">
-
-                    <div class="jrc_popup_panel_header_control">
-
-                        <i class="icon">
-                            <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <g filter="url(#filter0_d_2770_14901)">
-                                    <rect x="2" y="1" width="48" height="48" rx="10" fill="white" />
-                                    <rect x="2.5" y="1.5" width="47" height="47" rx="9.5" stroke="#E9EAEB" />
-                                    <path d="M36 23H16M25 32L32.8 32C33.9201 32 34.4802 32 34.908 31.782C35.2843 31.5903 35.5903 31.2843 35.782 30.908C36 30.4802 36 29.9201 36 28.8V21.2C36 20.0799 36 19.5198 35.782 19.092C35.5903 18.7157 35.2843 18.4097 34.908 18.218C34.4802 18 33.9201 18 32.8 18H31M25 32L27 34M25 32L27 30M21 32H19.2C18.0799 32 17.5198 32 17.092 31.782C16.7157 31.5903 16.4097 31.2843 16.218 30.908C16 30.4802 16 29.9201 16 28.8V21.2C16 20.0799 16 19.5198 16.218 19.092C16.4097 18.7157 16.7157 18.4097 17.092 18.218C17.5198 18 18.0799 18 19.2 18H27M27 18L25 20M27 18L25 16" stroke="#414651" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                </g>
-                                <defs>
-                                    <filter id="filter0_d_2770_14901" x="0" y="0" width="52" height="52" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                                        <feFlood flood-opacity="0" result="BackgroundImageFix" />
-                                        <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
-                                        <feOffset dy="1" />
-                                        <feGaussianBlur stdDeviation="1" />
-                                        <feColorMatrix type="matrix" values="0 0 0 0 0.0392157 0 0 0 0 0.0509804 0 0 0 0 0.0705882 0 0 0 0.05 0" />
-                                        <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_2770_14901" />
-                                        <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2770_14901" result="shape" />
-                                    </filter>
-                                </defs>
-                            </svg>
-
-                        </i>
-
-                        <button @click.prevent="closePopup" type="button" class="jrc_popup_panel_header_control_close">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x">
-                                <path d="M18 6 6 18" />
-                                <path d="m6 6 12 12" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <div class="jrc_popup_panel_header_text">
-                        <h3 class="header_text_title">Change Your plan</h3>
-                        <p class="header_text_sub_title">If your needs have changed, there's a plan that fits just right.</p>
-                    </div>
-
-                    <div class="jrc_popup_panel_content">
-
-                        <ul class="jrc_plans">
-                            <li class="jrc_plan current_plan">
-                                <p class="plan_summery"><strong>{{current_plan.name}}</strong> <span v-html="current_plan.price_per_month"></span>/month</p>
-                                <span>Current Plan</span>
-
-                                <div class="plan_check">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check">
-                                        <path d="M20 6 9 17l-5-5" />
-                                    </svg>
-                                </div>
-
-                            </li>
-
-                            <li @click.prevent="selected_plan_id=plan.id" :key="plan.id" :class="{'selected_plan': selected_plan_id==plan.id}" v-for="plan in plan_selection" class="jrc_plan">
-                                <p class="plan_summery"><strong>{{plan.name}}</strong> <span v-html="plan.price_per_month"></span>/month</p>
-                                <p v-if="plan.note !=''" class="plan_note">{{plan.note}}</p>
-                                <span v-if="plan.has_saving" v-html="`You save ${plan.save}`"></span>
-                                <div class="plan_check">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check">
-                                        <path d="M20 6 9 17l-5-5" />
-                                    </svg>
-                                </div>
-                            </li>
-
-
-                        </ul>
-
-                    </div>
-
-                    <div class="jrc_popup_panel_footer">
-                        <p><strong>IMPORTANT</strong>: Changes to your subscription will take effect after your current cycle ends on {{next_renew_at}}.</p>
-                        <div class="jrc_popup_panel_footer_buttons">
-                            <button type="button" @click.prevent="closePopup" class="jrc_popup_panel_btn jrc_popup_panel_btn_secondary">Cancel</button>
-                            <button type="button" @click.prevent="confirmUpdate" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Confirm</button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- Upgrade Plan Success Panel -->
-
-                <div v-if="current_panel==PANELS.CHANGE_PLAN_CONFIRM" id="upgrade_plan_success" class="jrc_popup_panel">
-
-                    <div class="jrc_popup_panel_header_control">
-
-                        <i class="icon">
-                            <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect x="4" y="4" width="48" height="48" rx="24" fill="#D1FADF" />
-                                <rect x="4" y="4" width="48" height="48" rx="24" stroke="#ECFDF3" stroke-width="8" />
-                                <path d="M23.5 28L26.5 31L32.5 25M38 28C38 33.5228 33.5228 38 28 38C22.4772 38 18 33.5228 18 28C18 22.4772 22.4772 18 28 18C33.5228 18 38 22.4772 38 28Z" stroke="#039855" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </i>
-
-                        <button @click.prevent="closePopup" type="button" class="jrc_popup_panel_header_control_close">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x">
-                                <path d="M18 6 6 18" />
-                                <path d="m6 6 12 12" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <div class="jrc_popup_panel_header_text">
-                        <h3 class="header_text_title">Your Subscription Has Been Updated!</h3>
-                        <p class="header_text_sub_title">Thank you for updating your Omiyage Snack Box plan. Here are the details of your new subscription:</p>
-                    </div>
-
-                    <div class="jrc_popup_panel_content">
-
-                        <ul>
-                            <li>📦 <strong> Selected Plan</strong>: {{selected_plan.name}} Plan</li>
-                            <li>📅 <strong> Effective From</strong>: {{next_renew_at}}</li>
-                            <li>💳 <strong> Updated Plan Price</strong>: <span v-html="selected_plan.price"></span></li>
-                            <li v-if="selected_plan.has_saving">💰 <strong> Total Savings</strong>: <span v-html="selected_plan.saving"></span></li>
-                        </ul>
-
-                        <p>You'll also receive an email confirmation with these details for your records.</p>
-
-                        <p>If you have any questions or want to make further changes, you can manage your subscription anytime from your account page.</p>
-
-                        <p>Thank you for being part of the Japan Rail Club family!</p>
-
-                    </div>
-
-                    <div class="jrc_popup_panel_footer">
-                        <div class="jrc_popup_panel_footer_buttons">
-                            <button @click.prevent="closePopup" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_secondary">Back to My Account</button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- Cancel Open Panel -->
-                <div v-if="current_panel==PANELS.CANCEL_OPEN" id="cancel_open" class="jrc_popup_panel">
-
-                    <div class="jrc_popup_panel_header_control floating">
-
-                        <i class="icon">
-
-                        </i>
-
-                        <button @click.prevent="closePopup" type="button" class="jrc_popup_panel_header_control_close">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x">
-                                <path d="M18 6 6 18" />
-                                <path d="m6 6 12 12" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <div class="jrc_popup_panel_header_text">
-                        <h3 class="header_text_title">Wait! Before You Cancel...</h3>
-                    </div>
-
-                    <div class="jrc_popup_panel_content">
-
-                        <p>Did you know you can change your Omiyage Snack Box <br> subscription anytime?</p>
-                        <p>Would you like to upgrade or downgrade <br>your plan instead?</p>
-
-                    </div>
-
-                    <div class="jrc_popup_panel_footer">
-                        <div class="jrc_popup_panel_footer_buttons col">
-                            <button @click.prevent="showUpdatePopup()" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Change Plans & Save</button>
-                            <button @click.prevent="current_panel=PANELS.CANCEL_WAIT" type="button" class="jrc_popup_panel_btn cancel">Cancel anyways</button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- Cancel Wait -->
-                <div v-if="current_panel==PANELS.CANCEL_WAIT" id="cancel_wait" class="jrc_popup_panel">
-
-                    <div class="jrc_popup_panel_header_control floating">
-
-                        <i class="icon">
-
-                        </i>
-
-                        <button @click.prevent="closePopup" type="button" class="jrc_popup_panel_header_control_close">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x">
-                                <path d="M18 6 6 18" />
-                                <path d="m6 6 12 12" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <div class="jrc_popup_panel_header_text">
-                        <h3 class="header_text_title">Wait! Are You Sure You Want to Cancel?</h3>
-                        <p class="header_text_sub_title">You're about to miss out on:</p>
-                    </div>
-
-                    <div class="jrc_popup_panel_content">
-
-                        <div class="icon-text">
-                            <span>🎁</span>
-                            <p>Exclusive Monthly Omiyage Boxes filled with unique Japanese snacks and treats.</p>
-                        </div>
-                        <div class="icon-text">
-                            <span>🌸</span>
-                            <p>Access to Exclusive Events featuring authentic Japanese experiences.</p>
-                        </div>
-                        <div class="icon-text">
-                            <span>🚄</span>
-                            <p>Special JR EAST Deals curated just for members.</p>
-                        </div>
-
-                    </div>
-
-                    <div class="jrc_popup_panel_footer">
-                        <div class="jrc_popup_panel_footer_buttons">
-                            <button @click.prevent="closePopup" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Back to My Account</button>
-                            <button @click.prevent="current_panel=PANELS.CANCEL_NOTE" class="jrc_popup_panel_btn jrc_popup_panel_btn_secondary">Proceed to cancel</button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- Cancel Note -->
-                <div v-if="current_panel==PANELS.CANCEL_NOTE" id="cancel_note" class="jrc_popup_panel">
-
-                    <div class="jrc_popup_panel_header_control floating">
-
-                        <i class="icon">
-
-                        </i>
-
-                        <button @click.prevent="closePopup" type="button" class="jrc_popup_panel_header_control_close">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x">
-                                <path d="M18 6 6 18" />
-                                <path d="m6 6 12 12" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <div class="jrc_popup_panel_header_text">
-                        <h3 class="header_text_title">We are sad to see you go!</h3>
-                        <p class="header_text_sub_title">Please select your reason for cancellation:</p>
-                    </div>
-
-                    <div class="jrc_popup_panel_content">
-
-                        <div id="reasons_container" class="reasons-container">
-                            <template v-for="reason in reasons" :key="reason.id">
-
-                                <label :for="'r_' + reason.id" class="reason-item">
-                                    <!-- 
-                                    here  i got error:withDirectives can only be used inside render functions when try to use
-                                    v-model="cancel_reason". so i use @change instead of v-model
-
-                                    :checked="cancel_reason === reason.text"
-                                    @change="cancel_reason = reason.text"
-                                    name="cancel_reason"
-                                    -->
-                                    <input
-                                        type="radio"
-                                        :id="'r_' + reason.id"
-                                        :checked="cancel_reason === reason.id"
-                                        @change="cancel_reason = reason.id"
-                                        :value="reason.id" />
-                                    <span>{{ reason.text }}</span>
-                                </label>
-
-                            </template>
-
-                            <!-- for other reason   -->
-                            <div v-if="cancel_reason === 9" class="feedback-box">
-                                <textarea
-                                    :value="other_reasons"
-                                    @input="other_reasons = $event.target.value"
-                                    id="feedback_box"
-                                    placeholder="Please share with us your thoughts"></textarea>
-
-                                <div v-if="other_reasons_error" style="color:#fd4747;font-size:12px">Feedback should contain atleast 6 characters</div>
-                            </div>
-
-                        </div>
-
-
-                    </div>
-
-                    <div class="jrc_popup_panel_footer">
-                        <div class="jrc_popup_panel_footer_buttons">
-                            <button @click.prevent="closePopup" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Back to My Account</button>
-                            <button @click.prevent="processCancel" class="jrc_popup_panel_btn jrc_popup_panel_btn_secondary">Proceed to cancel</button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </template>
-
-
-
-
+            </v-popup>
+        </Transition>
 
     </template>
 </div>
+
+
+<?php include MAV2_PATH . 'assets/js/vue_subscription_app.php'; ?>
