@@ -1175,6 +1175,7 @@
 .jrc_popup_panel_header_control_close {
   position: absolute;
   right: 16px;
+  z-index: 1;
   cursor: pointer;
   -webkit-appearance: none;
      -moz-appearance: none;
@@ -1270,6 +1271,11 @@
 .jrc_popup_panel_btn_primary:hover {
   background: #002e76;
 }
+.jrc_popup_panel_btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #b3b3b3;
+}
 .jrc_popup strong {
   font-weight: 700;
 }
@@ -1337,6 +1343,15 @@
 .jrc_popup .jrc_plans .jrc_plan.selected_plan p.plan_summery {
   color: #001a43;
 }
+.jrc_popup .jrc_plans .jrc_plan.pending_plan {
+  border: 2px solid #001a43;
+  background: #f7f7f7;
+  cursor: default;
+  color: #001a43;
+}
+.jrc_popup .jrc_plans .jrc_plan.pending_plan .plan_check {
+  display: none;
+}
 .jrc_popup .jrc_plans .jrc_plan p.plan_summery {
   color: #585757;
 }
@@ -1349,6 +1364,22 @@
   font-weight: 400;
   font-size: 12px;
   line-height: 20px;
+  letter-spacing: 0%;
+}
+.jrc_popup .jrc_plans .jrc_plan .plan_pending_update {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: start;
+      -ms-flex-align: start;
+          align-items: start;
+  gap: 10px;
+}
+.jrc_popup .jrc_plans .jrc_plan .plan_pending_update p {
+  font-family: Plus Jakarta Sans;
+  font-weight: 400;
+  font-size: 10px;
+  line-height: 10px;
   letter-spacing: 0%;
 }
 .jrc_popup#upgrade_plan_success .jrc_popup_panel_content {

@@ -447,6 +447,7 @@ foreach ($res as $sub) {
             </v-popup>
         </Transition>
 
+        <!-- error view panel -->
         <Transition name="fade">
             <v-popup v-show="current_panel==PANELS.ERROR" @close="closePopup" id="erro_view">
 
@@ -506,10 +507,35 @@ foreach ($res as $sub) {
 
                     </li>
 
-                    <li @click.prevent="selected_plan_id=plan.id" :key="plan.id" :class="{'selected_plan': selected_plan_id==plan.id}" v-for="plan in plan_selection" class="jrc_plan">
+                    <li
+                        @click.prevent="selectPlan(plan.id)"
+                        :key="plan.id" class="jrc_plan"
+                        :class="{'selected_plan': selected_plan_id==plan.id,'pending_plan':plan.update_pending}"
+                        v-for="plan in plan_selection">
+
                         <p class="plan_summery"><strong>{{plan.name}}</strong> <span v-html="plan.price_per_month"></span>/month</p>
                         <p v-if="plan.note !=''" class="plan_note">{{plan.note}}</p>
                         <span v-if="plan.has_saving" v-html="`You save ${plan.save}`"></span>
+                        <!-- if this is a pending plan -->
+                        <div v-if="plan.update_pending" class="plan_pending_update">
+
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <g clip-path="url(#clip0_2829_94)">
+                                    <path d="M5.00004 9.16671C7.30123 9.16671 9.16671 7.30123 9.16671 5.00004C9.16671 2.69885 7.30123 0.833374 5.00004 0.833374C2.69885 0.833374 0.833374 2.69885 0.833374 5.00004C0.833374 7.30123 2.69885 9.16671 5.00004 9.16671Z" stroke="black" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M5 6.66667V5" stroke="black" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M5 3.33337H5.00417" stroke="black" stroke-linecap="round" stroke-linejoin="round" />
+                                </g>
+                                <defs>
+                                    <clipPath id="clip0_2829_94">
+                                        <rect width="10" height="10" fill="white" />
+                                    </clipPath>
+                                </defs>
+                            </svg>
+
+                            <p>Your new plan will begin automatically on the {{next_renew_at}}. Select another plan & confirm to change.</p>
+
+
+                        </div>
                         <div class="plan_check">
                             <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check">
                                 <path d="M20 6 9 17l-5-5" />
@@ -524,7 +550,11 @@ foreach ($res as $sub) {
                     <p><strong>IMPORTANT</strong>: Changes to your subscription will take effect after your current cycle ends on {{next_renew_at}}.</p>
                     <div class="jrc_popup_panel_footer_buttons">
                         <button type="button" @click.prevent="closePopup" class="jrc_popup_panel_btn jrc_popup_panel_btn_secondary">Cancel</button>
-                        <button type="button" @click.prevent="confirmUpdate" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Confirm</button>
+                        <button
+                            :disabled="selected_plan_id==''"
+                            type="button"
+                            @click.prevent="confirmUpdate"
+                            class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Confirm</button>
 
                     </div>
 
@@ -549,7 +579,7 @@ foreach ($res as $sub) {
 
 
                 <template v-slot:title>
-                    <h3 class="header_text_title">Your Subscription Has Been Updated!</h3>
+                    <h3 class="header_text_title">Your subscription has been updated!</h3>
                     <p class="header_text_sub_title">Thank you for updating your Omiyage Snack Box plan. Here are the details of your new subscription:</p>
                 </template>
 
@@ -559,7 +589,7 @@ foreach ($res as $sub) {
                     <li>📦 <strong> Selected Plan</strong>: {{selected_plan.name}} Plan</li>
                     <li>📅 <strong> Effective From</strong>: {{next_renew_at}}</li>
                     <li>💳 <strong> Updated Plan Price</strong>: <span v-html="selected_plan.price"></span></li>
-                    <li v-if="selected_plan.has_saving">💰 <strong> Total Savings</strong>: <span v-html="selected_plan.saving"></span></li>
+                    <li v-if="selected_plan.has_saving">💰 <strong> Total Savings</strong>: <span v-html="selected_plan.save"></span></li>
                 </ul>
 
                 <p>You'll also receive an email confirmation with these details for your records.</p>
@@ -694,4 +724,4 @@ foreach ($res as $sub) {
 </div>
 
 
-<?php include MAV2_PATH . 'assets/js/vue_subscription_app.php'; ?>
+<?php include MAV2_PATH . 'assets/js/vue_subscription_app.js.php'; ?>

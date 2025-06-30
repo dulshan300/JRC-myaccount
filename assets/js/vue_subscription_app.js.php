@@ -188,7 +188,16 @@
             }
 
             const selectPlan = (id) => {
-                selected_plan_id.value = id;
+                // check if the id belongs for a current pending update
+                let update_pending = false;
+
+                plan_selection.value.forEach((plan) => {
+                    if (plan.id == id && plan.update_pending == true) {
+                        update_pending = true;
+                    }
+                });
+
+                if (!update_pending) selected_plan_id.value = id;
             }
 
             const showUpdatePopup = async (id) => {

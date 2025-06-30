@@ -964,7 +964,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: relative;            
+            position: relative;
 
             i.icon {}
 
@@ -1060,6 +1060,12 @@
                     background: lighten(#001a43, 10%);
                 }
             }
+
+            &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                background-color: #b3b3b3;
+            }
         }
     }
 
@@ -1131,6 +1137,19 @@
                 }
             }
 
+            &.pending_plan {
+                border: 2px solid #001a43;
+                background: lighten(#eaeaea, 5);
+                cursor: default;
+
+                color: #001a43;
+
+                .plan_check {
+                    display: none;
+                }
+
+            }
+
             p.plan_summery {
                 strong {
                     font-weight: 600;
@@ -1147,6 +1166,21 @@
                 font-size: 12px;
                 line-height: 20px;
                 letter-spacing: 0%;
+            }
+
+            .plan_pending_update {
+                display: flex;
+                align-items: start;
+                gap: 10px;
+
+                p {
+                    font-family: Plus Jakarta Sans;
+                    font-weight: 400;
+                    font-size: 10px;
+                    line-height: 10px;
+                    letter-spacing: 0%;
+
+                }
             }
         }
     }

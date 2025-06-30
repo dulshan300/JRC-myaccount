@@ -636,13 +636,13 @@ final class MAV2_Ajax_Admin
         }
 
         $notes = [
-            1=>"",
-            3=>"",
-            12=>'✅ Enjoy a full year of authentic Japanese snacks at the lowest monthly rate!',
-            6=>'✅ Great option for flexibility and savings.',
+            1 => "",
+            3 => "",
+            12 => '✅ Enjoy a full year of authentic Japanese snacks at the lowest monthly rate!',
+            6 => '✅ Great option for flexibility and savings.',
         ];
 
-        $available_plans = array_map(function ($v) use ($current_plan, $currency, $update_requests,$notes) {
+        $available_plans = array_map(function ($v) use ($current_plan, $currency, $update_requests, $notes) {
             $v['is_current'] = $v['plan'] == $current_plan;
             $v['update_pending'] = $update_requests && $update_requests['new_plan'] == $v['plan'];
             $v['price'] = $currency . $v['price'];
@@ -658,8 +658,11 @@ final class MAV2_Ajax_Admin
             return $v['plan'] == $current_plan;
         }))[0];
 
+        $next_renew_At = date('03-F-Y', strtotime($sub_start_date . ' + ' . $current_plan['plan'] . ' month'));
+        $next_renew_At = date('jS \of F Y', strtotime($next_renew_At));
+
         wp_send_json_success([
-            'next_renew_at' => date('03-F-Y', strtotime($sub_start_date . ' + ' . $current_plan['plan'] . ' month')),
+            'next_renew_at' => $next_renew_At,
             'current_plan' => $current_plan,
             'plans' => $available_plans,
             'meta' => $subscription->get_meta_data(),
