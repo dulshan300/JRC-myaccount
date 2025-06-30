@@ -532,7 +532,7 @@ foreach ($res as $sub) {
                                 </defs>
                             </svg>
 
-                            <p>Your new plan will begin automatically on the {{next_renew_at}}. Select another plan & confirm to change.</p>
+                            <p>Your selected new plan will begin automatically on the {{next_renew_at}}. Select another plan & confirm to change.</p>
 
 
                         </div>
@@ -580,7 +580,7 @@ foreach ($res as $sub) {
 
                 <template v-slot:title>
                     <h3 class="header_text_title">Your subscription has been updated!</h3>
-                    <p class="header_text_sub_title">Thank you for updating your Omiyage Snack Box plan. Here are the details of your new subscription:</p>
+                    <p class="header_text_sub_title">Thank you for updating your Omiyage Snack Box Subscription Plan. Here are the details of your new subscription:</p>
                 </template>
 
 
@@ -594,15 +594,13 @@ foreach ($res as $sub) {
 
                 <p>You'll also receive an email confirmation with these details for your records.</p>
 
-                <p>If you have any questions or want to make further changes, you can manage your subscription anytime from your account page.</p>
-
-                <p>Thank you for being part of the Japan Rail Club family!</p>
+                <p>Thank you for being part of the JAPAN RAIL CLUB family!</p>
 
 
 
                 <template v-slot:footer>
                     <div class="jrc_popup_panel_footer_buttons">
-                        <button @click.prevent="closePopup" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_secondary">Back to My Account</button>
+                        <button @click.prevent="closePopup" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Back to My Account</button>
 
                     </div>
                 </template>
@@ -619,13 +617,13 @@ foreach ($res as $sub) {
                 </template>
 
                 <p>Did you know you can change your Omiyage Snack Box <br> subscription anytime?</p>
-                <p>Would you like to upgrade or downgrade <br>your plan instead?</p>
+                <p>Would you like to switch to another subscription plan instead?</p>
 
 
 
                 <template v-slot:footer>
                     <div class="jrc_popup_panel_footer_buttons col">
-                        <button @click.prevent="showUpdatePopup()" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Change Plans & Save</button>
+                        <button @click.prevent="showUpdatePopup()" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Change Plan</button>
                         <button @click.prevent="current_panel=PANELS.CANCEL_WAIT" type="button" class="jrc_popup_panel_btn cancel">Cancel anyways</button>
 
                     </div>
