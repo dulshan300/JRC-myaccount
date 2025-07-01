@@ -1130,7 +1130,7 @@
   background: rgba(0, 0, 0, 0.5);
   z-index: 1000;
 }
-.jrc_popup .panel_font, .jrc_popup#cancel_open p, .jrc_popup#upgrade_plan_success .jrc_popup_panel_content ul, .jrc_popup#upgrade_plan_success .jrc_popup_panel_content p, .jrc_popup .jrc_plans .jrc_plan p.plan_summery, .jrc_popup .loading.error h3, .jrc_popup .jrc_popup_panel_footer p, .jrc_popup_panel_footer .jrc_popup p, .jrc_popup .jrc_popup_panel_header_text .header_text_sub_title, .jrc_popup_panel_header_text .jrc_popup .header_text_sub_title {
+.jrc_popup .panel_font, .jrc_popup#cancel_open p, .jrc_popup#upgrade_plan_success .jrc_popup_panel_content ul, .jrc_popup#upgrade_plan_success .jrc_popup_panel_content p, .jrc_popup .loading.error h3, .jrc_popup .jrc_popup_panel_footer p, .jrc_popup_panel_footer .jrc_popup p, .jrc_popup .jrc_popup_panel_header_text .header_text_sub_title, .jrc_popup_panel_header_text .jrc_popup .header_text_sub_title {
   font-family: Plus Jakarta Sans;
   font-weight: 400;
   font-size: 14px;
@@ -1330,24 +1330,18 @@
 .jrc_popup .jrc_plans .jrc_plan.current_plan .plan_check {
   display: none;
 }
-.jrc_popup .jrc_plans .jrc_plan.selected_plan {
+.jrc_popup .jrc_plans .jrc_plan.selected_plan, .jrc_popup .jrc_plans .jrc_plan.pending_plan {
   border: 2px solid #001a43;
-  background: #f7f7f7;
+  background: #001A43;
   cursor: default;
-  color: #001a43;
-}
-.jrc_popup .jrc_plans .jrc_plan.selected_plan .plan_check {
-  background: #001a43;
   color: #fff;
 }
-.jrc_popup .jrc_plans .jrc_plan.selected_plan p.plan_summery {
+.jrc_popup .jrc_plans .jrc_plan.selected_plan .plan_check, .jrc_popup .jrc_plans .jrc_plan.pending_plan .plan_check {
+  background: #fff;
   color: #001a43;
 }
-.jrc_popup .jrc_plans .jrc_plan.pending_plan {
-  border: 2px solid #001a43;
-  background: #f7f7f7;
-  cursor: default;
-  color: #001a43;
+.jrc_popup .jrc_plans .jrc_plan.selected_plan p.plan_summery, .jrc_popup .jrc_plans .jrc_plan.pending_plan p.plan_summery {
+  color: #fff;
 }
 .jrc_popup .jrc_plans .jrc_plan.pending_plan .plan_check {
   display: none;
@@ -1358,6 +1352,13 @@
 .jrc_popup .jrc_plans .jrc_plan p.plan_summery strong {
   font-weight: 600;
 }
+.jrc_popup .jrc_plans .jrc_plan p.plan_summery * {
+  font-family: "Plus Jakarta Sans";
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0%;
+}
 .jrc_popup .jrc_plans .jrc_plan p.plan_note,
 .jrc_popup .jrc_plans .jrc_plan span {
   font-family: "Plus Jakarta Sans";
@@ -1365,6 +1366,27 @@
   font-size: 12px;
   line-height: 20px;
   letter-spacing: 0%;
+}
+.jrc_popup .jrc_plans .jrc_plan .price_sec {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 10px;
+}
+.jrc_popup .jrc_plans .jrc_plan .price_sec span.total {
+  font-family: Plus Jakarta Sans;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: 0%;
+}
+.jrc_popup .jrc_plans .jrc_plan .price_sec span.saving {
+  font-family: Plus Jakarta Sans;
+  font-weight: 400;
+  font-size: 10px;
+  line-height: 20px;
+  letter-spacing: 0%;
+  color: #E6B422;
 }
 .jrc_popup .jrc_plans .jrc_plan .plan_pending_update {
   display: -webkit-box;
@@ -1374,6 +1396,9 @@
       -ms-flex-align: start;
           align-items: start;
   gap: 10px;
+}
+.jrc_popup .jrc_plans .jrc_plan .plan_pending_update svg {
+  color: #fff;
 }
 .jrc_popup .jrc_plans .jrc_plan .plan_pending_update p {
   font-family: Plus Jakarta Sans;

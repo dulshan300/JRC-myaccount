@@ -510,17 +510,20 @@ foreach ($res as $sub) {
                         :class="{'selected_plan': selected_plan_id==plan.id,'pending_plan':plan.update_pending}"
                         v-for="plan in plan_selection">
 
-                        <p class="plan_summery"><strong>{{plan.name}}</strong> <span v-html="plan.price_per_month"></span>/month</p>
+                        <p class="plan_summery"><strong>{{plan.name}} {{plan.plan==12?'- Best Value':''}}</strong> <span v-html="plan.price_per_month"></span>/month</p>
                         <p v-if="plan.note !=''" class="plan_note">{{plan.note}}</p>
-                        <span v-if="plan.has_saving" v-html="`You save ${plan.save}`"></span>
+                        <div v-if="plan.has_saving" class="price_sec">
+                            <span class="total" v-html="'Total: '+plan.price"></span>
+                            <span class="saving" v-html="`You save ${plan.save}`"></span>
+                        </div>
                         <!-- if this is a pending plan -->
                         <div v-if="plan.update_pending" class="plan_pending_update">
 
-                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <svg width="20" height="20" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <g clip-path="url(#clip0_2829_94)">
-                                    <path d="M5.00004 9.16671C7.30123 9.16671 9.16671 7.30123 9.16671 5.00004C9.16671 2.69885 7.30123 0.833374 5.00004 0.833374C2.69885 0.833374 0.833374 2.69885 0.833374 5.00004C0.833374 7.30123 2.69885 9.16671 5.00004 9.16671Z" stroke="black" stroke-linecap="round" stroke-linejoin="round" />
-                                    <path d="M5 6.66667V5" stroke="black" stroke-linecap="round" stroke-linejoin="round" />
-                                    <path d="M5 3.33337H5.00417" stroke="black" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M5.00004 9.16671C7.30123 9.16671 9.16671 7.30123 9.16671 5.00004C9.16671 2.69885 7.30123 0.833374 5.00004 0.833374C2.69885 0.833374 0.833374 2.69885 0.833374 5.00004C0.833374 7.30123 2.69885 9.16671 5.00004 9.16671Z" stroke="white" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M5 6.66667V5" stroke="white" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M5 3.33337H5.00417" stroke="white" stroke-linecap="round" stroke-linejoin="round" />
                                 </g>
                                 <defs>
                                     <clipPath id="clip0_2829_94">

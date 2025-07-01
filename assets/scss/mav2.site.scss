@@ -1120,29 +1120,25 @@
                 }
             }
 
-            &.selected_plan {
+            &.selected_plan,
+            &.pending_plan {
                 border: 2px solid #001a43;
-                background: lighten(#eaeaea, 5);
+                background: #001A43;
                 cursor: default;
 
-                color: #001a43;
+                color: #fff;
 
                 .plan_check {
-                    background: #001a43;
-                    color: #fff;
+                    background: #fff;
+                    color: #001a43;
                 }
 
                 p.plan_summery {
-                    color: #001a43;
+                    color: #fff;
                 }
             }
 
             &.pending_plan {
-                border: 2px solid #001a43;
-                background: lighten(#eaeaea, 5);
-                cursor: default;
-
-                color: #001a43;
 
                 .plan_check {
                     display: none;
@@ -1155,8 +1151,20 @@
                     font-weight: 600;
                 }
 
-                @extend .panel_font;
+                * {
+
+                    font-family: "Plus Jakarta Sans";
+                    font-weight: 400;
+                    font-size: 16px;
+                    line-height: 20px;
+                    letter-spacing: 0%;
+
+
+                }
+
                 color: #585757;
+
+
             }
 
             p.plan_note,
@@ -1168,10 +1176,37 @@
                 letter-spacing: 0%;
             }
 
+            .price_sec {
+                display: flex;
+                gap: 10px;
+
+                span.total {
+                    font-family: Plus Jakarta Sans;
+                    font-weight: 700;
+                    font-size: 12px;
+                    line-height: 20px;
+                    letter-spacing: 0%;
+                }
+
+                span.saving {
+                    font-family: Plus Jakarta Sans;
+                    font-weight: 400;
+                    font-size: 10px;
+                    line-height: 20px;
+                    letter-spacing: 0%;
+                    color: #E6B422;
+
+                }
+            }
+
             .plan_pending_update {
                 display: flex;
                 align-items: start;
                 gap: 10px;
+
+                svg {
+                    color: #fff;
+                }
 
                 p {
                     font-family: Plus Jakarta Sans;
