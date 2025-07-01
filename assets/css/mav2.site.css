@@ -1279,134 +1279,6 @@
 .jrc_popup strong {
   font-weight: 700;
 }
-.jrc_popup .jrc_plans {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  gap: 12px;
-}
-.jrc_popup .jrc_plans .jrc_plan {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  gap: 10px;
-  border-radius: 12px;
-  border: 1px solid #e6e6e8;
-  padding: 16px;
-  cursor: pointer;
-  position: relative;
-}
-.jrc_popup .jrc_plans .jrc_plan .plan_check {
-  position: absolute;
-  right: 16px;
-  min-width: 20px;
-  min-height: 20px;
-  border: 1px solid #e6e6e8;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  border-radius: 50%;
-  color: #fff;
-}
-.jrc_popup .jrc_plans .jrc_plan.current_plan {
-  border: 2px solid #b3b3b3;
-  background: #eaeaea;
-  cursor: default;
-}
-.jrc_popup .jrc_plans .jrc_plan.current_plan .plan_check {
-  display: none;
-}
-.jrc_popup .jrc_plans .jrc_plan.selected_plan, .jrc_popup .jrc_plans .jrc_plan.pending_plan {
-  border: 2px solid #001a43;
-  background: #001A43;
-  cursor: default;
-  color: #fff;
-}
-.jrc_popup .jrc_plans .jrc_plan.selected_plan .plan_check, .jrc_popup .jrc_plans .jrc_plan.pending_plan .plan_check {
-  background: #fff;
-  color: #001a43;
-}
-.jrc_popup .jrc_plans .jrc_plan.selected_plan p.plan_summery, .jrc_popup .jrc_plans .jrc_plan.pending_plan p.plan_summery {
-  color: #fff;
-}
-.jrc_popup .jrc_plans .jrc_plan.pending_plan .plan_check {
-  display: none;
-}
-.jrc_popup .jrc_plans .jrc_plan p.plan_summery {
-  color: #585757;
-}
-.jrc_popup .jrc_plans .jrc_plan p.plan_summery strong {
-  font-weight: 600;
-}
-.jrc_popup .jrc_plans .jrc_plan p.plan_summery * {
-  font-family: "Plus Jakarta Sans";
-  font-weight: 400;
-  font-size: 16px;
-  line-height: 20px;
-  letter-spacing: 0%;
-}
-.jrc_popup .jrc_plans .jrc_plan p.plan_note,
-.jrc_popup .jrc_plans .jrc_plan span {
-  font-family: "Plus Jakarta Sans";
-  font-weight: 400;
-  font-size: 12px;
-  line-height: 20px;
-  letter-spacing: 0%;
-}
-.jrc_popup .jrc_plans .jrc_plan .price_sec {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  gap: 10px;
-}
-.jrc_popup .jrc_plans .jrc_plan .price_sec span.total {
-  font-family: Plus Jakarta Sans;
-  font-weight: 700;
-  font-size: 12px;
-  line-height: 20px;
-  letter-spacing: 0%;
-}
-.jrc_popup .jrc_plans .jrc_plan .price_sec span.saving {
-  font-family: Plus Jakarta Sans;
-  font-weight: 400;
-  font-size: 10px;
-  line-height: 20px;
-  letter-spacing: 0%;
-  color: #E6B422;
-}
-.jrc_popup .jrc_plans .jrc_plan .plan_pending_update {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: start;
-      -ms-flex-align: start;
-          align-items: start;
-  gap: 10px;
-}
-.jrc_popup .jrc_plans .jrc_plan .plan_pending_update svg {
-  color: #fff;
-}
-.jrc_popup .jrc_plans .jrc_plan .plan_pending_update p {
-  font-family: Plus Jakarta Sans;
-  font-weight: 400;
-  font-size: 10px;
-  line-height: 10px;
-  letter-spacing: 0%;
-}
 .jrc_popup#upgrade_plan_success .jrc_popup_panel_content {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -1490,6 +1362,138 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.jrc_plans {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  gap: 12px;
+}
+.jrc_plans .jrc_plan {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  gap: 10px;
+  border-radius: 12px;
+  border: 1px solid #e6e6e8;
+  padding: 16px;
+  cursor: pointer;
+  position: relative;
+}
+.jrc_plans .jrc_plan .plan_check {
+  position: absolute;
+  right: 16px;
+  min-width: 20px;
+  min-height: 20px;
+  border: 1px solid #e6e6e8;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  border-radius: 50%;
+  color: #fff;
+}
+.jrc_plans .jrc_plan.current_plan {
+  border: 2px solid #b3b3b3;
+  background: #eaeaea;
+  cursor: default;
+}
+.jrc_plans .jrc_plan.current_plan .plan_check {
+  display: none;
+}
+.jrc_plans .jrc_plan.selected_plan, .jrc_plans .jrc_plan.pending_plan {
+  border: 2px solid #001a43;
+  background: #001A43;
+  cursor: default;
+  color: #fff;
+}
+.jrc_plans .jrc_plan.selected_plan .plan_check, .jrc_plans .jrc_plan.pending_plan .plan_check {
+  background: #fff;
+  color: #001a43;
+}
+.jrc_plans .jrc_plan.selected_plan p.plan_summery, .jrc_plans .jrc_plan.pending_plan p.plan_summery {
+  color: #fff;
+}
+.jrc_plans .jrc_plan.pending_plan .plan_check {
+  display: none;
+}
+.jrc_plans .jrc_plan p.plan_summery {
+  color: #585757;
+}
+.jrc_plans .jrc_plan p.plan_summery strong {
+  font-weight: 600;
+}
+.jrc_plans .jrc_plan p.plan_summery * {
+  font-family: "Plus Jakarta Sans";
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0%;
+}
+.jrc_plans .jrc_plan p.plan_note,
+.jrc_plans .jrc_plan span {
+  font-family: "Plus Jakarta Sans";
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: 0%;
+}
+.jrc_plans .jrc_plan .price_sec {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 10px;
+}
+.jrc_plans .jrc_plan .price_sec span.total {
+  font-family: Plus Jakarta Sans;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: 0%;
+}
+.jrc_plans .jrc_plan .price_sec span.saving {
+  font-family: Plus Jakarta Sans;
+  font-weight: 400;
+  font-size: 10px;
+  line-height: 20px;
+  letter-spacing: 0%;
+  color: #E6B422;
+}
+.jrc_plans .jrc_plan .plan_pending_update {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: start;
+      -ms-flex-align: start;
+          align-items: start;
+  gap: 10px;
+}
+.jrc_plans .jrc_plan .plan_pending_update svg,
+.jrc_plans .jrc_plan .plan_pending_update a {
+  color: #fff;
+}
+.jrc_plans .jrc_plan .plan_pending_update a {
+  text-decoration: underline;
+}
+.jrc_plans .jrc_plan .plan_pending_update p {
+  font-family: Plus Jakarta Sans;
+  font-weight: 400;
+  font-size: 10px;
+  line-height: 13px;
 }
 
 /* Fade animation */

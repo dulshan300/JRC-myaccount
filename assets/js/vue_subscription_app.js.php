@@ -329,6 +329,21 @@
 
             }
 
+            const cancel_plan_change = async () => {
+                console.log('cancel_plan_change');
+                setProcessing(true, 'Cancelling plan change...')
+
+                let data = {
+                    'action': 'mav2_subscription_upgrade_cancel',
+                    id: selected_subscription_id.value,
+                    nonce: mav2.nonce
+                };
+
+                let res = await _ajax(data);
+
+                showUpdatePopup();
+            }
+
             return {
                 msg,
                 subscription_data,
@@ -353,7 +368,8 @@
                 closePopup,
                 showUpdatePopup,
                 confirmUpdate,
-                processCancel
+                processCancel,
+                cancel_plan_change
             }
         }
     });

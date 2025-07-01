@@ -362,7 +362,7 @@ foreach ($res as $sub) {
 
                             <div class="sub_plan_status">
                                 <div class="sub_action_buttons">
-                                    <button v-if="sub.status == 'wc-active'" type="button" @click.prevent="showCancleOpenPopup(sub.id)" class="sub_button sub_plan_cancel_sub">Manage My Subscription</button>
+                                    <button v-if="sub.status == 'wc-active'" type="button" @click.prevent="showCancleOpenPopup(sub.id)" class="sub_button sub_plan_cancel_sub">Cancel Subscription</button>
 
                                     <span v-else-if="sub.status == 'wc-cancelled'" class="sub_status sub_plan_inactive">Cancelled</span>
 
@@ -532,7 +532,7 @@ foreach ($res as $sub) {
                                 </defs>
                             </svg>
 
-                            <p>Your selected new plan will begin automatically on the {{next_renew_at}}. Select another plan & confirm to change.</p>
+                            <p>Your selected new plan will begin automatically on the {{next_renew_at}}. Select another plan & confirm to change. <a @click.prevent="cancel_plan_change" href="">Click here to keep my current plan</a></p>
 
 
                         </div>

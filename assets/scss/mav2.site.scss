@@ -1080,146 +1080,6 @@
         }
     }
 
-    .jrc_plans {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-
-        .jrc_plan {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-
-            border-radius: 12px;
-            border: 1px solid #e6e6e8;
-            padding: 16px;
-            cursor: pointer;
-
-            position: relative;
-
-            .plan_check {
-                position: absolute;
-                right: 16px;
-                min-width: 20px;
-                min-height: 20px;
-                border: 1px solid #e6e6e8;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                border-radius: 50%;
-                color: #fff;
-            }
-
-            &.current_plan {
-                border: 2px solid #b3b3b3;
-                background: #eaeaea;
-                cursor: default;
-
-                .plan_check {
-                    display: none;
-                }
-            }
-
-            &.selected_plan,
-            &.pending_plan {
-                border: 2px solid #001a43;
-                background: #001A43;
-                cursor: default;
-
-                color: #fff;
-
-                .plan_check {
-                    background: #fff;
-                    color: #001a43;
-                }
-
-                p.plan_summery {
-                    color: #fff;
-                }
-            }
-
-            &.pending_plan {
-
-                .plan_check {
-                    display: none;
-                }
-
-            }
-
-            p.plan_summery {
-                strong {
-                    font-weight: 600;
-                }
-
-                * {
-
-                    font-family: "Plus Jakarta Sans";
-                    font-weight: 400;
-                    font-size: 16px;
-                    line-height: 20px;
-                    letter-spacing: 0%;
-
-
-                }
-
-                color: #585757;
-
-
-            }
-
-            p.plan_note,
-            span {
-                font-family: "Plus Jakarta Sans";
-                font-weight: 400;
-                font-size: 12px;
-                line-height: 20px;
-                letter-spacing: 0%;
-            }
-
-            .price_sec {
-                display: flex;
-                gap: 10px;
-
-                span.total {
-                    font-family: Plus Jakarta Sans;
-                    font-weight: 700;
-                    font-size: 12px;
-                    line-height: 20px;
-                    letter-spacing: 0%;
-                }
-
-                span.saving {
-                    font-family: Plus Jakarta Sans;
-                    font-weight: 400;
-                    font-size: 10px;
-                    line-height: 20px;
-                    letter-spacing: 0%;
-                    color: #E6B422;
-
-                }
-            }
-
-            .plan_pending_update {
-                display: flex;
-                align-items: start;
-                gap: 10px;
-
-                svg {
-                    color: #fff;
-                }
-
-                p {
-                    font-family: Plus Jakarta Sans;
-                    font-weight: 400;
-                    font-size: 10px;
-                    line-height: 10px;
-                    letter-spacing: 0%;
-
-                }
-            }
-        }
-    }
-
     &#upgrade_plan_success {
         .jrc_popup_panel_content {
             display: flex;
@@ -1302,6 +1162,150 @@
             cursor: pointer;
 
 
+        }
+    }
+}
+
+.jrc_plans {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .jrc_plan {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        border-radius: 12px;
+        border: 1px solid #e6e6e8;
+        padding: 16px;
+        cursor: pointer;
+
+        position: relative;
+
+        .plan_check {
+            position: absolute;
+            right: 16px;
+            min-width: 20px;
+            min-height: 20px;
+            border: 1px solid #e6e6e8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            color: #fff;
+        }
+
+        &.current_plan {
+            border: 2px solid #b3b3b3;
+            background: #eaeaea;
+            cursor: default;
+
+            .plan_check {
+                display: none;
+            }
+        }
+
+        &.selected_plan,
+        &.pending_plan {
+            border: 2px solid #001a43;
+            background: #001A43;
+            cursor: default;
+
+            color: #fff;
+
+            .plan_check {
+                background: #fff;
+                color: #001a43;
+            }
+
+            p.plan_summery {
+                color: #fff;
+            }
+        }
+
+        &.pending_plan {
+
+            .plan_check {
+                display: none;
+            }
+
+        }
+
+        p.plan_summery {
+            strong {
+                font-weight: 600;
+            }
+
+            * {
+
+                font-family: "Plus Jakarta Sans";
+                font-weight: 400;
+                font-size: 16px;
+                line-height: 20px;
+                letter-spacing: 0%;
+
+
+            }
+
+            color: #585757;
+
+
+        }
+
+        p.plan_note,
+        span {
+            font-family: "Plus Jakarta Sans";
+            font-weight: 400;
+            font-size: 12px;
+            line-height: 20px;
+            letter-spacing: 0%;
+        }
+
+        .price_sec {
+            display: flex;
+            gap: 10px;
+
+            span.total {
+                font-family: Plus Jakarta Sans;
+                font-weight: 700;
+                font-size: 12px;
+                line-height: 20px;
+                letter-spacing: 0%;
+            }
+
+            span.saving {
+                font-family: Plus Jakarta Sans;
+                font-weight: 400;
+                font-size: 10px;
+                line-height: 20px;
+                letter-spacing: 0%;
+                color: #E6B422;
+
+            }
+        }
+
+        .plan_pending_update {
+            display: flex;
+            align-items: start;
+            gap: 10px;
+
+            svg,
+            a {
+                color: #fff;
+            }
+
+            a {
+                text-decoration: underline;
+            }
+
+            p {
+                font-family: Plus Jakarta Sans;
+                font-weight: 400;
+                font-size: 10px;
+                line-height: 13px;
+
+            }
         }
     }
 }

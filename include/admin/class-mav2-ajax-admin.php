@@ -784,7 +784,7 @@ final class MAV2_Ajax_Admin
         $this->send_html_email(
             $admin_email,
             "Subscription $update_dir request",
-            'sub_upgrade_admin',
+            'admin_sub_upgrade_confirm_en',
             $user_data
         );
 
