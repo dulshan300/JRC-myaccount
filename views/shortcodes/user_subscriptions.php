@@ -1,6 +1,7 @@
 <?php
 $user_id = get_current_user_id();
-// $user_id = 1446;
+// $user_id = 1482;
+// $user_id = 1791;
 
 
 
@@ -120,8 +121,8 @@ function mav2_get_tracking($order)
 
         if (preg_match($pattern_JP, $order->tracking, $matches)) {
             $trackingNumber = $matches[0]; // The captured tracking number            
-            $link = 'https://trackings.post.japanpost.jp/services/srv/search/?requestNo1=%20' . $trackingNumber . '&search.x=68&search.y=17&search=Tracking+start&locale=ja&startingUrlPatten=';
-            $order->tracking = "<a href='{$link}' target='_blank'>{$trackingNumber}</a>";
+            $link = 'https://trackings.post.japanpost.jp/services/srv/search/?requestNo1=' . $trackingNumber . '&search.x=68&search.y=17&search=Tracking+start&locale=ja&startingUrlPatten=';
+            $order->tracking = '<a href="' . $link . '" target="_blank">' . $trackingNumber . '</a>';
         } else if (preg_match($pattern_US, $order->tracking, $matches)) {
             // us
             $trackingNumber = $matches[1]; // The captured tracking number            
@@ -181,7 +182,11 @@ foreach ($res as $sub) {
     $renew_orders = array_reverse($renew_orders);
     $sub_orders = array_merge($sub_orders, $renew_orders);
 
+    // var_dump($sub_orders);
+
     $last_sub = end($sub_orders);
+
+    $str_ids = implode(',', $sub_orders);
 
     // getting order details
 
@@ -195,7 +200,7 @@ foreach ($res as $sub) {
         so subtotal calculation is _line_subtotal
     */
 
-    $osql = "SELECT od.id, od.currency as currency, od.date_created_gmt as created_at, ( SELECT om.meta_value FROM wp_woocommerce_order_items oi left JOIN wp_woocommerce_order_itemmeta om ON om.order_item_id = oi.order_item_id WHERE oi.order_id = od.id AND om.meta_key ='_line_subtotal') as subtotal, COALESCE( ( SELECT sum(oim.meta_value) FROM wp_woocommerce_order_items oi LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = oi.order_item_id AND oim.meta_key ='cost'WHERE oi.order_id = od.id AND oi.order_item_type ='shipping'), 0 ) as'shipping', COALESCE( ABS( ( SELECT meta_value from wp_woocommerce_order_itemmeta WHERE order_item_id =( SELECT order_item_id FROM wp_woocommerce_order_items oi WHERE ( oi.order_item_type ='coupon'OR oi.order_item_type ='fee') AND order_id = od.id LIMIT 1 ) AND ( meta_key ='discount_amount'OR meta_key ='_fee_amount') ) ), 0 ) as'discount', od.total_amount, COALESCE( REPLACE ( ( SELECT item.order_item_name FROM wp_wc_orders orders LEFT JOIN wp_woocommerce_order_items item ON item.order_id = orders.id WHERE item.order_id = od.id AND item.order_item_type IN ('coupon','fee') LIMIT 1 ),'Discount: ',''),'') AS'coupon'from wp_wc_orders od WHERE od.id = $last_sub";
+    $osql = "SELECT od.id, od.currency as currency, od.date_created_gmt as created_at, ( SELECT om.meta_value FROM wp_woocommerce_order_items oi left JOIN wp_woocommerce_order_itemmeta om ON om.order_item_id = oi.order_item_id WHERE oi.order_id = od.id AND om.meta_key ='_line_subtotal') as subtotal, COALESCE( ( SELECT sum(oim.meta_value) FROM wp_woocommerce_order_items oi LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = oi.order_item_id AND oim.meta_key ='cost'WHERE oi.order_id = od.id AND oi.order_item_type ='shipping'), 0 ) as'shipping', COALESCE( ABS( ( SELECT meta_value from wp_woocommerce_order_itemmeta WHERE order_item_id =( SELECT order_item_id FROM wp_woocommerce_order_items oi WHERE ( oi.order_item_type ='coupon'OR oi.order_item_type ='fee') AND order_id = od.id LIMIT 1 ) AND ( meta_key ='discount_amount'OR meta_key ='_fee_amount') ) ), 0 ) as'discount', od.total_amount, COALESCE( REPLACE ( ( SELECT item.order_item_name FROM wp_wc_orders orders LEFT JOIN wp_woocommerce_order_items item ON item.order_id = orders.id WHERE item.order_id = od.id AND item.order_item_type IN ('coupon','fee') LIMIT 1 ),'Discount: ',''),'') AS'coupon'from wp_wc_orders od WHERE od.id IN ($str_ids) AND od.total_amount > 0 ORDER BY od.date_created_gmt DESC LIMIT 1";
 
     $odata = $wpdb->get_row($osql);
     $temp['created_at'] = date('d F Y', strtotime($odata->created_at . ' + 8 hours'));
@@ -208,6 +213,8 @@ foreach ($res as $sub) {
     // get last order status
     $last_order_id = end($sub_orders);
 
+
+
     $orders_history = $sub_orders;
 
     if ($sub->plan != 1) {
@@ -216,7 +223,7 @@ foreach ($res as $sub) {
         $orders_history = unserialize($sub->fullfilled);
     }
 
-    $lo_sql = "SELECT od.id, od.status,od.date_created_gmt, COALESCE( ( SELECT comment_content from wp_comments WHERE comment_post_ID = od.id AND comment_content LIKE '%%Tracking number%%'ORDER BY comment_date_gmt DESC LIMIT 1 ),404) as tracking, (SELECT country FROM wp_wc_order_addresses WHERE order_id=od.id LIMIT 1) country from wp_wc_orders od WHERE od.id=%s";
+    $lo_sql = "SELECT od.id, od.status,od.date_updated_gmt,od.date_created_gmt, COALESCE( ( SELECT comment_content from wp_comments WHERE comment_post_ID = od.id AND comment_content LIKE '%%Tracking number%%'ORDER BY comment_date_gmt DESC LIMIT 1 ),404) as tracking, (SELECT country FROM wp_wc_order_addresses WHERE order_id=od.id LIMIT 1) country from wp_wc_orders od WHERE od.id=%s";
 
     $lo_q = $wpdb->prepare($lo_sql, $last_order_id);
 
@@ -244,6 +251,9 @@ foreach ($res as $sub) {
 
         $temp_history[] = $hd;
     }
+
+    // echo '<pre>';
+    // print_r($temp_history);
 
 
     $temp['order_history'] = array_reverse($temp_history);
@@ -285,16 +295,8 @@ foreach ($res as $sub) {
 
     $temp['address'] = $address;
 
-    // getting next payement details
-    $fullfilled = unserialize($sub->fullfilled);
-    $last_box = end($fullfilled);
-
-    $last_date = strtotime($odata->created_at . ' + 8 hours');
+    $last_date = strtotime($lo_q->date_updated_gmt . ' + 8 hours');
     $order = wc_get_order($last_box);
-
-    if ($order) {
-        // $last_date = $order->get_date_paid()->date;
-    }
 
     $temp['next_payment'] = date('03 F Y', strtotime(date('Y-m-03', $last_date) . ' +' . ($sub->plan > 1 ? $sub->to_ship + 1 : 1) . ' month'));
 
@@ -355,9 +357,9 @@ foreach ($res as $sub) {
 
                         <!-- plan details -->
                         <div class="sub_plan_details">
-                            <span class="sub_plan_shipped"><span>No. of Boxes Shipped:</span> {{sub.shipped}}</span>
-                            <span class="sub_plan_created"><span>Subscription Date:</span> {{sub.created_at}}</span>
-                            <span v-if="sub.status != 'wc-cancelled'" class="sub_plan_next_renew"><span>Next Payment Renewal Date:</span> {{sub.next_payment}}</span>
+                            <span class="sub_plan_shipped"><span>No. of Boxes Shipped:&nbsp; </span> {{sub.shipped}}</span>
+                            <span class="sub_plan_created"><span>Subscription Date:&nbsp;</span> {{sub.created_at}}</span>
+                            <span v-if="sub.status != 'wc-cancelled'" class="sub_plan_next_renew"><span>Next Payment Renewal Date:&nbsp;</span> {{sub.next_payment}}</span>
 
 
                             <div class="sub_plan_status">
@@ -376,11 +378,11 @@ foreach ($res as $sub) {
 
                         <!-- product values -->
                         <div class="sub_product_values">
-                            <span class="sub_product_value"><span>Product Value:</span> <span v-html="sub.currency + sub.product_value"> </span></span>
-                            <span class="sub_product_subtotal"><span>Subtotal:</span> <span v-html="sub.currency + sub.product_value"> </span></span>
-                            <span class="sub_product_shipping"><span>Shipping:</span> <span v-html="sub.currency + sub.shipping"> </span></span>
-                            <span class="sub_product_discount"><span>Discount:</span> <span v-html="sub.currency + sub.discount"> </span></span>
-                            <span class="sub_product_total"><span>Total:</span> <span v-html="sub.currency + sub.total"> </span></span>
+                            <span class="sub_product_value"><span>Product Value:&nbsp;</span> <span v-html="sub.currency + sub.product_value"> </span></span>
+                            <span class="sub_product_subtotal"><span>Subtotal:&nbsp;</span> <span v-html="sub.currency + sub.product_value"> </span></span>
+                            <span class="sub_product_shipping"><span>Shipping:&nbsp;</span> <span v-html="sub.currency + sub.shipping"> </span></span>
+                            <span class="sub_product_discount"><span>Discount:&nbsp;</span> <span v-html="sub.currency + sub.discount"> </span></span>
+                            <span class="sub_product_total"><span>Total:&nbsp;</span> <span v-html="sub.currency + sub.total"> </span></span>
                         </div>
 
                         <!-- address details -->

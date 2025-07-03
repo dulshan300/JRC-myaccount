@@ -24,34 +24,33 @@
                         </div>
                         <h1
                             style="font-weight:bold;text-align:center;margin:0;font-size:32px;padding:0px 24px 16px 24px">
-                            Your Subscription Has Been Updated!
+                            您的訂閱已更新！
                         </h1>
                         <div style="padding:16px 40px 16px 40px">
                             <hr
                                 style="width:100%;border:none;border-top:1px solid #CCCCCC;margin:0" />
                         </div>
                         <div style="font-weight:normal;padding:16px 24px 16px 24px">
-                            Hi &lt;Customer Name&gt;,
+                            您好 <?= $customer_name ?>,
                         </div>
                         <div style="font-weight:normal;padding:4px 24px 4px 24px">
                             <p>
-                                Great news—your JAPAN RAIL CLUB subscription has been
-                                successfully updated!
+                                好消息！ 您的JAPAN RAIL CLUB 訂閱已成功更新。
                             </p>
-                            <p>Here are the details of your new plan:</p>
+                            <p>以下是您更新方案的詳細資訊：</p>
                             <p>
-                                Plan: Omiyage Snack Box Subscription<br />Updated Plan Price:
-                                SGD [New Plan Cost]<br />Plan Duration: [e.g. 6 Months]<br />Effective
-                                From: [Start Date 03 month YYYY]
-                            </p>
-                            <p>
-                                Your current plan will remain active until [Current End Date].
-                                After that, your new plan will kick in automatically—no action
-                                needed on your part.
+                                方案： OMIYAGE點心禮盒訂閱<br />
+                                更新方案費用： <?= $price ?><br />
+                                方案期限： <?= $new_plan ?><br />
+                                生效日期： <?= $end_date ?>
                             </p>
                             <p>
-                                If you have any questions or need assistance, feel free to
-                                reach out to us—we're always happy to help!
+
+                                您目前的方案將持續有效至「<?= $end_date ?>」。在此之後，新方案將自動生效，您無需額外操作。
+
+                            </p>
+                            <p>
+                                如果您有任何疑問或需要協助，歡迎隨時與我們聯繫——我們隨時樂意為您服務！
                             </p>
                         </div>
                         <div style="text-align:center;padding:16px 24px 16px 24px">
@@ -64,7 +63,7 @@
                         hidden
                         >&nbsp;</i
                       ><!
-                    [endif]--></span><span>View My Subscription</span><span><!--[if mso
+                    [endif]--></span><span>查看我的訂閱</span><span><!--[if mso
                       ]><i
                         style="letter-spacing: 20px;mso-font-width:-100%"
                         hidden
@@ -74,13 +73,13 @@
                         </div>
                         <div style="font-weight:normal;padding:4px 24px 16px 24px">
                             <p>
-                                Thank you for being a part of the JAPAN RAIL CLUB family!
-                                We're excited to keep delivering the flavours of Japan to your
-                                doorstep!
+                                "感謝您成為 JAPAN RAIL CLUB 的一員！
+                                我們很高興能持續將日本的美味送到您家門口！"
+
                             </p>
                             <p>
-                                Warm regards,<br />
-                                <b>The JAPAN RAIL CLUB Team</b>
+                               祝一切順心美好，<br />
+                                <b> JAPAN RAIL CLUB 團隊</b>
                             </p>
                         </div>
                         <div style="padding:16px 40px 40px 40px">

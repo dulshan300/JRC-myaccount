@@ -238,7 +238,7 @@
                 }
 
                 // get data
-                next_renew_at.value = data.data.next_renew_at;
+                next_renew_at.value = data.data.next_renew_At_n;
                 const plans = data.data.plans;
 
                 for (let i = 0; i < plans.length; i++) {

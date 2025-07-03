@@ -626,6 +626,11 @@ final class MAV2_Ajax_Admin
         $plans = $this->get_prepaid_details();
 
         $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
+        $remaining_peases = intval($subscription->get_meta('_ps_prepaid_renewals_available'));
+        $parent_order_id = $subscription->get_parent_id();
+        $fullfilled = $subscription->get_meta('_ps_prepaid_fulfilled_orders');
+        $fullfilled = is_array($fullfilled) ? $fullfilled : [];
+        $fullfilled = array_merge([$parent_order_id], $fullfilled);
 
         $update_requests = get_option('webp_subscription_update_request', []);
 
@@ -652,21 +657,28 @@ final class MAV2_Ajax_Admin
             return $v;
         }, $plans);
 
-        $sub_start_date = $subscription->get_date('last_order_date_paid');
+        $last_order = wc_get_order(end($fullfilled));
+        $sub_start_date = $last_order->date_updated_gmt;
 
         $current_plan = array_values(array_filter($plans, function ($v) use ($current_plan) {
             return $v['plan'] == $current_plan;
         }))[0];
 
-        $next_renew_At = date('03-F-Y', strtotime($sub_start_date . ' + ' . $current_plan['plan'] . ' month'));
+
+
+        $next_renew_At = date('03-F-Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
+        $next_renew_At_n = date('03 F Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
         $next_renew_At = date('jS \of F Y', strtotime($next_renew_At));
 
         wp_send_json_success([
             'next_renew_at' => $next_renew_At,
+            'next_renew_At_n' => $next_renew_At_n,
             'current_plan' => $current_plan,
             'plans' => $available_plans,
             'meta' => $subscription->get_meta_data(),
             'prepaid_plans' => $this->get_prepaid_details(),
+            'remain' => $remaining_peases + 1,
+            'start_date'=>$sub_start_date
 
         ]);
     }
@@ -788,7 +800,7 @@ final class MAV2_Ajax_Admin
             $user_data
         );
 
-        $subject = ($lang == 'cn') ? "Your Subscription Has Been Updated!" : "Your Subscription Has Been Updated!";
+        $subject = ($lang == 'cn') ? "您的訂閱已更新！" : "Your Subscription Has Been Updated!";
         $template = "customer_sub_upgrade_confirm_$lang";
 
 
