@@ -21,6 +21,7 @@ global $wpdb;
 $sql = "SELECT
     od.id,
     od.status,
+    od.currency,
     'Omiyage Snack Box Subscription' as product,
     od.parent_order_id,
     (
@@ -200,15 +201,21 @@ foreach ($res as $sub) {
         so subtotal calculation is _line_subtotal
     */
 
-    $osql = "SELECT od.id, od.currency as currency, od.date_created_gmt as created_at, ( SELECT om.meta_value FROM wp_woocommerce_order_items oi left JOIN wp_woocommerce_order_itemmeta om ON om.order_item_id = oi.order_item_id WHERE oi.order_id = od.id AND om.meta_key ='_line_subtotal') as subtotal, COALESCE( ( SELECT sum(oim.meta_value) FROM wp_woocommerce_order_items oi LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = oi.order_item_id AND oim.meta_key ='cost'WHERE oi.order_id = od.id AND oi.order_item_type ='shipping'), 0 ) as'shipping', COALESCE( ABS( ( SELECT meta_value from wp_woocommerce_order_itemmeta WHERE order_item_id =( SELECT order_item_id FROM wp_woocommerce_order_items oi WHERE ( oi.order_item_type ='coupon'OR oi.order_item_type ='fee') AND order_id = od.id LIMIT 1 ) AND ( meta_key ='discount_amount'OR meta_key ='_fee_amount') ) ), 0 ) as'discount', od.total_amount, COALESCE( REPLACE ( ( SELECT item.order_item_name FROM wp_wc_orders orders LEFT JOIN wp_woocommerce_order_items item ON item.order_id = orders.id WHERE item.order_id = od.id AND item.order_item_type IN ('coupon','fee') LIMIT 1 ),'Discount: ',''),'') AS'coupon'from wp_wc_orders od WHERE od.id IN ($str_ids) AND od.total_amount > 0 ORDER BY od.date_created_gmt DESC LIMIT 1";
+    $osql = "SELECT od.id, od.currency as currency, od.date_created_gmt as created_at, ( SELECT om.meta_value FROM wp_woocommerce_order_items oi left JOIN wp_woocommerce_order_itemmeta om ON om.order_item_id = oi.order_item_id WHERE oi.order_id = od.id AND om.meta_key ='_line_subtotal') as subtotal, COALESCE( ( SELECT sum(oim.meta_value) FROM wp_woocommerce_order_items oi LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = oi.order_item_id AND oim.meta_key ='cost'WHERE oi.order_id = od.id AND oi.order_item_type ='shipping'), 0 ) as'shipping', COALESCE( ABS( ( SELECT meta_value from wp_woocommerce_order_itemmeta WHERE order_item_id = ( SELECT order_item_id FROM wp_woocommerce_order_items oi WHERE ( oi.order_item_type ='coupon'OR oi.order_item_type ='fee') AND order_id = od.id LIMIT 1 ) AND ( meta_key ='discount_amount'OR meta_key ='_fee_amount') ) ), 0 ) as'discount', od.total_amount, COALESCE( REPLACE ( ( SELECT item.order_item_name FROM wp_wc_orders orders LEFT JOIN wp_woocommerce_order_items item ON item.order_id = orders.id WHERE item.order_id = od.id AND item.order_item_type IN ('coupon','fee') LIMIT 1 ),'Discount: ',''),'') AS'coupon'from wp_wc_orders od WHERE od.id IN ($str_ids) AND ( COALESCE( ABS( ( SELECT meta_value from wp_woocommerce_order_itemmeta WHERE order_item_id = ( SELECT order_item_id FROM wp_woocommerce_order_items oi WHERE ( oi.order_item_type ='coupon'OR oi.order_item_type ='fee') AND order_id = od.id LIMIT 1 ) AND ( meta_key ='discount_amount'OR meta_key ='_fee_amount') ) ), 0 ) > 0 OR od.total_amount > 0 ) ORDER BY od.date_created_gmt DESC LIMIT 1";
 
     $odata = $wpdb->get_row($osql);
-    $temp['created_at'] = date('d F Y', strtotime($odata->created_at . ' + 8 hours'));
+    $temp['created_at'] = date('j F Y', strtotime($odata->created_at . ' + 8 hours'));
     $temp['product_value'] = number_format(floatval($odata->subtotal), 2);
     $temp['shipping'] = number_format(floatval($odata->shipping), 2);
     $temp['discount'] = floatval($odata->discount) > 0 ? number_format(floatval($odata->discount), 2) . " ({$odata->coupon})" : '0.00';
     $temp['total'] = number_format(floatval($odata->total_amount), 2);
-    $temp['currency'] = get_woocommerce_currency_symbol($odata->currency);
+
+    $name = $sub->currency;
+    $symbol = get_woocommerce_currency_symbol($name);
+    $currency = $symbol;
+    if ($name != 'TWD') $currency = $name . $currency;
+
+    $temp['currency'] = $currency;
 
     // get last order status
     $last_order_id = end($sub_orders);
@@ -298,7 +305,7 @@ foreach ($res as $sub) {
     $last_date = strtotime($lo_q->date_updated_gmt . ' + 8 hours');
     $order = wc_get_order($last_box);
 
-    $temp['next_payment'] = date('03 F Y', strtotime(date('Y-m-03', $last_date) . ' +' . ($sub->plan > 1 ? $sub->to_ship + 1 : 1) . ' month'));
+    $temp['next_payment'] = date('j F Y', strtotime(date('Y-m-03', $last_date) . ' +' . ($sub->plan > 1 ? $sub->to_ship + 1 : 1) . ' month'));
 
     $out_data[] = $temp;
 }
@@ -489,7 +496,7 @@ foreach ($res as $sub) {
                 </template>
 
                 <template v-slot:title>
-                    <h3 class="header_text_title">Change Your plan</h3>
+                    <h3 class="header_text_title">Choose Your Plan</h3>
                     <p class="header_text_sub_title">If your needs have changed, there's a plan that fits just right.</p>
                 </template>
 
@@ -581,7 +588,7 @@ foreach ($res as $sub) {
 
 
                 <template v-slot:title>
-                    <h3 class="header_text_title">Your subscription has been updated!</h3>
+                    <h3 class="header_text_title">Your Subscription Has Been Updated!</h3>
                     <p class="header_text_sub_title">Thank you for updating your Omiyage Snack Box Subscription Plan. Here are the details of your new subscription:</p>
                 </template>
 
@@ -618,7 +625,7 @@ foreach ($res as $sub) {
                     <h3 class="header_text_title">Wait! Before You Cancel...</h3>
                 </template>
 
-                <p>Did you know you can change your Omiyage Snack Box <br> subscription anytime?</p>
+                <p>Did you know you can change your Omiyage Snack Box subscription anytime?</p>
                 <p>Would you like to switch to another subscription plan instead?</p>
 
 

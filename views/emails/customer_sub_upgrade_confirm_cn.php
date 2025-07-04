@@ -14,7 +14,7 @@
             border="0">
             <tbody>
                 <tr style="width:100%">
-                    <td>
+                    <td style="text-align: center;">
                         <div style="padding:16px 24px 16px 24px;text-align:center">
                             <img
                                 alt="Japan Rail Logo"
@@ -37,13 +37,18 @@
                             <p>
                                 好消息！ 您的JAPAN RAIL CLUB 訂閱已成功更新。
                             </p>
-                            <p>以下是您更新方案的詳細資訊：</p>
-                            <p>
-                                方案： OMIYAGE點心禮盒訂閱<br />
-                                更新方案費用： <?= $price ?><br />
-                                方案期限： <?= $new_plan ?><br />
-                                生效日期： <?= $end_date ?>
-                            </p>
+                            <div style="margin:0 -20px">
+                                <div style="background-color: #efefef; padding:10px 30px;text-align: left;">
+
+                                    <p>以下是您更新方案的詳細資訊：</p>
+                                    <p>
+                                        <strong>方案</strong>： OMIYAGE點心禮盒訂閱<br />
+                                        <strong>更新方案費用</strong>： <?= $price ?><br />
+                                        <strong>方案期限</strong>： <?= $new_plan ?><br />
+                                        <strong>生效日期</strong>： <?= $end_date ?>
+                                    </p>
+                                </div>
+                            </div>
                             <p>
 
                                 您目前的方案將持續有效至「<?= $end_date ?>」。在此之後，新方案將自動生效，您無需額外操作。
@@ -78,7 +83,7 @@
 
                             </p>
                             <p>
-                               祝一切順心美好，<br />
+                                祝一切順心美好，<br />
                                 <b> JAPAN RAIL CLUB 團隊</b>
                             </p>
                         </div>

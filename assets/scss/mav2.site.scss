@@ -959,6 +959,8 @@
         display: flex;
         flex-direction: column;
         gap: 15px;
+        max-height: 95vh;
+        overflow-y: auto;
 
         &_header_control {
             display: flex;

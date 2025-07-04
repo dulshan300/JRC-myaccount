@@ -14,7 +14,7 @@
             border="0">
             <tbody>
                 <tr style="width:100%">
-                    <td>
+                    <td style="text-align: center;">
                         <div style="padding:16px 24px 16px 24px;text-align:center">
                             <img
                                 alt="Japan Rail Logo"
@@ -38,12 +38,20 @@
                                 Great news—your JAPAN RAIL CLUB subscription has been
                                 successfully updated!
                             </p>
-                            <p>Here are the details of your new plan:</p>
-                            <p>
-                                Plan: Omiyage Snack Box Subscription<br />Updated Plan Price:
-                                <?= $price ?><br />Plan Duration: <?= $new_plan ?><br />Effective
-                                From: <?= $end_date ?>
-                            </p>
+                            <div style="margin:0 -20px">
+                                <div style="background-color: #efefef; padding:10px 30px; text-align: left;">
+
+                                    <p>Here are the details of your new plan:</p>
+                                    <p>
+                                        <strong>Plan</strong>: Omiyage Snack Box Subscription<br />
+                                        <strong>Updated Plan Price</strong>: <?= $price ?><br />
+                                        <strong>Plan Duration</strong>: <?= $new_plan ?><br />
+                                        <strong>Effective From</strong>: <?= $end_date ?>
+                                    </p>
+
+                                </div>
+                            </div>
+
                             <p>
                                 Your current plan will remain active until <?= $end_date ?>.
                                 After that, your new plan will kick in automatically—no action

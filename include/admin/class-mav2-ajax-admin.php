@@ -552,8 +552,9 @@ final class MAV2_Ajax_Admin
         $wc_product = wc_get_product($product_id);
         $prepaid_plans = get_post_meta($product_id, '_ps_prepaid_plans', true);
         $currency = do_shortcode('[yaycurrency-currency]', true);
-        $per_month_price = floatval($wc_product->get_price());
+        $per_month_price = floatval($wc_product->price);
         $per_month_price = $this->_get_exchange_rate($per_month_price, $currency);
+        $per_month_price = ceil($per_month_price);
 
 
         $final_v_list = [];
@@ -666,8 +667,8 @@ final class MAV2_Ajax_Admin
 
 
 
-        $next_renew_At = date('03-F-Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
-        $next_renew_At_n = date('03 F Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
+        $next_renew_At = date('3-F-Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
+        $next_renew_At_n = date('3 F Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
         $next_renew_At = date('jS \of F Y', strtotime($next_renew_At));
 
         wp_send_json_success([
@@ -678,7 +679,7 @@ final class MAV2_Ajax_Admin
             'meta' => $subscription->get_meta_data(),
             'prepaid_plans' => $this->get_prepaid_details(),
             'remain' => $remaining_peases + 1,
-            'start_date'=>$sub_start_date
+            'start_date' => $sub_start_date
 
         ]);
     }
@@ -749,6 +750,12 @@ final class MAV2_Ajax_Admin
         // check if the user selected same plan as the current plan
 
         $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
+        $remaining_peases = intval($subscription->get_meta('_ps_prepaid_renewals_available'));
+        $parent_order_id = $subscription->get_parent_id();
+        $fullfilled = $subscription->get_meta('_ps_prepaid_fulfilled_orders');
+        $fullfilled = is_array($fullfilled) ? $fullfilled : [];
+        $fullfilled = array_merge([$parent_order_id], $fullfilled);
+
         $new_plan = $selected_plan['plan'];
 
         if ($current_plan == $new_plan) {
@@ -759,7 +766,11 @@ final class MAV2_Ajax_Admin
         $country = $subscription->get_shipping_country();
         $ch_list = ['TW', 'HK', 'CN'];
         $lang = in_array($country, $ch_list) ? 'cn' : 'en';
-        $sub_start_date = $subscription->get_date('last_order_date_paid');
+
+
+        $last_order = wc_get_order(end($fullfilled));
+        $sub_start_date = $last_order->date_updated_gmt;
+        $next_renew_At = date('3 F Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
 
         $user_data = [
             'customer_name' => $subscription->get_shipping_first_name() . " " . $subscription->get_shipping_last_name(),
@@ -768,7 +779,7 @@ final class MAV2_Ajax_Admin
             'new_plan' => $new_plan . ' Month' . ($new_plan > 1 ? 's' : ''),
             'user_id' => $user_id,
             'lang' => $lang,
-            'end_date' => date('03-F-Y', strtotime($sub_start_date . ' + ' . $current_plan . ' month')),
+            'end_date' => $next_renew_At,
             'price' => $currency . $selected_plan['price']
         ];
 
