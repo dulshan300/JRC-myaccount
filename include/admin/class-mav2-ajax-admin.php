@@ -800,16 +800,30 @@ final class MAV2_Ajax_Admin
 
         // send notification mail to admin
 
+        $admin_emails = [];
+        try {
+            $admin_emails =  JRC_Helper::get_setting('admin_emails');
+            $admin_emails = explode(',', $admin_emails);
+            $admin_emails = array_map('trim', $admin_emails);
+            $admin_emails = array_filter($admin_emails, 'is_email');
+        } catch (\Exception $ex) {
+            //throw $th;
+        }
+
         $update_dir = $new_plan > $current_plan ? 'upgrade' : 'downgrade';
-        $admin_email = get_option('admin_email');
+
         $user_email = $subscription->billing_email;
 
-        $this->send_html_email(
-            $admin_email,
-            "Subscription $update_dir request",
-            'admin_sub_upgrade_confirm_en',
-            $user_data
-        );
+        // send notification mail to admin
+        foreach ($admin_emails as $admin_email) {
+            $this->send_html_email(
+                $admin_email,
+                "Subscription $update_dir request",
+                'admin_sub_upgrade_confirm_en',
+                $user_data
+            );
+        }
+
 
         $subject = ($lang == 'cn') ? "您的訂閱已更新！" : "Your Subscription Has Been Updated!";
         $template = "customer_sub_upgrade_confirm_$lang";
