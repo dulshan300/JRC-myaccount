@@ -1,4 +1,5 @@
 <?php
+
 /*
 Plugin Name: My Account V2 (WooCommerce Custome Update)
 Description: A Updated version of WooCommerce My Account.
@@ -22,7 +23,6 @@ if (!class_exists('Stripe\StripeClient')) {
     require_once MAV2_PATH . 'vendor/stripe/stripe-php/init.php';
 }
 
-
 require_once MAV2_PATH . 'include/admin/class-mav2-admin.php';
 require_once MAV2_PATH . 'include/admin/class-mav2-ajax-admin.php';
 require_once MAV2_PATH . 'include/admin/class-mav2-short-code.php';
@@ -30,7 +30,7 @@ require_once MAV2_PATH . 'include/admin/class-mav2-short-code.php';
 function mav2_init()
 {
 
-    $mav2 = new MAV2_Admin;
+    $mav2 = new MAV2_Admin();
     $mav2->init();
 }
 

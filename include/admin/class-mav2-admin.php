@@ -71,6 +71,7 @@ final class MAV2_Admin
         if (file_exists($file_path)) {
             return filemtime($file_path);
         }
+
         return MAV2_VERSION;
     }
 
@@ -134,7 +135,7 @@ final class MAV2_Admin
 
     public function register_ajax_handlers()
     {
-        $ajax_instance = new MAV2_Ajax_Admin;
+        $ajax_instance = new MAV2_Ajax_Admin();
         $reflection = new ReflectionClass($ajax_instance);
         $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
 
@@ -149,7 +150,7 @@ final class MAV2_Admin
 
     public function register_shortcode()
     {
-        $short_codes = new MAV2ShortCode;
+        $short_codes = new MAV2ShortCode();
         $reflection = new ReflectionClass($short_codes);
         $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
 

@@ -103,7 +103,7 @@ $res = $wpdb->get_results($sql);
 
 $out_data = [];
 
-$w_countries = new WC_Countries;
+$w_countries = new WC_Countries();
 $all_countries = $w_countries->get_countries();
 
 $orders_history = [];
@@ -119,12 +119,12 @@ function mav2_get_tracking($order)
         $pattern_US = '/\b(\d+)\b/';
 
         if (preg_match($pattern_JP, $order->tracking, $matches)) {
-            $trackingNumber = $matches[0]; // The captured tracking number            
+            $trackingNumber = $matches[0]; // The captured tracking number
             $link = 'https://trackings.post.japanpost.jp/services/srv/search/?requestNo1=' . $trackingNumber . '&search.x=68&search.y=17&search=Tracking+start&locale=ja&startingUrlPatten=';
             $order->tracking = '<a href="' . $link . '" target="_blank">' . $trackingNumber . '</a>';
-        } else if (preg_match($pattern_US, $order->tracking, $matches)) {
+        } elseif (preg_match($pattern_US, $order->tracking, $matches)) {
             // us
-            $trackingNumber = $matches[1]; // The captured tracking number            
+            $trackingNumber = $matches[1]; // The captured tracking number
             $us_link = 'https://parcelsapp.com/en/tracking/' . $trackingNumber;
             $order->tracking = "<a href='{$us_link}' target='_blank'>{$trackingNumber}</a>";
         }
@@ -212,14 +212,14 @@ foreach ($res as $sub) {
     $name = $sub->currency;
     $symbol = get_woocommerce_currency_symbol($name);
     $currency = $symbol;
-    if ($name != 'TWD') $currency = $name . $currency;
+    if ($name != 'TWD') {
+        $currency = $name . $currency;
+    }
 
     $temp['currency'] = $currency;
 
     // get last order status
     $last_order_id = end($sub_orders);
-
-
 
     $orders_history = $sub_orders;
 
@@ -261,12 +261,9 @@ foreach ($res as $sub) {
     // echo '<pre>';
     // print_r($temp_history);
 
-
     $temp['order_history'] = array_reverse($temp_history);
 
     $temp['last_order_details'] = $lo_data;
-
-
 
     // get order shipping address
     $shppng_sql = "SELECT

@@ -19,7 +19,7 @@ $billing_city = get_user_meta($user_id, 'billing_city', true);
 $billing_postcode = get_user_meta($user_id, 'billing_postcode', true);
 $billing_country = get_user_meta($user_id, 'billing_country', true);
 
-$countries_obj = new WC_Countries; // Initialize the WC_Countries class
+$countries_obj = new WC_Countries(); // Initialize the WC_Countries class
 $countries = $countries_obj->get_countries(); // Get the list of countries
 
 ?>

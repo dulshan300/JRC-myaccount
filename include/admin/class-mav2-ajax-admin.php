@@ -166,8 +166,6 @@ final class MAV2_Ajax_Admin
         update_user_meta($user_id, 'billing_postcode', $billing_postcode);
         update_user_meta($user_id, 'billing_country', $billing_country);
 
-
-
         update_user_meta($user_id, 'shipping_first_name', $billing_first_name);
         update_user_meta($user_id, 'shipping_last_name', $billing_last_name);
         update_user_meta($user_id, 'shipping_email', $billing_email);
@@ -347,11 +345,8 @@ final class MAV2_Ajax_Admin
         line: 160
         */
         global $wpdb;
-
         $keys = $this->get_stripe_keys();
-
         $stripe = new \Stripe\StripeClient($keys['secret_key']);
-
         $source = $_POST['token'];
         $card = $source['card'];
         $payment_method_id = $source['id'];
@@ -414,7 +409,7 @@ final class MAV2_Ajax_Admin
             error_log('Removed Stripe woocommerce_get_customer_payment_tokens action.');
         }
 
-        $pt = new WC_Payment_Token_CC;
+        $pt = new WC_Payment_Token_CC();
         $pt->set_token($payment_method_id);
         $pt->set_gateway_id(WC_Stripe_UPE_Payment_Gateway::ID);
         $pt->set_card_type(strtolower($card['brand']));
@@ -462,7 +457,6 @@ final class MAV2_Ajax_Admin
             $order->set_requires_manual_renewal(false);
             $order->save();
         }
-
 
         wp_send_json($this->user_get_payment_methods());
     }
@@ -547,6 +541,7 @@ final class MAV2_Ajax_Admin
         if (isset($rates[$currency])) {
             return $val * $rates[$currency];
         }
+
         return $val;
     }
 
@@ -602,6 +597,7 @@ final class MAV2_Ajax_Admin
         }
 
         $final_v_list = array_reverse($final_v_list);
+
         return $final_v_list;
     }
 
@@ -613,17 +609,17 @@ final class MAV2_Ajax_Admin
 
         if (!$subscription) {
             wp_send_json_error('Sorry, subscription not found');
+
             return;
         }
 
         $payment_details = $this->user_get_payment_methods($subscription->get_user_id());
 
-
         if (count($payment_details) == 0) {
             wp_send_json_error('Sorry, This feature is only available for users who have a payment method. Please add a payment method to your account.');
+
             return;
         }
-
 
         $currency = $this->get_formatted_currency($subscription);
 
@@ -631,7 +627,6 @@ final class MAV2_Ajax_Admin
         $plans = $this->get_prepaid_details($name);
 
         $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
-
 
         $update_requests = get_option('webp_subscription_update_request', []);
 
@@ -673,12 +668,9 @@ final class MAV2_Ajax_Admin
             return $v;
         }, $plans);
 
-
-
         $current_plan = array_values(array_filter($plans, function ($v) use ($current_plan) {
             return $v['plan'] == $current_plan;
         }))[0];
-
 
         $renewal_days = $this->get_subscription_renewal_date($subscription);
 
@@ -692,11 +684,8 @@ final class MAV2_Ajax_Admin
             // 'prepaid_plans' => $this->get_prepaid_details(),
             // 'remain' => $remaining_peases + 1,
             // 'start_date' => $sub_start_date
-
         ]);
     }
-
-
 
     public function update_subscription_plan()
     {
@@ -710,8 +699,6 @@ final class MAV2_Ajax_Admin
         } elseif ($headers['X-From'] !== 'admin-support') {
             return wp_send_json_error('Unauthorized');
         }
-
-
 
         // Validate and get subscription data
         if (!isset($_POST['id'], $_POST['plan'])) {
@@ -782,9 +769,9 @@ final class MAV2_Ajax_Admin
         $symbol = get_woocommerce_currency_symbol($subscription->currency);
         $name = $subscription->currency;
         $currency = $symbol;
-        if ($name != 'TWD') $currency = $name . $currency;
-
-
+        if ($name != 'TWD') {
+            $currency = $name . $currency;
+        }
 
         $last_order = wc_get_order(end($fullfilled));
         $sub_start_date = $last_order->date_updated_gmt;
@@ -814,8 +801,6 @@ final class MAV2_Ajax_Admin
 
         update_option('webp_subscription_update_request', $values);
 
-
-
         // send notification mail to admin
 
         $admin_emails = [];
@@ -842,10 +827,8 @@ final class MAV2_Ajax_Admin
             );
         }
 
-
         $subject = ($lang == 'cn') ? "您的訂閱已更新！" : "Your Subscription Has Been Updated!";
         $template = "customer_sub_upgrade_confirm_$lang";
-
 
         // send notification mail to users
 
@@ -864,7 +847,7 @@ final class MAV2_Ajax_Admin
 
         $headers = getallheaders();
         if (isset($headers['X-From']) && $headers['X-From'] === 'admin-support') {
-        } else if (!check_ajax_referer('mav2-nonce', 'nonce', false)) {
+        } elseif (!check_ajax_referer('mav2-nonce', 'nonce', false)) {
             return wp_send_json_error('Invalid nonce');
         }
 
@@ -884,11 +867,8 @@ final class MAV2_Ajax_Admin
         wp_send_json_success('Subscription updated');
     }
 
-
-
     /**
      * Checks coupon usage for a subscription and returns remaining usage count.
-     *
      * Processes AJAX request to check how many times a coupon can still be used
      * for subscription cancellation. Returns remaining usage count as JSON.
      */
@@ -897,6 +877,7 @@ final class MAV2_Ajax_Admin
         // Verify nonce for security
         if (!isset($_POST['id']) || !is_numeric($_POST['id'])) {
             wp_send_json_error('Invalid subscription ID', 400);
+
             return;
         }
 
@@ -914,6 +895,7 @@ final class MAV2_Ajax_Admin
 
         if (empty($cancelling_coupon)) {
             wp_send_json($out);
+
             return;
         }
 
@@ -955,6 +937,7 @@ final class MAV2_Ajax_Admin
 
         if (empty($sub_id)) {
             wp_send_json(['status' => 'error', 'message' => 'Invalid subscription ID']);
+
             return;
         }
 
@@ -968,22 +951,24 @@ final class MAV2_Ajax_Admin
 
         if (!$subscription) {
             wp_send_json(['status' => 'error', 'message' => 'Invalid subscription']);
+
             return;
         }
 
         $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
         $cancelling_coupon = JRC_Helper::get_setting('cancelling_coupon_' . $current_plan . 'm', '');
 
-
         if (empty($cancelling_coupon)) {
             error_log("MAV2 ERROR: Invalid Coupon $cancelling_coupon");
             wp_send_json(['status' => 'error', 'message' => 'Invalid Coupon']);
+
             return;
         }
 
         // Check if coupon is already accepted
         if (isset($options['webp_coupon_acceptance_list'][$sub_id]) && $options['webp_coupon_acceptance_list'][$sub_id] == $cancelling_coupon) {
             wp_send_json(['status' => 'error', 'message' => 'Coupon already accepted']);
+
             return;
         }
 
@@ -994,7 +979,6 @@ final class MAV2_Ajax_Admin
         // Batch update options
         update_option('webp_coupon_acceptance_list', $options['webp_coupon_acceptance_list']);
         update_option('cancelling_coupons_usages', $options['cancelling_coupons_usages']);
-
 
         // send email to user;
         $data = [];
@@ -1014,7 +998,6 @@ final class MAV2_Ajax_Admin
             $price = $plan_details['price'];
             $saving = number_format($price * $coupon_amount / 100, 2);
 
-
             $data['name'] = $name;
             $data['plan'] = $plan_details['name'];
             // renew dates
@@ -1026,13 +1009,11 @@ final class MAV2_Ajax_Admin
             $data['effective_from_n'] = $renew_dates['next_renew_At_n'];
             $data['savings'] = $formatted_currency . $saving;
 
-
             $this->send_html_email($email, $subject, $template, $data);
         }
 
         wp_send_json_success($data);
     }
-
 
     private function get_cancelling_coupon_usage($subscription)
     {
@@ -1092,7 +1073,6 @@ final class MAV2_Ajax_Admin
         $last_order = wc_get_order(end($fullfilled));
         $sub_start_date = $last_order->date_updated_gmt;
 
-
         $next_renew_At = date('3-F-Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
         $next_renew_At_n = date('3 F Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
         $next_renew_At = date('jS \of F Y', strtotime($next_renew_At));
@@ -1123,6 +1103,7 @@ final class MAV2_Ajax_Admin
         $plan = array_find($plans, function ($p) use ($current_plan) {
             return $p["plan"] === $current_plan;
         });
+
         return $plan;
     }
 
@@ -1141,7 +1122,10 @@ final class MAV2_Ajax_Admin
 
         $currency = $symbol;
 
-        if ($name != 'TWD') $currency = $name . $currency;
+        if ($name != 'TWD') {
+            $currency = $name . $currency;
+        }
+
         return $currency;
     }
 
