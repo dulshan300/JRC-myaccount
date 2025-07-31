@@ -1,3 +1,43 @@
+<?php
+global $wpdb;
+$user = wp_get_current_user();
+
+$user_id = $user->ID;
+
+// 1,3,6,12 months coupons
+$cancelling_coupons = [
+    JRC_Helper::get_setting('cancelling_coupon_1m', ''),
+    JRC_Helper::get_setting('cancelling_coupon_3m', ''),
+    JRC_Helper::get_setting('cancelling_coupon_6m', ''),
+    JRC_Helper::get_setting('cancelling_coupon_12m', ''),
+];
+// validating coupon
+
+$eligible_coupons = [false, false, false, false];
+
+$test_accounts = [
+    "xianliangtestinginjuly@gmail.com",
+    "xianliangt319@gmail.com",
+    "tanxianliang47@gmail.com",
+    "xianliangt319@gmail.com",
+    "dulshan@webpotato.sg"
+];
+
+if (in_array($user->user_email, $test_accounts)) {
+
+    foreach ($cancelling_coupons as $key => $coupon_code) {
+        $coupon = new WC_Coupon($coupon_code);
+        $coupon_id = $coupon->get_id();
+        if (!$coupon_id) {
+            $eligible_coupons[$key] = false;
+        } else {
+            $eligible_coupons[$key] = true;
+        }
+    }
+}
+
+?>
+
 <template id="panel-template">
 
     <div class="jrc_popup">
@@ -90,6 +130,8 @@
                 CANCEL_OPEN: 202,
                 CANCEL_WAIT: 203,
                 CANCEL_NOTE: 204,
+                COUPON_APPLY: 205,
+                COUPON_APPLY_SUCCESS: 206,
             }
 
             const reasons = ref([{
@@ -142,6 +184,12 @@
             const msg = ref('hello world');
 
             const subscription_data = ref([..._subscription_data]);
+            // [1,3,6,12]
+            const eligible_coupons_plans = ref(<?php echo json_encode($eligible_coupons); ?>);
+            const can_use_cancelling_coupon = ref(<?php echo json_encode($can_use_coupon); ?>);
+            const coupon_amount = ref(<?php echo json_encode($coupon_amount); ?>);
+            const coupon_box = ref({});
+
 
             const show_sub_edit_popup = ref(false);
             const current_panel = ref(PANELS.NONE);
@@ -227,32 +275,40 @@
                     id: id
                 };
 
-                let {
-                    data
-                } = await _ajax(param);
+                try {
 
-                if (data.success == false) {
-                    error_text.value = data.data;
-                    setPanel(PANELS.ERROR);
-                    return;
-                }
+                    let {
+                        data
+                    } = await _ajax(param);
 
-                // get data
-                next_renew_at.value = data.data.next_renew_At_n;
-                const plans = data.data.plans;
-
-                for (let i = 0; i < plans.length; i++) {
-                    if (plans[i].is_current) {
-                        current_plan.value = plans[i];
-                    } else {
-                        plan_selection.value.push(plans[i])
+                    if (data.success == false) {
+                        error_text.value = data.data;
+                        setPanel(PANELS.ERROR);
+                        return;
                     }
 
+
+                    // get data
+                    next_renew_at.value = data.data.next_renew_At_n;
+                    const plans = data.data.plans;
+
+                    for (let i = 0; i < plans.length; i++) {
+                        if (plans[i].is_current) {
+                            current_plan.value = plans[i];
+                        } else {
+                            plan_selection.value.push(plans[i])
+                        }
+
+                    }
+
+                    setProcessing();
+
+                    setPanel(PANELS.CHANGE_PLAN)
+
+                } catch (error) {
+                    error_text.value = "Something went wrong";
+                    setPanel(PANELS.ERROR);
                 }
-
-                setProcessing();
-
-                setPanel(PANELS.CHANGE_PLAN)
 
                 // You can also access other refs here if needed
                 // Example: show_sub_edit_popup.value = true;
@@ -283,10 +339,120 @@
 
             }
 
-            const showCancleOpenPopup = (id) => {
+
+            const selected_sub_plan = ref(null);
+
+            const showCancleOpenPopup = async (id, plan) => {
 
                 selected_subscription_id.value = id;
+                selected_sub_plan.value = plan;
+
+
                 setPanel(PANELS.CANCEL_OPEN);
+
+            }
+
+            const cancel_anyway_handler = async () => {
+
+                const plans_raw = [1, 3, 6, 12];
+                const plan_index = plans_raw.indexOf(parseInt(selected_sub_plan.value));
+
+                if (eligible_coupons_plans.value[plan_index]) {
+                    // get order details
+                    setProcessing(true, 'Getting Subscription Details...');
+
+                    try {
+                        // check for coupon usage
+                        let param = {
+                            'action': 'mav2_check_coupon_usage',
+                            id: selected_subscription_id.value
+                        };
+
+                        const usage = await _ajax(param);
+
+                        if (usage.data.remain === 0) {
+                            setPanel(PANELS.CANCEL_WAIT);
+                            return;
+                        }
+
+                        param = {
+                            'action': 'mav2_get_subscription_details',
+                            id: selected_subscription_id.value
+                        };
+
+                        let {
+                            data
+                        } = await _ajax(param);
+
+
+                        if (data.success === false) {
+                            error_text.value = data.data;
+                            setPanel(PANELS.ERROR);
+                            return;
+                        }
+
+                        console.log(data);
+
+                        const plans = data.data.plans;
+                        const _current_plan = plans.find(p => p.is_current == true);
+
+                        let saving = _current_plan.raw_price * (_current_plan.special_discount / 100);
+                        saving = parseInt(saving * 100);
+                        saving = saving / 100;
+                        saving = saving.toFixed(2);
+
+                        let price = _current_plan.raw_price - saving;
+                        price = parseInt(price * 100);
+                        price = price / 100;
+                        price = price.toFixed(2);
+
+                        coupon_box.value = {
+                            plan: _current_plan.name,
+                            price: `${_current_plan.currency} ${price}`,
+                            discount: _current_plan.special_discount,
+                            renew_at: data.data.next_renew_At_n,
+                            saving: `${_current_plan.currency} ${saving}`,
+                        }
+
+                        setPanel(PANELS.COUPON_APPLY);
+
+                    } catch (error) {
+
+                    }
+
+
+                } else {
+
+                    setPanel(PANELS.CANCEL_WAIT);
+                }
+
+            }
+
+            const acceptCouponOffer = async () => {
+
+                setProcessing(true, 'Accepting Coupon Offer...');
+
+                try {
+                    const payload = {
+                        id: selected_subscription_id.value,
+                        action: 'mav2_accept_coupon_offer'
+                    }
+
+                    const {
+                        data
+                    } = await _ajax(payload);
+
+                    if (data.status == 'error') {
+                        error_text.value = data.message;
+                        setPanel(PANELS.ERROR);
+                        return;
+                    }
+
+                    setPanel(PANELS.COUPON_APPLY_SUCCESS);
+
+                } catch (error) {
+
+                }
             }
 
             const processCancel = async () => {
@@ -344,6 +510,7 @@
                 showUpdatePopup();
             }
 
+
             return {
                 msg,
                 subscription_data,
@@ -358,18 +525,23 @@
                 plan_selection,
                 next_renew_at,
                 cancel_reason,
+                can_use_cancelling_coupon,
+                coupon_amount,
                 PANELS,
                 reasons,
                 other_reasons,
                 other_reasons_error,
                 showCancleOpenPopup,
+                coupon_box,
                 selectPlan,
                 setPanel,
                 closePopup,
                 showUpdatePopup,
                 confirmUpdate,
                 processCancel,
-                cancel_plan_change
+                cancel_plan_change,
+                acceptCouponOffer,
+                cancel_anyway_handler
             }
         }
     });

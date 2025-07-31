@@ -35,7 +35,7 @@
                             <p>Here are the details:</p>
                             <p>Customer Name: <?= $customer_name ?><br />
                                 Customer Email: <?= $customer_email ?><br />
-                                Current Plan: <?= $current_plan . $current_plan > 1 ? ' Months' : ' Month'; ?><br />
+                                Current Plan: <?= $current_plan . ($current_plan > 1 ? ' Months' : ' Month'); ?><br />
                                 New Plan: <?= $new_plan ?><br />
                                 Updated Plan Price: <?= $price ?><br />
                                 Effective From: <?= $end_date ?>

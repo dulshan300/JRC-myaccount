@@ -991,8 +991,7 @@
                 font-family: Plus Jakarta Sans;
                 font-weight: 600;
                 font-size: 18px;
-                line-height: 28px;
-                letter-spacing: 0%;
+                line-height: 28px;                              
                 color: #181d27;
             }
 
@@ -1163,6 +1162,19 @@
             border-radius: 4px;
             cursor: pointer;
 
+
+        }
+    }
+
+    &#coupon_deal_for_cancel{
+        text-align: center;
+        p{
+            line-height: 28px;
+            max-width: 430px;
+        }
+        .header_text_title{
+            max-width: 430px;
+            line-height: 28px;
 
         }
     }

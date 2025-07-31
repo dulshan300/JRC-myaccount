@@ -45,7 +45,7 @@
                                     <p>
                                         <strong>Plan</strong>: Omiyage Snack Box Subscription<br />
                                         <strong>Updated Plan Price</strong>: <?= $price ?><br />
-                                        <strong>Plan Duration</strong>: <?= $new_plan ?><br />
+                                        <strong>Updated Plan Duration</strong>: <?= $new_plan ?><br />
                                         <strong>Effective From</strong>: <?= $end_date ?>
                                     </p>
 

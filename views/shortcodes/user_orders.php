@@ -57,7 +57,6 @@ foreach ($rows as $row) {
     $key = str_replace('-', ' ', $key);
     $key = ucwords($key);
 
-    // TODO: check if key is in the list of tickets meta
     $items = [];
 
     foreach ($tickets_meta as $key => $value) {

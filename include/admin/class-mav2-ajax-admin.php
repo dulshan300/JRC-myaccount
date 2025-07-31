@@ -307,11 +307,17 @@ final class MAV2_Ajax_Admin
         wp_send_json_success(['success']);
     }
 
-    private function user_get_payment_methods()
+    private function user_get_payment_methods($uid = null)
     {
 
-        $user = wp_get_current_user();
-        $tokens = WC_Payment_Tokens::get_customer_tokens($user->ID);
+        $user_id = $uid;
+        if ($user_id == null || empty($user_id)) {
+            $user_id = get_current_user_id();
+        }
+
+        $tokens = WC_Payment_Tokens::get_customer_tokens($user_id);
+
+        error_log("tokens: " . print_r($tokens, true));
 
         $token_details = [];
 
@@ -544,18 +550,17 @@ final class MAV2_Ajax_Admin
         return $val;
     }
 
-    private function get_prepaid_details()
+    private function get_prepaid_details($_currency = "")
     {
         global $wpdb;
         $product_id = 198;
 
         $wc_product = wc_get_product($product_id);
         $prepaid_plans = get_post_meta($product_id, '_ps_prepaid_plans', true);
-        $currency = do_shortcode('[yaycurrency-currency]', true);
+        // $currency = do_shortcode('[yaycurrency-currency]', true);
         $per_month_price = floatval($wc_product->price);
-        $per_month_price = $this->_get_exchange_rate($per_month_price, $currency);
-        $per_month_price = ceil($per_month_price);
-
+        $per_month_price = $this->_get_exchange_rate($per_month_price, $_currency);
+        // $per_month_price = ceil($per_month_price);
 
         $final_v_list = [];
 
@@ -592,7 +597,7 @@ final class MAV2_Ajax_Admin
                 'save' => number_format($save, 2, '.', ''),
                 'discount' => number_format($discount, 0, '.', ''),
                 'price_no_discount' => number_format(round($per_month_price * $pieces), 2),
-                'plan' => $pieces
+                'plan' => $pieces,
             ];
         }
 
@@ -603,35 +608,30 @@ final class MAV2_Ajax_Admin
     public function get_subscription_details()
     {
 
-        if (count($this->user_get_payment_methods()) == 0) {
+        $sub_id = intval($_POST['id']);
+        $subscription = wcs_get_subscription($sub_id);
+
+        if (!$subscription) {
+            wp_send_json_error('Sorry, subscription not found');
+            return;
+        }
+
+        $payment_details = $this->user_get_payment_methods($subscription->get_user_id());
+
+
+        if (count($payment_details) == 0) {
             wp_send_json_error('Sorry, This feature is only available for users who have a payment method. Please add a payment method to your account.');
             return;
         }
 
 
-        $name = do_shortcode('[yaycurrency-currency]', true);
-        $symbol = do_shortcode('[yaycurrency-symbol]', true);
+        $currency = $this->get_formatted_currency($subscription);
 
-        $currency = $symbol;
-
-        if ($name != 'TWD') $currency = $name . $currency;
-
-        $sub_id = intval($_POST['id']);
-        $subscription = wcs_get_subscription($sub_id);
-
-        if (!$subscription) {
-            wp_send_json_error('Subscription not found');
-            return;
-        }
-
-        $plans = $this->get_prepaid_details();
+        $name = $subscription->currency;
+        $plans = $this->get_prepaid_details($name);
 
         $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
-        $remaining_peases = intval($subscription->get_meta('_ps_prepaid_renewals_available'));
-        $parent_order_id = $subscription->get_parent_id();
-        $fullfilled = $subscription->get_meta('_ps_prepaid_fulfilled_orders');
-        $fullfilled = is_array($fullfilled) ? $fullfilled : [];
-        $fullfilled = array_merge([$parent_order_id], $fullfilled);
+
 
         $update_requests = get_option('webp_subscription_update_request', []);
 
@@ -649,40 +649,54 @@ final class MAV2_Ajax_Admin
         ];
 
         $available_plans = array_map(function ($v) use ($current_plan, $currency, $update_requests, $notes) {
+
+            // cancel coupon data
+            $cancelling_coupon_code = JRC_Helper::get_setting('cancelling_coupon_' . $v['plan'] . 'm', '');
+            $coupon = new WC_Coupon($cancelling_coupon_code);
+            $coupon_id = $coupon->get_id();
+            $special_discount = 0;
+
+            if ($coupon_id) {
+                $special_discount = floatval($coupon->get_amount());
+            }
+
             $v['is_current'] = $v['plan'] == $current_plan;
             $v['update_pending'] = $update_requests && $update_requests['new_plan'] == $v['plan'];
+            $v['currency'] = $currency;
+            $v['raw_price'] = floatval($v['price']);
             $v['price'] = $currency . $v['price'];
             $v['note'] = $notes[$v['plan']];
             $v['price_per_month'] = $currency . $v['price_per_month'];
             $v['save'] = $currency . $v['save'];
+            $v['special_discount'] = $special_discount;
+
             return $v;
         }, $plans);
 
-        $last_order = wc_get_order(end($fullfilled));
-        $sub_start_date = $last_order->date_updated_gmt;
+
 
         $current_plan = array_values(array_filter($plans, function ($v) use ($current_plan) {
             return $v['plan'] == $current_plan;
         }))[0];
 
 
-
-        $next_renew_At = date('3-F-Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
-        $next_renew_At_n = date('3 F Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
-        $next_renew_At = date('jS \of F Y', strtotime($next_renew_At));
+        $renewal_days = $this->get_subscription_renewal_date($subscription);
 
         wp_send_json_success([
-            'next_renew_at' => $next_renew_At,
-            'next_renew_At_n' => $next_renew_At_n,
+            'next_renew_at' => $renewal_days["next_renew_At"],
+            'next_renew_At_n' => $renewal_days["next_renew_At_n"],
             'current_plan' => $current_plan,
             'plans' => $available_plans,
-            'meta' => $subscription->get_meta_data(),
-            'prepaid_plans' => $this->get_prepaid_details(),
-            'remain' => $remaining_peases + 1,
-            'start_date' => $sub_start_date
+            'discount_coupons' => $this->get_cancelling_coupon_usage($subscription)
+            // 'meta' => $subscription->get_meta_data(),
+            // 'prepaid_plans' => $this->get_prepaid_details(),
+            // 'remain' => $remaining_peases + 1,
+            // 'start_date' => $sub_start_date
 
         ]);
     }
+
+
 
     public function update_subscription_plan()
     {
@@ -697,10 +711,7 @@ final class MAV2_Ajax_Admin
             return wp_send_json_error('Unauthorized');
         }
 
-        // Get currency information
-        $name = do_shortcode('[yaycurrency-currency]', true);
-        $symbol = do_shortcode('[yaycurrency-symbol]', true);
-        $currency = ($name != 'TWD') ? $name . $symbol : $symbol;
+
 
         // Validate and get subscription data
         if (!isset($_POST['id'], $_POST['plan'])) {
@@ -710,6 +721,7 @@ final class MAV2_Ajax_Admin
         // getting post data
         $sub_id = intval($_POST['id']);
         $subscription = wcs_get_subscription($sub_id);
+
         if (!$subscription) {
             return wp_send_json_error('Invalid subscription');
         }
@@ -721,7 +733,7 @@ final class MAV2_Ajax_Admin
         }
 
         // Get and validate selected plan
-        $plans = $this->get_prepaid_details();
+        $plans = $this->get_prepaid_details($subscription->currency);
         $selected_plan = null;
 
         foreach ($plans as $plan) {
@@ -764,8 +776,14 @@ final class MAV2_Ajax_Admin
 
         // Prepare user data for emails
         $country = $subscription->get_shipping_country();
-        $ch_list = ['TW', 'HK', 'CN'];
-        $lang = in_array($country, $ch_list) ? 'cn' : 'en';
+
+        $lang = JRC_Helper::get_lang($country);
+        // currency
+        $symbol = get_woocommerce_currency_symbol($subscription->currency);
+        $name = $subscription->currency;
+        $currency = $symbol;
+        if ($name != 'TWD') $currency = $name . $currency;
+
 
 
         $last_order = wc_get_order(end($fullfilled));
@@ -866,6 +884,266 @@ final class MAV2_Ajax_Admin
         wp_send_json_success('Subscription updated');
     }
 
+
+
+    /**
+     * Checks coupon usage for a subscription and returns remaining usage count.
+     *
+     * Processes AJAX request to check how many times a coupon can still be used
+     * for subscription cancellation. Returns remaining usage count as JSON.
+     */
+    public function check_coupon_usage()
+    {
+        // Verify nonce for security
+        if (!isset($_POST['id']) || !is_numeric($_POST['id'])) {
+            wp_send_json_error('Invalid subscription ID', 400);
+            return;
+        }
+
+        $out = [
+            'remain' => 0,
+            'discount' => 0
+        ];
+
+        $subscription_id = $_POST['id'];
+
+        // need to check any discount coupons for this plan
+        $plan = $this->get_prepaid_plan_by_sub($subscription_id);
+        $plan = $plan['plan'];
+        $cancelling_coupon = JRC_Helper::get_setting('cancelling_coupon_' . $plan . 'm', '');
+
+        if (empty($cancelling_coupon)) {
+            wp_send_json($out);
+            return;
+        }
+
+        $coupon_usages = get_option('cancelling_coupons_usages', []);
+        $current_usage = isset($coupon_usages[$subscription_id]) ? (int) $coupon_usages[$subscription_id] : 0;
+
+        // Get max usage from settings with default 0
+        $max_usage = (int) JRC_Helper::get_setting('cancelling_coupon_max_usage', 0);
+
+        // Calculate remaining usage (ensuring it doesn't go below 0)
+        $remaining_usage = max(0, $max_usage - $current_usage);
+
+        // if current coupon alrady used then set remain to 0;
+        if ($current_usage > 0) {
+
+            $subscription = wcs_get_subscription($subscription_id);
+            $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
+            $cancelling_coupon = JRC_Helper::get_setting('cancelling_coupon_' . $current_plan . 'm', '');
+            $acceptance_list = get_option('webp_coupon_acceptance_list', []);
+            $coupon_accepted = isset($acceptance_list[$subscription_id]) ? $acceptance_list[$subscription_id] : false;
+            if ($coupon_accepted == $cancelling_coupon) {
+                $remaining_usage = 0;
+            }
+        }
+
+        $out['remain'] = $remaining_usage;
+
+        wp_send_json([
+            'remain' => $remaining_usage
+        ]);
+    }
+
+    // this function is for add coupon to selected subscription
+    // at when user try to cancel it.
+    public function accept_coupon_offer()
+    {
+        // Validate and sanitize input
+        $sub_id = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';
+
+        if (empty($sub_id)) {
+            wp_send_json(['status' => 'error', 'message' => 'Invalid subscription ID']);
+            return;
+        }
+
+        // Get options in one go
+        $options = [
+            'cancelling_coupons_usages' => get_option('cancelling_coupons_usages', []),
+            'webp_coupon_acceptance_list' => get_option('webp_coupon_acceptance_list', [])
+        ];
+
+        $subscription = wcs_get_subscription($sub_id);
+
+        if (!$subscription) {
+            wp_send_json(['status' => 'error', 'message' => 'Invalid subscription']);
+            return;
+        }
+
+        $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
+        $cancelling_coupon = JRC_Helper::get_setting('cancelling_coupon_' . $current_plan . 'm', '');
+
+
+        if (empty($cancelling_coupon)) {
+            error_log("MAV2 ERROR: Invalid Coupon $cancelling_coupon");
+            wp_send_json(['status' => 'error', 'message' => 'Invalid Coupon']);
+            return;
+        }
+
+        // Check if coupon is already accepted
+        if (isset($options['webp_coupon_acceptance_list'][$sub_id]) && $options['webp_coupon_acceptance_list'][$sub_id] == $cancelling_coupon) {
+            wp_send_json(['status' => 'error', 'message' => 'Coupon already accepted']);
+            return;
+        }
+
+        // Update options
+        $options['webp_coupon_acceptance_list'][$sub_id] = $cancelling_coupon;
+        $options['cancelling_coupons_usages'][$sub_id] = intval($options['cancelling_coupons_usages'][$sub_id] ?? 0) + 1;
+
+        // Batch update options
+        update_option('webp_coupon_acceptance_list', $options['webp_coupon_acceptance_list']);
+        update_option('cancelling_coupons_usages', $options['cancelling_coupons_usages']);
+
+
+        // send email to user;
+        $data = [];
+        if (class_exists('JRC_Helper')) {
+            $name = $subscription->get_billing_first_name();
+            $email = $subscription->get_billing_email();
+            $country = $subscription->get_billing_country();
+            $lang = JRC_Helper::get_lang($country);
+            $subject = $lang == 'en' ? 'Your Omiyage Snack Box Subscription Discount Has Been Activated!' : '您的 Omiyage Snack Box 訂閱折扣已啟動！';
+            $template = "coupon_accepted_$lang";
+
+            $plan_details = $this->get_prepaid_plan_by_sub($subscription);
+            $coupon = new WC_Coupon($cancelling_coupon);
+            $coupon_amount = $coupon->get_amount();
+            $formatted_currency = $this->get_formatted_currency($subscription);
+
+            $price = $plan_details['price'];
+            $saving = number_format($price * $coupon_amount / 100, 2);
+
+
+            $data['name'] = $name;
+            $data['plan'] = $plan_details['name'];
+            // renew dates
+            $renew_dates = $this->get_subscription_renewal_date($subscription);
+
+            $data['discount'] = $coupon_amount . "%";
+            $data['discounted_price'] = $formatted_currency . $price - $saving;
+            $data['effective_from'] = $renew_dates['next_renew_At'];
+            $data['effective_from_n'] = $renew_dates['next_renew_At_n'];
+            $data['savings'] = $formatted_currency . $saving;
+
+
+            $this->send_html_email($email, $subject, $template, $data);
+        }
+
+        wp_send_json_success($data);
+    }
+
+
+    private function get_cancelling_coupon_usage($subscription)
+    {
+        if (!class_exists('WC_Subscription')) {
+            throw new Exception('WooCommerce Subscription is not installed');
+        }
+
+        if (!($subscription instanceof WC_Subscription)) {
+            $subscription = wcs_get_subscription($subscription);
+        }
+
+        $out = ['remain' => 0];
+
+        $plan = $this->get_prepaid_plan_by_sub($subscription);
+        $plan = $plan['plan'];
+        $cancelling_coupon = JRC_Helper::get_setting('cancelling_coupon_' . $plan . 'm', '');
+
+        if (empty($cancelling_coupon)) {
+            return $out;
+        }
+
+        $coupon_usages = get_option('cancelling_coupons_usages', []);
+        $current_usage = isset($coupon_usages[$subscription->get_id()]) ? (int) $coupon_usages[$subscription->get_id()] : 0;
+
+        // Get max usage from settings with default 0
+        $max_usage = (int) JRC_Helper::get_setting('cancelling_coupon_max_usage', 0);
+
+        // Calculate remaining usage (ensuring it doesn't go below 0)
+        $remaining_usage = max(0, $max_usage - $current_usage);
+
+        $coupon = new WC_Coupon($cancelling_coupon);
+        $coupon_amount = $coupon->get_amount();
+
+        $out['remain'] = $remaining_usage;
+        $out['amount'] = $coupon_amount;
+
+        return $out;
+    }
+
+    private function get_subscription_renewal_date($subscription)
+    {
+        if (!class_exists('WC_Subscription')) {
+            throw new Exception('WooCommerce Subscription is not installed');
+        }
+
+        if (!($subscription instanceof WC_Subscription)) {
+            $subscription = wcs_get_subscription($subscription);
+        }
+
+        $remaining_peases = intval($subscription->get_meta('_ps_prepaid_renewals_available'));
+        $parent_order_id = $subscription->get_parent_id();
+
+        $fullfilled = $subscription->get_meta('_ps_prepaid_fulfilled_orders');
+        $fullfilled = is_array($fullfilled) ? $fullfilled : [];
+        $fullfilled = array_merge([$parent_order_id], $fullfilled);
+
+        $last_order = wc_get_order(end($fullfilled));
+        $sub_start_date = $last_order->date_updated_gmt;
+
+
+        $next_renew_At = date('3-F-Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
+        $next_renew_At_n = date('3 F Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
+        $next_renew_At = date('jS \of F Y', strtotime($next_renew_At));
+
+        return [
+            'next_renew_At' => $next_renew_At,
+            'next_renew_At_n' => $next_renew_At_n,
+        ];
+    }
+
+    /*
+    * Get prepaid plan by subscription
+    * @param WC_Subscription $subscription
+    * @return array (plan)
+    */
+    private function get_prepaid_plan_by_sub($subscription)
+    {
+        if (!class_exists('WC_Subscription')) {
+            throw new Exception('WooCommerce Subscription is not installed');
+        }
+
+        if (!($subscription instanceof WC_Subscription)) {
+            $subscription = wcs_get_subscription($subscription);
+        }
+
+        $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
+        $plans = $this->get_prepaid_details($subscription->get_currency());
+        $plan = array_find($plans, function ($p) use ($current_plan) {
+            return $p["plan"] === $current_plan;
+        });
+        return $plan;
+    }
+
+    private function get_formatted_currency($subscription)
+    {
+        if (!class_exists('WC_Subscription')) {
+            throw new Exception('WooCommerce Subscription is not installed');
+        }
+
+        if (!($subscription instanceof WC_Subscription)) {
+            $subscription = wcs_get_subscription($subscription);
+        }
+
+        $symbol = get_woocommerce_currency_symbol($subscription->currency);
+        $name = $subscription->currency;
+
+        $currency = $symbol;
+
+        if ($name != 'TWD') $currency = $name . $currency;
+        return $currency;
+    }
 
     private function send_html_email($email, $subject, $template, $data = [])
     {

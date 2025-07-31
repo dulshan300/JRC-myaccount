@@ -1201,7 +1201,6 @@
   font-weight: 600;
   font-size: 18px;
   line-height: 28px;
-  letter-spacing: 0%;
   color: #181d27;
 }
 .jrc_popup_panel_footer {
@@ -1271,7 +1270,7 @@
   color: #fff;
 }
 .jrc_popup_panel_btn_primary:hover {
-  background: #002e76;
+  background: rgb(0, 45.7910447761, 118);
 }
 .jrc_popup_panel_btn:disabled {
   opacity: 0.5;
@@ -1364,6 +1363,17 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   cursor: pointer;
+}
+.jrc_popup#coupon_deal_for_cancel {
+  text-align: center;
+}
+.jrc_popup#coupon_deal_for_cancel p {
+  line-height: 28px;
+  max-width: 430px;
+}
+.jrc_popup#coupon_deal_for_cancel .header_text_title {
+  max-width: 430px;
+  line-height: 28px;
 }
 
 .jrc_plans {

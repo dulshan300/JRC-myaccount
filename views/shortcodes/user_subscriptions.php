@@ -3,8 +3,6 @@ $user_id = get_current_user_id();
 // $user_id = 1482;
 // $user_id = 1791;
 
-
-
 if (empty($user_id)) {
     echo 'Please login to see your subscription';
 
@@ -117,7 +115,7 @@ function mav2_get_tracking($order)
     } else {
 
         // $pattern_JP = '/\b([A-Z0-9]{13})\b/';
-        $pattern_JP = '/RN([\d+]+)JP/';
+        $pattern_JP = '/([A-Z]+)([\d+]+)JP/';
         $pattern_US = '/\b(\d+)\b/';
 
         if (preg_match($pattern_JP, $order->tracking, $matches)) {
@@ -165,6 +163,7 @@ foreach ($res as $sub) {
     $temp['status'] = $sub->prepaid_cancel === 'yes' ? 'wc-cancelled' : $sub->status;
     $temp['prepaid_cancel'] = $sub->prepaid_cancel;
     $temp['product'] = $sub->product;
+    $temp['plan_raw'] = $sub->plan;
     $temp['plan'] = (intval($sub->plan) > 1 ? $sub->plan . ' Months' : $sub->plan . ' Month') . ' Plan';
     $temp['order_history'] = [];
 
@@ -371,7 +370,8 @@ foreach ($res as $sub) {
 
                             <div class="sub_plan_status">
                                 <div class="sub_action_buttons">
-                                    <button v-if="sub.status == 'wc-active'" type="button" @click.prevent="showCancleOpenPopup(sub.id)" class="sub_button sub_plan_cancel_sub">Cancel Subscription</button>
+                                    <button v-if="sub.status == 'wc-active'" type="button" @click.prevent="showCancleOpenPopup(sub.id,sub.plan_raw)" class="sub_button sub_plan_cancel_sub">Cancel Subscription</button>
+                                    <button v-if="sub.status == 'wc-active'" type="button" @click.prevent="showUpdatePopup(sub.id)" class="sub_button sub_plan_cancel_sub">Change Subscription</button>
 
                                     <span v-else-if="sub.status == 'wc-cancelled'" class="sub_status sub_plan_inactive">Cancelled</span>
 
@@ -617,6 +617,72 @@ foreach ($res as $sub) {
             </v-popup>
         </Transition>
 
+        <!-- Coupone deal befor cancel -->
+        <Transition name="fade">
+            <v-popup v-show="current_panel==PANELS.COUPON_APPLY" id="coupon_deal_for_cancel" @close="closePopup">
+
+                <template v-slot:title>
+                    <h3 class="header_text_title">Stay with JAPAN RAIL CLUB and get a {{coupon_box.discount}}% discount.</h3>
+                </template>
+
+                <p>Your current plan: {{coupon_box.plan}}</p>
+                <p>If you take up our offer, you save Total: <span v-html="coupon_box.saving"></span> on the {{coupon_box.renew_at}}</p>
+
+                <template v-slot:footer>
+                    <div class="jrc_popup_panel_footer_buttons col">
+                        <button @click.prevent="acceptCouponOffer" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Yes, I'll take the {{coupon_box.discount}}% OFF</button>
+                        <button @click.prevent="current_panel=PANELS.CANCEL_WAIT" type="button" class="jrc_popup_panel_btn cancel">No, continue cancelling</button>
+
+                    </div>
+
+                </template>
+
+            </v-popup>
+        </Transition>
+
+        <!-- Apply Coupon Success Panel -->
+        <Transition name="fade">
+            <v-popup v-show="current_panel==PANELS.COUPON_APPLY_SUCCESS" id="upgrade_plan_success" @close="closePopup">
+
+
+                <template v-slot:icon>
+                    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="4" y="4" width="48" height="48" rx="24" fill="#D1FADF" />
+                        <rect x="4" y="4" width="48" height="48" rx="24" stroke="#ECFDF3" stroke-width="8" />
+                        <path d="M23.5 28L26.5 31L32.5 25M38 28C38 33.5228 33.5228 38 28 38C22.4772 38 18 33.5228 18 28C18 22.4772 22.4772 18 28 18C33.5228 18 38 22.4772 38 28Z" stroke="#039855" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </template>
+
+
+                <template v-slot:title>
+                    <h3 class="header_text_title">Coupon Applied Successfully!</h3>
+                    <p class="header_text_sub_title">Thank you for using Omiyage Snack Box Subscription Plan. Here is the Summery for the next renewal:</p>
+                </template>
+
+                <ul>
+                    <li>📦 <strong> Plan</strong>: {{coupon_box.plan}} Plan</li>
+                    <li>📅 <strong> Effective From</strong>: {{coupon_box.renew_at}}</li>
+                    <li>💳 <strong> Discounted Price</strong>: <span v-html="coupon_box.price"></span></li>
+                    <li>💰 <strong> Saving</strong>: <span v-html="coupon_box.saving"></span></li>
+                </ul>
+
+                <p>You'll also receive an email confirmation with these details for your records.</p>
+
+                <p>Thank you for being part of the JAPAN RAIL CLUB family!</p>
+
+
+
+                <template v-slot:footer>
+                    <div class="jrc_popup_panel_footer_buttons">
+                        <button @click.prevent="closePopup" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Back to My Account</button>
+
+                    </div>
+                </template>
+
+            </v-popup>
+        </Transition>
+
+
         <!-- Cancel Open Panel -->
         <Transition name="fade">
             <v-popup v-show="current_panel==PANELS.CANCEL_OPEN" id="cancel_open" @close="closePopup">
@@ -633,7 +699,8 @@ foreach ($res as $sub) {
                 <template v-slot:footer>
                     <div class="jrc_popup_panel_footer_buttons col">
                         <button @click.prevent="showUpdatePopup()" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Change Plan</button>
-                        <button @click.prevent="current_panel=PANELS.CANCEL_WAIT" type="button" class="jrc_popup_panel_btn cancel">Cancel anyways</button>
+                        <button @click.prevent="cancel_anyway_handler" type="button" class="jrc_popup_panel_btn cancel">Cancel anyways</button>
+                        <!-- <button @click.prevent="current_panel=PANELS.CANCEL_WAIT" type="button" class="jrc_popup_panel_btn cancel">Cancel anyways</button> -->
 
                     </div>
 
