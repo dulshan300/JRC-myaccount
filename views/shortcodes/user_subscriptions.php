@@ -619,16 +619,26 @@ foreach ($res as $sub) {
             <v-popup v-show="current_panel==PANELS.COUPON_APPLY" id="coupon_deal_for_cancel" @close="closePopup">
 
                 <template v-slot:title>
-                    <h3 class="header_text_title">Stay with JAPAN RAIL CLUB and get a {{coupon_box.discount}}% discount.</h3>
+                    <h3 class="header_text_title">Wait! Don't End the Journey Just Yet</h3>
                 </template>
 
-                <p>Your current plan: {{coupon_box.plan}}</p>
-                <p>If you take up our offer, you save Total: <span v-html="coupon_box.saving"></span> on the {{coupon_box.renew_at}}</p>
-
+                <div class="tt">
+                    <p>We'd love to have you stay onboard a little longer.</p>
+                    <br>
+                    <p>As a heartfelt thank you for being with JAPAN RAIL CLUB, enjoy <strong>{{coupon_box.discount}}% off your next renewal</strong> if you stay with us. No code needed.</p>
+                    <br>
+                    <p>Your flavour journey through Japan still has more to offer.</p>
+                    <br>
+                    <p><strong>Your current plan</strong>: {{coupon_box.plan}} Subscription</p>
+                    <p><strong>Your save</strong>: <span v-html="coupon_box.saving"></span> on the <strong>{{coupon_box.renew_at}}</strong></p>
+                    <br>
+                    <p>Don't miss this exclusive offer — keep your journey going today. </p>
+                    <br>
+                </div>
                 <template v-slot:footer>
                     <div class="jrc_popup_panel_footer_buttons col">
-                        <button @click.prevent="acceptCouponOffer" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Yes, I'll take the {{coupon_box.discount}}% OFF</button>
-                        <button @click.prevent="current_panel=PANELS.CANCEL_WAIT" type="button" class="jrc_popup_panel_btn cancel">No, continue cancelling</button>
+                        <button @click.prevent="acceptCouponOffer" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Yes, I'll Stay Onboard</button>
+                        <button @click.prevent="current_panel=PANELS.CANCEL_WAIT" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_secondary">No, Cancel My Subscription</button>
 
                     </div>
 
@@ -652,26 +662,25 @@ foreach ($res as $sub) {
 
 
                 <template v-slot:title>
-                    <h3 class="header_text_title">Coupon Applied Successfully!</h3>
-                    <p class="header_text_sub_title">Thank you for using Omiyage Snack Box Subscription Plan. Here is the Summery for the next renewal:</p>
+                    <h3 class="header_text_title">Thank You! Your 10% Savings Are Confirmed</h3>
+                    <p class="header_text_sub_title">Thank you for continuing your JAPAN RAIL CLUB subscription. Here's a quick summary of your upcoming renewal:
+                    </p>
                 </template>
 
                 <ul>
                     <li>📦 <strong> Plan</strong>: {{coupon_box.plan}} Plan</li>
-                    <li>📅 <strong> Effective From</strong>: {{coupon_box.renew_at}}</li>
-                    <li>💳 <strong> Discounted Price</strong>: <span v-html="coupon_box.price"></span></li>
-                    <li>💰 <strong> Saving</strong>: <span v-html="coupon_box.saving"></span></li>
+                    <li>📅 <strong> Renewal Date</strong>: {{coupon_box.renew_at}}</li>
+                    <li>💳 <strong> Your Renewal Price</strong>: <span v-html="coupon_box.price"></span></li>
+                    <li>💰 <strong> You Saved</strong>: <span v-html="coupon_box.saving"></span></li>
                 </ul>
 
-                <p>You'll also receive an email confirmation with these details for your records.</p>
+                <p>A confirmation email has been sent to you with these details for your records.</p>
 
-                <p>Thank you for being part of the JAPAN RAIL CLUB family!</p>
-
-
+                <p>Thank you for staying with us on this flavourful journey!</p>
 
                 <template v-slot:footer>
                     <div class="jrc_popup_panel_footer_buttons">
-                        <button @click.prevent="closePopup" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Back to My Account</button>
+                        <button @click.prevent="closePopup" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Return to My Account</button>
 
                     </div>
                 </template>

@@ -1016,6 +1016,7 @@ final class MAV2_Ajax_Admin
             }
 
             $data['name'] = $name;
+            $data['email'] = $email;
             $data['plan'] = $plan_details['name'];
             // renew dates
             $renew_dates = $this->get_subscription_renewal_date($subscription);
@@ -1026,7 +1027,21 @@ final class MAV2_Ajax_Admin
             $data['effective_from_n'] = $renew_dates['next_renew_At_n'];
             $data['savings'] = $formatted_currency . $saving;
 
+            // for user
             $this->send_html_email($email, $subject, $template, $data);
+
+            // for admin
+            $admin_emails = [];
+
+            $admin_emails =  JRC_Helper::get_setting('admin_emails');
+            $admin_emails = explode(',', $admin_emails);
+            $admin_emails = array_map('trim', $admin_emails);
+            $admin_emails = array_filter($admin_emails, 'is_email');
+
+            $template = "coupon_accepted_admin";
+            foreach ($admin_emails as $admin_email) {
+                $this->send_html_email($admin_email, "Renew Coupon Accepted", $template, $data);
+            }
         }
 
         wp_send_json_success($data);

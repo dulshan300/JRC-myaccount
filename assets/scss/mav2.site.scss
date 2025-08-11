@@ -1062,6 +1062,15 @@
                 }
             }
 
+            &_secondary{
+                background: #c6c6c6;
+                color: #fff;
+
+                &:hover {
+                    background: lighten(#8b8b8b, 10%);
+                }
+            }
+
             &:disabled {
                 opacity: 0.5;
                 cursor: not-allowed;
@@ -1168,16 +1177,29 @@
 
     &#coupon_deal_for_cancel{
         text-align: center;
+
+        .jrc_popup_panel{
+            max-width: 600px !important;
+        }
         p{
             line-height: 28px;
-            max-width: 430px;
+            max-width: 100%;
         }
         .header_text_title{
-            max-width: 430px;
+            max-width: 100%;
             line-height: 28px;
+        }
 
+        .jrc_popup_panel_footer_buttons{
+            display: flex;
+            flex-direction: row;
+            @media screen and (max-width: 768px){
+                flex-direction: column;
+            }
         }
     }
+
+   
 }
 
 .jrc_plans {

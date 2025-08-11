@@ -1272,6 +1272,13 @@
 .jrc_popup_panel_btn_primary:hover {
   background: rgb(0, 45.7910447761, 118);
 }
+.jrc_popup_panel_btn_secondary {
+  background: #c6c6c6;
+  color: #fff;
+}
+.jrc_popup_panel_btn_secondary:hover {
+  background: rgb(164.5, 164.5, 164.5);
+}
 .jrc_popup_panel_btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -1367,13 +1374,33 @@
 .jrc_popup#coupon_deal_for_cancel {
   text-align: center;
 }
+.jrc_popup#coupon_deal_for_cancel .jrc_popup_panel {
+  max-width: 600px !important;
+}
 .jrc_popup#coupon_deal_for_cancel p {
   line-height: 28px;
-  max-width: 430px;
+  max-width: 100%;
 }
 .jrc_popup#coupon_deal_for_cancel .header_text_title {
-  max-width: 430px;
+  max-width: 100%;
   line-height: 28px;
+}
+.jrc_popup#coupon_deal_for_cancel .jrc_popup_panel_footer_buttons {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: row;
+          flex-direction: row;
+}
+@media screen and (max-width: 768px) {
+  .jrc_popup#coupon_deal_for_cancel .jrc_popup_panel_footer_buttons {
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column;
+  }
 }
 
 .jrc_plans {

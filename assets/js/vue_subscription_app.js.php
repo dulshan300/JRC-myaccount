@@ -20,7 +20,8 @@ $test_accounts = [
     "xianliangt319@gmail.com",
     "tanxianliang47@gmail.com",
     "xianliangt319@gmail.com",
-    "dulshan@webpotato.sg"
+    "dulshan@webpotato.sg",
+    "webpotatosg@gmail.com"
 ];
 
 if (in_array($user->user_email, $test_accounts)) {
