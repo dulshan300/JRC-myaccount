@@ -1,3 +1,4 @@
+<span style="display:none !important; visibility:hidden; opacity:0; color:transparent; height:0; width:0;">Your <?= $discount ?> savings have been successfully applied to your subscription</span>
 <!doctype html>
 <html>
 
@@ -24,19 +25,16 @@
                         </div>
                         <h1
                             style="font-weight:bold;text-align:center;margin:0;font-size:32px;padding:16px 24px 0px 24px">
-                            🎉 Omiyage Snack Box Subscription Discount Has Been Activated!
+                            🎉 You've Activated Your Discount!
                         </h1>
                         <div
                             style="font-size:14px;font-weight:normal;text-align:center;padding:4px 60px 4px 60px">
-                            <p>Dear <?= $name ?>,</p>
+                            <p>Dear Customer,</p>
                             <p>
-                                Thank you for staying with us! We,re excited to let you know
-                                that your special discount has been successfully applied to
-                                your subscription.
+                                Thank you for staying with us! Your exclusive discount has been successfully applied to your subscription.
                             </p>
                             <p>
-                                There,s nothing more you need to do! Just sit back and look
-                                forward to your upcoming Omiyage Snack Box!
+                                There's nothing more you need to do — simply sit back, relax, and look forward to your next Omiyage Snack Box, filled with authentic treats from Japan.
                             </p>
                             <img
                                 alt="Japan Rail Logo"
@@ -46,15 +44,14 @@
 
                             <p><b>Omiyage Snack Box Subscription Details</b></p>
                             <p style="background-color:#F5F5F5;padding:16px;margin-top:24px;border-radius:8px;text-align:left">
-                                Your Subscription Details:<br /><br />
+                                Subscription Summary:<br /><br />
                                 <strong>Plan</strong>: <?= $plan ?> Omiyage Snack Box<br />
-                                <strong>Discounted Amount</strong>: <?= $savings ?><br />
-                                <strong>Next Renewal Date</strong>: <?= $effective_from ?><br />
-                                <strong>Renewal Amount</strong>: <?= $discounted_price ?>
+                                <strong>Renewal Date</strong>: <?= $effective_from ?><br />
+                                <strong>Renewal Price</strong>: <?= $discounted_price ?>
+                                <strong>You Saved:</strong>: <?= $savings ?><br />
                             </p>
                             <p>
-                                <b>Need to update your subscription, payment method, or
-                                    delivery preferences? Click below:</b>
+                                <b>Wish to update your subscription, payment method, or delivery preferences?</b>
                             </p>
                         </div>
                         <div style="text-align:center;padding:16px 24px 16px 24px">
@@ -67,7 +64,7 @@
                         hidden
                         >&nbsp;</i
                       ><!
-                    [endif]--></span><span>MANAGE YOUR SUBSCRIPTION</span><span><!--[if mso
+                    [endif]--></span><span>Manage Subscription</span><span><!--[if mso
                       ]><i
                         style="letter-spacing: 20px;mso-font-width:-100%"
                         hidden
@@ -78,18 +75,14 @@
                         <div
                             style="font-size:14px;font-weight:normal;text-align:center;padding:4px 24px 16px 24px">
                             <p>
-                                We,re committed to providing you with the best experience
-                                possible, and we truly appreciate your continued support. And
-                                we look forward to delivering another delightful snack journey
-                                to you!
+                                We truly appreciate your continued support and look forward to sharing more of Japan’s finest flavours with you.
                             </p>
                             <p>
-                                If you need any assistance, feel free to reach out at
-                                <a href="mailto:info@japanrailclub.com" target="_blank">info@japanrailclub.com</a>—we,re happy to help.
+                                Questions? Reach us anytime at 
+                                <a href="mailto:info@japanrailclub.com" target="_blank">info@japanrailclub.com</a>
                             </p>
                             <p>
-                                Thank you for choosing us. We look forward to continuing this
-                                journey with you!
+                                Thank you again for choosing JAPAN RAIL CLUB.
                             </p>
                         </div>
                         <div style="padding:16px 40px 40px 40px">

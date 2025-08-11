@@ -1,3 +1,4 @@
+<span style="display:none !important; visibility:hidden; opacity:0; color:transparent; height:0; width:0;">您的 <?= $discount ?> 優惠已成功套用到訂閱方案。</span>
 <!doctype html>
 <html>
 
@@ -24,16 +25,16 @@
                         </div>
                         <h1
                             style="font-weight:bold;text-align:center;margin:0;font-size:32px;padding:16px 24px 0px 24px">
-                            🎉 您的 Omiyage Snack Box 訂閱折扣已啟動！
+                            🎉 您的優惠折扣已啟動！
                         </h1>
                         <div
                             style="font-size:14px;font-weight:normal;text-align:center;padding:4px 60px 4px 60px">
-                            <p>親愛的 <?= $name ?>,</p>
+                            <p>親愛的顧客您好，</p>
                             <p>
-                                感謝您繼續與我們合作！我們很高興通知您，您的特別折扣已成功套用在您的訂閱更新上。
+                                感謝您選擇我們的服務！您的專屬優惠折扣已成功套用至您的訂閱方案。
                             </p>
                             <p>
-                                您不需要再做什麼了！只需坐下來期待您即將收到的 Omiyage Snack Box！
+                                您無需再進行任何操作，只需放鬆心情，期待下一次送達的正宗日本美味點心禮盒！
                             </p>
                             <img
                                 alt="Japan Rail Logo"
@@ -43,14 +44,14 @@
 
                             <p><b>Omiyage Snack Box 訂閱詳情</b></p>
                             <p style="background-color:#F5F5F5;padding:16px;margin-top:24px;border-radius:8px;text-align:left">
-                                您的訂閱詳情：<br /><br />
-                                <strong>計劃</strong>: <?= $plan ?> Omiyage Snack Box<br />
-                                <strong>折扣金額</strong>: <?= $savings ?><br />
-                                <strong>下次續訂日期</strong>: <?= $effective_from ?><br />
-                                <strong>續訂金額</strong>: <?= $discounted_price ?>
+                                訂閱摘要:<br /><br />
+                                <strong>訂閱方案</strong>: <?= $plan ?> Omiyage Snack Box<br />
+                                <strong>續訂日期</strong>: <?= $effective_from ?><br />
+                                <strong>續訂費用</strong>: <?= $discounted_price ?>
+                                <strong>節省費用:</strong>: <?= $savings ?><br />
                             </p>
                             <p>
-                                <b>需要更新您的訂閱、付款方式或送貨偏好嗎？請按以下連結:</b>
+                                <b>希望更新您的訂閱、付款方式或送貨地址嗎？</b>
                             </p>
                         </div>
                         <div style="text-align:center;padding:16px 24px 16px 24px">
@@ -63,7 +64,7 @@
                         hidden
                         >&nbsp;</i
                       ><!
-                    [endif]--></span><span>管理您的訂閱</span><span><!--[if mso
+                    [endif]--></span><span>管理訂閱</span><span><!--[if mso
                       ]><i
                         style="letter-spacing: 20px;mso-font-width:-100%"
                         hidden
@@ -74,14 +75,14 @@
                         <div
                             style="font-size:14px;font-weight:normal;text-align:center;padding:4px 24px 16px 24px">
                             <p>
-                                我們致力於為您提供最好的體驗，我們衷心感謝您一直以來的支持。我們期待為您帶來另一個愉快的零食之旅！
+                                JAPAN RAIL CLUB衷心感謝您一直以來的支持，並期待與您分享更多日本的極致美味。
                             </p>
                             <p>
-                                如果您需要任何協助，請隨時透過
-                                <a href="mailto:info@japanrailclub.com" target="_blank">info@japanrailclub.com</a>—聯絡我們，我們很樂意為您效勞。
+                                有任何疑問歡迎隨時透過
+                                <a href="mailto:info@japanrailclub.com" target="_blank">info@japanrailclub.com</a> 聯絡我們。
                             </p>
                             <p>
-                                感謝您選擇我們。我們期待與您繼續這段旅程！
+                                再次感謝您選擇 JAPAN RAIL CLUB
                             </p>
                         </div>
                         <div style="padding:16px 40px 40px 40px">

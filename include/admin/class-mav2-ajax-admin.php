@@ -751,8 +751,10 @@ final class MAV2_Ajax_Admin
         $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
         $remaining_peases = intval($subscription->get_meta('_ps_prepaid_renewals_available'));
         $parent_order_id = $subscription->get_parent_id();
-        $fullfilled = $subscription->get_meta('_ps_prepaid_fulfilled_orders');
+        $fullfilled = $subscription->get_meta('_subscription_renewal_order_ids_cache');
         $fullfilled = is_array($fullfilled) ? $fullfilled : [];
+        // reverse
+        $fullfilled = array_reverse($fullfilled);
         $fullfilled = array_merge([$parent_order_id], $fullfilled);
 
         $new_plan = $selected_plan['plan'];
@@ -774,8 +776,11 @@ final class MAV2_Ajax_Admin
         }
 
         $last_order = wc_get_order(end($fullfilled));
-        $sub_start_date = $last_order->date_updated_gmt;
+        $sub_start_date = $last_order->get_date_created()->date('Y-m-d H:i:s');
+        // get first day of the month
+        $sub_start_date = date('Y-m-01', strtotime($sub_start_date));
         $next_renew_At = date('3 F Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
+        // $next_renew_At = date('Y-m-01', strtotime($sub_start_date));
 
         $user_data = [
             'customer_name' => $subscription->get_shipping_first_name() . " " . $subscription->get_shipping_last_name(),
@@ -934,6 +939,7 @@ final class MAV2_Ajax_Admin
     {
         // Validate and sanitize input
         $sub_id = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';
+        $coupon = isset($_POST['coupon']) ? sanitize_text_field($_POST['coupon']) : false;
 
         if (empty($sub_id)) {
             wp_send_json(['status' => 'error', 'message' => 'Invalid subscription ID']);
@@ -954,9 +960,12 @@ final class MAV2_Ajax_Admin
 
             return;
         }
+        $cancelling_coupon = $coupon;
+        if ($coupon === false) {
+            $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
+            $cancelling_coupon = JRC_Helper::get_setting('cancelling_coupon_' . $current_plan . 'm', '');
+        }
 
-        $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
-        $cancelling_coupon = JRC_Helper::get_setting('cancelling_coupon_' . $current_plan . 'm', '');
 
         if (empty($cancelling_coupon)) {
             error_log("MAV2 ERROR: Invalid Coupon $cancelling_coupon");
@@ -987,23 +996,31 @@ final class MAV2_Ajax_Admin
             $email = $subscription->get_billing_email();
             $country = $subscription->get_billing_country();
             $lang = JRC_Helper::get_lang($country);
-            $subject = $lang == 'en' ? 'Your Omiyage Snack Box Subscription Discount Has Been Activated!' : '您的 Omiyage Snack Box 訂閱折扣已啟動！';
+            $subject = $lang == 'en' ? "🎉 You've Activated Your Discount!" : "🎉 您的優惠折扣已啟動！";
             $template = "coupon_accepted_$lang";
 
             $plan_details = $this->get_prepaid_plan_by_sub($subscription);
             $coupon = new WC_Coupon($cancelling_coupon);
             $coupon_amount = $coupon->get_amount();
+            $coupon_type = $coupon->get_discount_type();
+            $is_percent_type = strpos($coupon_type, 'percent') !== false;
+
             $formatted_currency = $this->get_formatted_currency($subscription);
 
             $price = $plan_details['price'];
-            $saving = number_format($price * $coupon_amount / 100, 2);
+            $saving = 0;
+            if ($is_percent_type) {
+                $saving = number_format($price * $coupon_amount / 100, 2);
+            } else {
+                $saving = $coupon_amount;
+            }
 
             $data['name'] = $name;
             $data['plan'] = $plan_details['name'];
             // renew dates
             $renew_dates = $this->get_subscription_renewal_date($subscription);
 
-            $data['discount'] = $coupon_amount . "%";
+            $data['discount'] = ($is_percent_type ? $coupon_amount . '%' : $formatted_currency . $coupon_amount);
             $data['discounted_price'] = $formatted_currency . $price - $saving;
             $data['effective_from'] = $renew_dates['next_renew_At'];
             $data['effective_from_n'] = $renew_dates['next_renew_At_n'];
