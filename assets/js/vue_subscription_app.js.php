@@ -21,7 +21,8 @@ $test_accounts = [
     "tanxianliang47@gmail.com",
     "xianliangt319@gmail.com",
     "dulshan@webpotato.sg",
-    "webpotatosg@gmail.com"
+    "webpotatosg@gmail.com",
+    "d1madusanka@gmail.com"
 ];
 
 if (in_array($user->user_email, $test_accounts)) {
@@ -307,7 +308,7 @@ if (in_array($user->user_email, $test_accounts)) {
                     setPanel(PANELS.CHANGE_PLAN)
 
                 } catch (error) {
-                    error_text.value = "Something went wrong";
+                    error_text.value = "Please Try Again...";
                     setPanel(PANELS.ERROR);
                 }
 
@@ -409,10 +410,11 @@ if (in_array($user->user_email, $test_accounts)) {
 
                         coupon_box.value = {
                             plan: _current_plan.name,
-                            price: `${_current_plan.currency} ${price}`,
+                            price: `${_current_plan.currency}${price}`,
                             discount: _current_plan.special_discount,
                             renew_at: data.data.next_renew_At_n,
-                            saving: `${_current_plan.currency} ${saving}`,
+                            original_price: `${_current_plan.price}`,
+                            saving: `${_current_plan.currency}${saving}`,
                         }
 
                         setPanel(PANELS.COUPON_APPLY);
@@ -448,6 +450,8 @@ if (in_array($user->user_email, $test_accounts)) {
                         setPanel(PANELS.ERROR);
                         return;
                     }
+
+
 
                     setPanel(PANELS.COUPON_APPLY_SUCCESS);
 

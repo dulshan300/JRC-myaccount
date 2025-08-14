@@ -3,7 +3,7 @@
 <html>
 
 <body>
-    <div
+    <div data-no-translation
         style='background-color:#FDF9ED;color:#262626;font-family:"Helvetica Neue", "Arial Nova", "Nimbus Sans", Arial, sans-serif;font-size:16px;font-weight:400;letter-spacing:0.15008px;line-height:1.5;margin:0;padding:32px 0;min-height:100%;width:100%'>
         <table
             align="center"
@@ -27,27 +27,24 @@
                             style="font-weight:bold;text-align:center;margin:0;font-size:32px;padding:16px 24px 0px 24px">
                             🎉 您的優惠折扣已啟動！
                         </h1>
-                        <div
-                            style="font-size:14px;font-weight:normal;text-align:center;padding:4px 60px 4px 60px">
-                            <p>親愛的顧客您好，</p>
+                        <div style="font-size:14px;font-weight:normal;text-align:left;padding:4px 60px 4px 60px">
+                            <p>您好 <?= $name ?>!</p>
                             <p>
                                 感謝您選擇我們的服務！您的專屬優惠折扣已成功套用至您的訂閱方案。
                             </p>
                             <p>
                                 您無需再進行任何操作，只需放鬆心情，期待下一次送達的正宗日本美味點心禮盒！
                             </p>
-                            <img
-                                alt="Japan Rail Logo"
-                                src="https://www.japanrailclub.com/wp-content/uploads/2025/07/Japan-Rail-Club-Omiyage-Box.webp"
-                                height="200"
-                                style="height:200px;outline:none;border:none;text-decoration:none;vertical-align:middle;display:inline-block;max-width:100%" />
+                            <div style="text-align:center">
+                                <img alt="Japan Rail Logo" src="https://www.japanrailclub.com/wp-content/uploads/2025/07/Japan-Rail-Club-Omiyage-Box.webp" height="200" style="height:200px;outline:none;border:none;text-decoration:none;vertical-align:middle;display:inline-block;max-width:100%" />
+                            </div>
 
                             <p><b>Omiyage Snack Box 訂閱詳情</b></p>
-                            <p style="background-color:#F5F5F5;padding:16px;margin-top:24px;border-radius:8px;text-align:left">
+                            <p style="background-color:#fefaf1;padding:16px;margin-top:24px;border-radius:8px;text-align:left">
                                 訂閱摘要:<br /><br />
                                 <strong>訂閱方案</strong>: <?= $plan ?> Omiyage Snack Box<br />
-                                <strong>續訂日期</strong>: <?= $effective_from ?><br />
-                                <strong>續訂費用</strong>: <?= $discounted_price ?>
+                                <strong>續訂日期</strong>: <?= $effective_from_n ?><br />
+                                <strong>續訂費用</strong>: <?= $discounted_price ?>&nbsp;(U.P. <?= $original_price ?>)<br />
                                 <strong>節省費用:</strong>: <?= $savings ?><br />
                             </p>
                             <p>
@@ -73,7 +70,7 @@
                     [endif]--></span></a>
                         </div>
                         <div
-                            style="font-size:14px;font-weight:normal;text-align:center;padding:4px 24px 16px 24px">
+                            style="font-size:14px;font-weight:normal;text-align:left;padding:4px 60px 4px 60px">
                             <p>
                                 JAPAN RAIL CLUB衷心感謝您一直以來的支持，並期待與您分享更多日本的極致美味。
                             </p>

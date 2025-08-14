@@ -606,6 +606,7 @@ final class MAV2_Ajax_Admin
 
         $sub_id = intval($_POST['id']);
         $subscription = wcs_get_subscription($sub_id);
+        $isAdmin = isset($_POST['sender']) && $_POST['sender'] == 'admin';
 
         if (!$subscription) {
             wp_send_json_error('Sorry, subscription not found');
@@ -619,6 +620,12 @@ final class MAV2_Ajax_Admin
             wp_send_json_error('Sorry, This feature is only available for users who have a payment method. Please add a payment method to your account.');
 
             return;
+        }
+
+        // check if there is discount_coupon applied
+        $webp_coupon_acceptance_list = get_option('webp_coupon_acceptance_list', []);
+        if (isset($webp_coupon_acceptance_list[$sub_id]) && !$isAdmin) {
+            wp_send_json_error('You have opted in for all renewal discount. Please contact our store administrator to request for a change of plan type.');
         }
 
         $currency = $this->get_formatted_currency($subscription);
@@ -809,28 +816,25 @@ final class MAV2_Ajax_Admin
         // send notification mail to admin
 
         $admin_emails = [];
-        try {
-            $admin_emails =  JRC_Helper::get_setting('admin_emails');
-            $admin_emails = explode(',', $admin_emails);
-            $admin_emails = array_map('trim', $admin_emails);
-            $admin_emails = array_filter($admin_emails, 'is_email');
-        } catch (\Exception $ex) {
-            //throw $th;
-        }
+
+        $admin_emails =  JRC_Helper::get_setting('admin_emails');
+        $admin_emails = explode(',', $admin_emails);
+        $admin_emails = array_map('trim', $admin_emails);
+        $admin_emails = array_filter($admin_emails, 'is_email');
 
         $update_dir = $new_plan > $current_plan ? 'upgrade' : 'downgrade';
 
         $user_email = $subscription->billing_email;
 
         // send notification mail to admin
-        foreach ($admin_emails as $admin_email) {
-            $this->send_html_email(
-                $admin_email,
-                "Subscription $update_dir request",
-                'admin_sub_upgrade_confirm_en',
-                $user_data
-            );
-        }
+
+        $this->send_html_email(
+            $admin_emails,
+            "Subscription $update_dir request",
+            'admin_sub_upgrade_confirm_en',
+            $user_data
+        );
+
 
         $subject = ($lang == 'cn') ? "您的訂閱已更新！" : "Your Subscription Has Been Updated!";
         $template = "customer_sub_upgrade_confirm_$lang";
@@ -843,6 +847,8 @@ final class MAV2_Ajax_Admin
             $template,
             $user_data
         );
+
+        JRC_Helper::set_readme($sub_id, "Rquested to change from $current_plan to $new_plan");
 
         return wp_send_json_success('Subscription updated');
     }
@@ -863,10 +869,43 @@ final class MAV2_Ajax_Admin
         $values = get_option('webp_subscription_update_request', []);
 
         // Remove the subscription update request if it exists
+
+
+        $request = $values[$sub_id];
         if (isset($values[$sub_id])) {
             unset($values[$sub_id]);
             update_option('webp_subscription_update_request', $values);
+
+            JRC_Helper::set_readme($sub_id, "Cancelled to change of plan");
         }
+
+        $sub = wcs_get_subscription($sub_id);
+        $name = $sub->get_billing_first_name() . ' ' . $sub->get_billing_last_name();
+        $email = $request['email'];
+        $current_plan = intval($request['current_plan']) > 1 ? intval($request['current_plan']) . ' Months' : intval($request['current_plan']) . ' Month';
+        $new_plan = intval($request['new_plan']) > 1 ? intval($request['new_plan']) . ' Months' : intval($request['new_plan']) . ' Month';
+
+
+        $data = [
+            'name' => $name,
+            'email' => $email,
+            'current_plan' => $current_plan,
+            'new_plan' => $new_plan,
+        ];
+
+        $template = "admin_sub_upgrade_cancelled";
+
+        $this->send_admin_emails($template, "Customer Cancelled Change of Plan Request", $data);
+
+        /*
+        'sub_id' => $sub_id,
+            'current_plan' => $current_plan,
+            'new_plan' => $new_plan,
+            'pm_token' => $pm_token->token_id,
+            'email' => $user->user_email
+            */
+
+
 
         // Return a success response
         wp_send_json_success('Subscription updated');
@@ -892,6 +931,14 @@ final class MAV2_Ajax_Admin
         ];
 
         $subscription_id = $_POST['id'];
+
+        // check if plan change reqeust
+        $values = get_option('webp_subscription_update_request', []);
+        if (isset($values[$subscription_id])) {
+            wp_send_json($out);
+
+            return;
+        }
 
         // need to check any discount coupons for this plan
         $plan = $this->get_prepaid_plan_by_sub($subscription_id);
@@ -987,7 +1034,7 @@ final class MAV2_Ajax_Admin
 
         // Batch update options
         update_option('webp_coupon_acceptance_list', $options['webp_coupon_acceptance_list']);
-        update_option('cancelling_coupons_usages', $options['cancelling_coupons_usages']);
+        // update_option('cancelling_coupons_usages', $options['cancelling_coupons_usages']);
 
         // send email to user;
         $data = [];
@@ -1022,7 +1069,8 @@ final class MAV2_Ajax_Admin
             $renew_dates = $this->get_subscription_renewal_date($subscription);
 
             $data['discount'] = ($is_percent_type ? $coupon_amount . '%' : $formatted_currency . $coupon_amount);
-            $data['discounted_price'] = $formatted_currency . $price - $saving;
+            $data['discounted_price'] = $formatted_currency . number_format($price - $saving, 2);
+            $data['original_price'] = $formatted_currency . number_format($price, 2);
             $data['effective_from'] = $renew_dates['next_renew_At'];
             $data['effective_from_n'] = $renew_dates['next_renew_At_n'];
             $data['savings'] = $formatted_currency . $saving;
@@ -1030,18 +1078,10 @@ final class MAV2_Ajax_Admin
             // for user
             $this->send_html_email($email, $subject, $template, $data);
 
-            // for admin
-            $admin_emails = [];
-
-            $admin_emails =  JRC_Helper::get_setting('admin_emails');
-            $admin_emails = explode(',', $admin_emails);
-            $admin_emails = array_map('trim', $admin_emails);
-            $admin_emails = array_filter($admin_emails, 'is_email');
+            // for admin          
 
             $template = "coupon_accepted_admin";
-            foreach ($admin_emails as $admin_email) {
-                $this->send_html_email($admin_email, "Renew Coupon Accepted", $template, $data);
-            }
+            $this->send_admin_emails($template, "Renew Coupon Accepted", $data);
         }
 
         wp_send_json_success($data);
@@ -1155,20 +1195,21 @@ final class MAV2_Ajax_Admin
         $currency = $symbol;
 
         if ($name != 'TWD') {
-            $currency = $name . $currency;
+            $currency = $name . " " . $currency;
         }
 
         return $currency;
     }
 
-    private function send_html_email($email, $subject, $template, $data = [])
+    private function send_html_email($to, $subject, $template, $data = [])
     {
         // Get the template content
         $template_path = MAV2_PATH . "views/emails/{$template}.php";
 
         if (!file_exists($template_path)) {
-            return new WP_Error('email_template_missing', __('Email template not found.', 'your-plugin-textdomain'));
+            return new WP_Error('email_template_missing');
         }
+
 
         ob_start();
         extract($data);
@@ -1180,7 +1221,23 @@ final class MAV2_Ajax_Admin
             'Content-Type: text/html; charset=UTF-8',
         ];
 
+        if (is_array($to)) {
+            $primary = array_pop($to);
+            $headers[] = "Bcc: " . implode(', ', $to);
+            $to = $primary;
+        }
+
         // Send email
-        return wp_mail($email, $subject, $message, $headers);
+        return wp_mail($to, $subject, $message, $headers);
+    }
+    private function send_admin_emails($template, $subject, $data)
+    {
+        $admin_emails = [];
+        $admin_emails =  JRC_Helper::get_setting('admin_emails');
+        $admin_emails = explode(',', $admin_emails);
+        $admin_emails = array_map('trim', $admin_emails);
+        $admin_emails = array_filter($admin_emails, 'is_email');
+
+        $this->send_html_email($admin_emails, $subject, $template, $data);
     }
 }

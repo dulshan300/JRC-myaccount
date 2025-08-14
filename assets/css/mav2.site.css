@@ -1287,6 +1287,9 @@
 .jrc_popup strong {
   font-weight: 700;
 }
+.jrc_popup#upgrade_plan_success .header_text_title {
+  font-family: var(--e-global-typography-3072787-font-family), Sans-serif !important;
+}
 .jrc_popup#upgrade_plan_success .jrc_popup_panel_content {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -1371,8 +1374,14 @@
   border-radius: 4px;
   cursor: pointer;
 }
+.jrc_popup#upgrade_plan_success .jrc_popup_panel {
+  max-width: 600px !important;
+}
 .jrc_popup#coupon_deal_for_cancel {
   text-align: center;
+}
+.jrc_popup#coupon_deal_for_cancel .header_text_title {
+  font-family: var(--e-global-typography-3072787-font-family), Sans-serif !important;
 }
 .jrc_popup#coupon_deal_for_cancel .jrc_popup_panel {
   max-width: 600px !important;

@@ -991,7 +991,7 @@
                 font-family: Plus Jakarta Sans;
                 font-weight: 600;
                 font-size: 18px;
-                line-height: 28px;                              
+                line-height: 28px;
                 color: #181d27;
             }
 
@@ -1062,7 +1062,7 @@
                 }
             }
 
-            &_secondary{
+            &_secondary {
                 background: #c6c6c6;
                 color: #fff;
 
@@ -1091,6 +1091,10 @@
     }
 
     &#upgrade_plan_success {
+        .header_text_title {
+            font-family: var(--e-global-typography-3072787-font-family), Sans-serif !important;
+        }
+
         .jrc_popup_panel_content {
             display: flex;
             flex-direction: column;
@@ -1175,31 +1179,44 @@
         }
     }
 
-    &#coupon_deal_for_cancel{
-        text-align: center;
-
-        .jrc_popup_panel{
+    &#upgrade_plan_success {
+        .jrc_popup_panel {
             max-width: 600px !important;
         }
-        p{
+    }
+
+    &#coupon_deal_for_cancel {
+        text-align: center;
+
+        .header_text_title {
+            font-family: var(--e-global-typography-3072787-font-family), Sans-serif !important;
+        }
+
+        .jrc_popup_panel {
+            max-width: 600px !important;
+        }
+
+        p {
             line-height: 28px;
             max-width: 100%;
         }
-        .header_text_title{
+
+        .header_text_title {
             max-width: 100%;
             line-height: 28px;
         }
 
-        .jrc_popup_panel_footer_buttons{
+        .jrc_popup_panel_footer_buttons {
             display: flex;
             flex-direction: row;
-            @media screen and (max-width: 768px){
+
+            @media screen and (max-width: 768px) {
                 flex-direction: column;
             }
         }
     }
 
-   
+
 }
 
 .jrc_plans {

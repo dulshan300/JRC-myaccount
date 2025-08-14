@@ -127,31 +127,7 @@ function mav2_get_tracking($order)
             $trackingNumber = $matches[1]; // The captured tracking number
             $us_link = 'https://parcelsapp.com/en/tracking/' . $trackingNumber;
             $order->tracking = "<a href='{$us_link}' target='_blank'>{$trackingNumber}</a>";
-        }
-
-        /*
-
-        // some of traking code is here
-        $traking = $order->tracking;
-        $search = "Tracking number(s):";
-        $traking = str_replace("<br/>", '', $traking);
-
-        $str_pos = strpos($traking, $search);
-        $traking = substr($traking, $str_pos);
-        $traking = str_replace($search, '', $traking);
-        $traking = str_replace("<br/>", '', $traking);
-        $traking = trim($traking);
-
-        $order->tracking = $traking;
-
-        if ($order->country == 'US') {
-            $us_link = 'https://parcelsapp.com/en/tracking/' . $traking;
-            $order->tracking = "<a href='{$us_link}' target='_blank'>{$order->tracking}</a>";
-        } else {
-            $link = 'https://trackings.post.japanpost.jp/services/srv/search/?requestNo1=%20' . $traking . '&search.x=68&search.y=17&search=Tracking+start&locale=ja&startingUrlPatten=';
-            $order->tracking = "<a href='{$link}' target='_blank'>{$order->tracking}</a>";
-        }
-            */
+        }    
     }
 
     return $order->tracking;
@@ -190,23 +166,14 @@ foreach ($res as $sub) {
 
     // getting order details
 
-    /*
-        old version: subtoal calculation
-        wp_woocommerce_order_itemmeta _line_subtotal save as SGD and wp_wc_orders_meta has yay_currency_order_rate key
-        for save the rate of SGD to relevent currency at that time. so calculation was _line_subtotal * yay_currency_order_rate;
-
-        new version: subtotal calculation (2025-06-24)
-        wp_woocommerce_order_itemmeta _line_subtotal save as the selected currency
-        so subtotal calculation is _line_subtotal
-    */
-
     $osql = "SELECT od.id, od.currency, od.date_created_gmt AS created_at, od.total_amount, oi1.order_item_name AS coupon, meta_discount.meta_value AS discount, meta_subtotal.meta_value AS subtotal FROM wp_wc_orders od LEFT JOIN wp_woocommerce_order_items oi1 ON oi1.order_id = od.id AND oi1.order_item_type IN ('coupon','fee') LEFT JOIN wp_woocommerce_order_items oi2 ON oi2.order_id = od.id AND oi2.order_item_type IN ('line_item') LEFT JOIN wp_woocommerce_order_itemmeta meta_discount ON oi1.order_item_id = meta_discount.order_item_id AND meta_discount.meta_key ='discount_amount'LEFT JOIN wp_woocommerce_order_itemmeta meta_subtotal ON oi2.order_item_id = meta_subtotal.order_item_id AND meta_subtotal.meta_key ='_line_subtotal'WHERE od.id IN ($str_ids) AND ( meta_discount.meta_value > 0 OR od.total_amount > 0 ) ORDER BY od.date_created_gmt DESC LIMIT 1";
 
     $odata = $wpdb->get_row($osql);
     $temp['created_at'] = date('j F Y', strtotime($odata->created_at . ' + 8 hours'));
     $temp['product_value'] = number_format(floatval($odata->subtotal), 2);
     $temp['shipping'] = number_format(floatval($odata->shipping), 2);
-    $temp['discount'] = floatval($odata->discount) > 0 ? number_format(floatval($odata->discount), 2) . " ({$odata->coupon})" : '0.00';
+    // $temp['discount'] = floatval($odata->discount) > 0 ? number_format(floatval($odata->discount), 2) . " ({$odata->coupon})" : '0.00';
+    $temp['discount'] = floatval($odata->discount) > 0 ? number_format(floatval($odata->discount), 2) : '0.00';
     $temp['total'] = number_format(floatval($odata->total_amount), 2);
 
     $name = $sub->currency;
@@ -630,7 +597,7 @@ foreach ($res as $sub) {
                     <p>Your flavour journey through Japan still has more to offer.</p>
                     <br>
                     <p><strong>Your current plan</strong>: {{coupon_box.plan}} Subscription</p>
-                    <p><strong>Your save</strong>: <span v-html="coupon_box.saving"></span> on the <strong>{{coupon_box.renew_at}}</strong></p>
+                    <p><strong>Your save</strong>: <span v-html="coupon_box.saving"></span> on your next renewal on <strong>{{coupon_box.renew_at}}</strong></p>
                     <br>
                     <p>Don't miss this exclusive offer — keep your journey going today. </p>
                     <br>
@@ -650,37 +617,31 @@ foreach ($res as $sub) {
         <!-- Apply Coupon Success Panel -->
         <Transition name="fade">
             <v-popup v-show="current_panel==PANELS.COUPON_APPLY_SUCCESS" id="upgrade_plan_success" @close="closePopup">
-
-
-                <template v-slot:icon>
-                    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="4" y="4" width="48" height="48" rx="24" fill="#D1FADF" />
-                        <rect x="4" y="4" width="48" height="48" rx="24" stroke="#ECFDF3" stroke-width="8" />
-                        <path d="M23.5 28L26.5 31L32.5 25M38 28C38 33.5228 33.5228 38 28 38C22.4772 38 18 33.5228 18 28C18 22.4772 22.4772 18 28 18C33.5228 18 38 22.4772 38 28Z" stroke="#039855" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                </template>
-
-
                 <template v-slot:title>
-                    <h3 class="header_text_title">Thank You! Your 10% Savings Are Confirmed</h3>
-                    <p class="header_text_sub_title">Thank you for continuing your JAPAN RAIL CLUB subscription. Here's a quick summary of your upcoming renewal:
-                    </p>
+                    <div style="text-align: center;">
+                        <h3 class="header_text_title">Thank You! Your {{coupon_box.discount}}% Savings Are Confirmed</h3>
+                        <br>
+                        <p class="header_text_sub_title">Thank you for continuing your JAPAN RAIL CLUB subscription. Here's a quick summary of your upcoming renewal:
+                        </p>
+                    </div>
                 </template>
 
-                <ul>
-                    <li>📦 <strong> Plan</strong>: {{coupon_box.plan}} Plan</li>
+                <ul style="margin-top:10px">
+                    <li>📦 <strong> Plan</strong>: {{coupon_box.plan}} Subscription</li>
                     <li>📅 <strong> Renewal Date</strong>: {{coupon_box.renew_at}}</li>
-                    <li>💳 <strong> Your Renewal Price</strong>: <span v-html="coupon_box.price"></span></li>
+                    <li>💳 <strong> Your Renewal Price</strong>: <span v-html="coupon_box.price"></span>&nbsp;(U.P.&nbsp;<span v-html="coupon_box.original_price"></span>)</li>
                     <li>💰 <strong> You Saved</strong>: <span v-html="coupon_box.saving"></span></li>
                 </ul>
 
-                <p>A confirmation email has been sent to you with these details for your records.</p>
-
-                <p>Thank you for staying with us on this flavourful journey!</p>
+                <div style="text-align: center;margin-top:10px">
+                    <p>A confirmation email has been sent to you with these details for your records.</p>
+                    <br>
+                    <p>Thank you for staying with us on this flavourful journey!</p>
+                </div>
 
                 <template v-slot:footer>
-                    <div class="jrc_popup_panel_footer_buttons">
-                        <button @click.prevent="closePopup" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Return to My Account</button>
+                    <div class="jrc_popup_panel_footer_buttons" style="justify-content: center;">
+                        <button @click.prevent="closePopup" style="width: 60%;" type="button" class="jrc_popup_panel_btn jrc_popup_panel_btn_primary">Return to My Account</button>
 
                     </div>
                 </template>

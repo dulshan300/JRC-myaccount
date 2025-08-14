@@ -24,7 +24,7 @@
                         </div>
                         <h1
                             style="font-weight:bold;text-align:center;margin:0;font-size:32px;padding:0px 24px 16px 24px">
-                            Subscription Change Notification!
+                            Customer Cancelled Change of Plan Request
                         </h1>
                         <div style="padding:16px 40px 16px 40px">
                             <hr
@@ -33,15 +33,10 @@
 
                         <div style="font-weight:normal;padding:4px 24px 4px 24px">
                             <p>Here are the details:</p>
-                            <p>Customer Name: <?= $customer_name ?><br />
-                                Customer Email: <?= $customer_email ?><br />
-                                Current Plan: <?= $current_plan . ($current_plan > 1 ? ' Months' : ' Month'); ?><br />
-                                New Plan: <?= $new_plan ?><br />
-                                Updated Plan Price: <?= $price ?><br />
-                                Effective From: <?= $end_date ?>
-                            </p>
-
-
+                            <p>Customer Name: <?= $name ?><br />
+                                Customer Email: <?= $email ?><br />
+                                Current Plan: <?= $current_plan ?><br />
+                                Planned To Be Changed: <?= $new_plan ?><br /> </p>
                         </div>
 
                         <div style="font-weight:normal;padding:4px 24px 16px 24px">
