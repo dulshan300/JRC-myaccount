@@ -25,18 +25,19 @@ $test_accounts = [
     "d1madusanka@gmail.com"
 ];
 
-if (in_array($user->user_email, $test_accounts)) {
+// for testing
+// if (in_array($user->user_email, $test_accounts)) {
 
-    foreach ($cancelling_coupons as $key => $coupon_code) {
-        $coupon = new WC_Coupon($coupon_code);
-        $coupon_id = $coupon->get_id();
-        if (!$coupon_id) {
-            $eligible_coupons[$key] = false;
-        } else {
-            $eligible_coupons[$key] = true;
-        }
+foreach ($cancelling_coupons as $key => $coupon_code) {
+    $coupon = new WC_Coupon($coupon_code);
+    $coupon_id = $coupon->get_id();
+    if (!$coupon_id) {
+        $eligible_coupons[$key] = false;
+    } else {
+        $eligible_coupons[$key] = true;
     }
 }
+// }
 
 ?>
 
@@ -188,8 +189,6 @@ if (in_array($user->user_email, $test_accounts)) {
             const subscription_data = ref([..._subscription_data]);
             // [1,3,6,12]
             const eligible_coupons_plans = ref(<?php echo json_encode($eligible_coupons); ?>);
-            const can_use_cancelling_coupon = ref(<?php echo json_encode($can_use_coupon); ?>);
-            const coupon_amount = ref(<?php echo json_encode($coupon_amount); ?>);
             const coupon_box = ref({});
 
 
@@ -530,8 +529,6 @@ if (in_array($user->user_email, $test_accounts)) {
                 plan_selection,
                 next_renew_at,
                 cancel_reason,
-                can_use_cancelling_coupon,
-                coupon_amount,
                 PANELS,
                 reasons,
                 other_reasons,

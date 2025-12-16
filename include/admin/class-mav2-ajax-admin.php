@@ -808,7 +808,8 @@ final class MAV2_Ajax_Admin
             'current_plan' => $current_plan,
             'new_plan' => $new_plan,
             'pm_token' => $pm_token->token_id,
-            'email' => $user->user_email
+            'email' => $user->user_email,
+            'requested_at' => date('Y-m-d H:i:s')
         ];
 
         update_option('webp_subscription_update_request', $values);
@@ -1135,6 +1136,17 @@ final class MAV2_Ajax_Admin
             $subscription = wcs_get_subscription($subscription);
         }
 
+        $lang = 'en';
+        $ch_list = ['TW', 'HK', 'CN'];
+        $ko_list = ['KO'];
+
+        $country = $subscription->get_shipping_country();
+        if (in_array($country, $ch_list)) {
+            $lang = 'ch';
+        } else if (in_array($country, $ko_list)) {
+            $lang = 'ko';
+        }
+
         $remaining_peases = intval($subscription->get_meta('_ps_prepaid_renewals_available'));
         $parent_order_id = $subscription->get_parent_id();
 
@@ -1145,9 +1157,17 @@ final class MAV2_Ajax_Admin
         $last_order = wc_get_order(end($fullfilled));
         $sub_start_date = $last_order->date_updated_gmt;
 
-        $next_renew_At = date('3-F-Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
-        $next_renew_At_n = date('3 F Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
-        $next_renew_At = date('jS \of F Y', strtotime($next_renew_At));
+        $_next_renew = date('Y-m-d', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
+        $next_renew_At_n = date('3 F Y', strtotime($_next_renew));
+        $next_renew_At = date('jS \of F Y', strtotime($_next_renew));
+
+        if ($lang == 'ch') {
+            $next_renew_At = date('Y年m月3日', strtotime($_next_renew));
+            $next_renew_At_n = date('Y年m月3日', strtotime($_next_renew));
+        } elseif ($lang == 'ko') {
+            $next_renew_At = date('Y년m월3일', strtotime($_next_renew));
+            $next_renew_At_n = date('Y년m월3일', strtotime($_next_renew));
+        }
 
         return [
             'next_renew_At' => $next_renew_At,

@@ -20,6 +20,7 @@ $sql = "SELECT
     od.id,
     od.status,
     od.currency,
+    ad.country,
     'Omiyage Snack Box Subscription' as product,
     od.parent_order_id,
     (
@@ -94,6 +95,8 @@ $sql = "SELECT
     
 from
     wp_wc_orders od
+left join
+    wp_wc_order_addresses ad on ad.order_id=od.id and ad.address_type='shipping'
 WHERE
     od.`type` = 'shop_subscription'
         AND od.customer_id = $user_id
@@ -127,11 +130,15 @@ function mav2_get_tracking($order)
             $trackingNumber = $matches[1]; // The captured tracking number
             $us_link = 'https://parcelsapp.com/en/tracking/' . $trackingNumber;
             $order->tracking = "<a href='{$us_link}' target='_blank'>{$trackingNumber}</a>";
-        }    
+        }
     }
 
     return $order->tracking;
 }
+
+$lang = 'en';
+$ch_list = ['TW', 'HK', 'CN'];
+$ko_list = ['KO'];
 
 foreach ($res as $sub) {
     $temp = [];
@@ -143,6 +150,12 @@ foreach ($res as $sub) {
     $temp['plan'] = (intval($sub->plan) > 1 ? $sub->plan . ' Months' : $sub->plan . ' Month') . ' Plan';
     $temp['order_history'] = [];
 
+    if (in_array($sub->country, $ch_list)) {
+        $lang = 'ch';
+    } else if (in_array($sub->country, $ko_list)) {
+        $lang = 'ko';
+    }
+
     if ($sub->plan == 1) {
         $temp['shipped'] = '1' . ' of ' . $sub->plan;
     } else {
@@ -150,7 +163,14 @@ foreach ($res as $sub) {
         $temp['shipped'] = intval($sub->plan) - intval($sub->to_ship) . ' of ' . $sub->plan;
     }
 
-    $temp['next_shipment_date'] = date('Y-m-03', strtotime($sub->next_shipment_date));
+
+    if ($lang == 'en') {
+        $temp['next_shipment_date'] = date('Y-m-03', strtotime($sub->next_shipment_date));
+    } elseif ($lang == 'ch') {
+        $temp['next_shipment_date'] = date('Y年m月3日', strtotime($sub->next_shipment_date));
+    } elseif ($lang == 'ko') {
+        $temp['next_shipment_date'] = date('Y년m월3일', strtotime($sub->next_shipment_date));
+    }
 
     $sub_orders = [$sub->parent_order_id];
     // if renewal orders
@@ -166,7 +186,8 @@ foreach ($res as $sub) {
 
     // getting order details
 
-    $osql = "SELECT od.id, od.currency, od.date_created_gmt AS created_at, od.total_amount, oi1.order_item_name AS coupon, meta_discount.meta_value AS discount, meta_subtotal.meta_value AS subtotal FROM wp_wc_orders od LEFT JOIN wp_woocommerce_order_items oi1 ON oi1.order_id = od.id AND oi1.order_item_type IN ('coupon','fee') LEFT JOIN wp_woocommerce_order_items oi2 ON oi2.order_id = od.id AND oi2.order_item_type IN ('line_item') LEFT JOIN wp_woocommerce_order_itemmeta meta_discount ON oi1.order_item_id = meta_discount.order_item_id AND meta_discount.meta_key ='discount_amount'LEFT JOIN wp_woocommerce_order_itemmeta meta_subtotal ON oi2.order_item_id = meta_subtotal.order_item_id AND meta_subtotal.meta_key ='_line_subtotal'WHERE od.id IN ($str_ids) AND ( meta_discount.meta_value > 0 OR od.total_amount > 0 ) ORDER BY od.date_created_gmt DESC LIMIT 1";
+    $osql = "SELECT od.id, od.currency, lp.shipping_amount AS shipping, od.date_created_gmt AS created_at, od.total_amount, oi1.order_item_name AS coupon, meta_discount.meta_value AS discount, meta_subtotal.meta_value AS subtotal FROM wp_wc_orders od LEFT JOIN wp_woocommerce_order_items oi1 ON oi1.order_id = od.id AND oi1.order_item_type IN ('coupon','fee') LEFT JOIN wp_woocommerce_order_items oi2 ON oi2.order_id = od.id AND oi2.order_item_type IN ('line_item') LEFT JOIN wp_woocommerce_order_itemmeta meta_discount ON oi1.order_item_id = meta_discount.order_item_id AND meta_discount.meta_key ='discount_amount'LEFT JOIN wp_woocommerce_order_itemmeta meta_subtotal ON oi2.order_item_id = meta_subtotal.order_item_id AND meta_subtotal.meta_key ='_line_subtotal' LEFT JOIN wp_wc_order_product_lookup lp ON lp.order_id = od.id
+    WHERE od.id IN ($str_ids) AND ( meta_discount.meta_value > 0 OR od.total_amount > 0 ) ORDER BY od.date_created_gmt DESC LIMIT 1";
 
     $odata = $wpdb->get_row($osql);
     $temp['created_at'] = date('j F Y', strtotime($odata->created_at . ' + 8 hours'));
@@ -267,8 +288,15 @@ foreach ($res as $sub) {
 
     $last_date = strtotime($lo_q->date_updated_gmt . ' + 8 hours');
     $order = wc_get_order($last_box);
+    $_next_payment = date('j F Y', strtotime(date('Y-m-03', $last_date) . ' +' . ($sub->plan > 1 ? $sub->to_ship + 1 : 1) . ' month'));
 
-    $temp['next_payment'] = date('j F Y', strtotime(date('Y-m-03', $last_date) . ' +' . ($sub->plan > 1 ? $sub->to_ship + 1 : 1) . ' month'));
+    if ($lang == 'ch') {
+        $_next_payment = date('Y年n月j日', strtotime($_next_payment));
+    } else if ($lang == 'ko') {
+        $_next_payment = date('Y년n월j일', strtotime($_next_payment));
+    }
+
+    $temp['next_payment'] = $_next_payment;
 
     $out_data[] = $temp;
 }
@@ -619,7 +647,7 @@ foreach ($res as $sub) {
             <v-popup v-show="current_panel==PANELS.COUPON_APPLY_SUCCESS" id="upgrade_plan_success" @close="closePopup">
                 <template v-slot:title>
                     <div style="text-align: center;">
-                        <h3 class="header_text_title">Thank You! Your {{coupon_box.discount}}% Savings Are Confirmed</h3>
+                        <h3 class="header_text_title">Thank You! Your {{coupon_box.discount}} &percnt; Savings Are Confirmed</h3>
                         <br>
                         <p class="header_text_sub_title">Thank you for continuing your JAPAN RAIL CLUB subscription. Here's a quick summary of your upcoming renewal:
                         </p>

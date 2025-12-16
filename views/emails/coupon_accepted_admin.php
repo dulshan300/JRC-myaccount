@@ -39,7 +39,7 @@
                                 <strong>Plan</strong>: <?= $plan ?> Omiyage Snack Box<br />
                                 <strong>Renewal Date</strong>: <?= $effective_from_n ?><br />
                                 <strong>Renewal Price</strong>: <?= $discounted_price ?>&nbsp;(U.P. <?= $original_price ?>)<br />
-                                <strong>You Saved:</strong>: <?= $savings ?><br />
+                                <strong>You Saved</strong>: <?= $savings ?><br />
                             </p>
 
                         </div>
