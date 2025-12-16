@@ -11,9 +11,9 @@ if (empty($user_id)) {
 
 global $wpdb;
 
-// $sql = "SELECT od.id,od.currency, pl.order_item_id, od.customer_id, pl.product_id, od.status, ( SELECT post_title FROM wp_posts WHERE ID = pl.product_id ) as product, ( SELECT guid FROM wp_posts WHERE ID = ( SELECT meta_value FROM wp_postmeta WHERE post_id = pl.product_id AND meta_key ='_thumbnail_id') ) AS product_image_url, COALESCE(cl.discount_amount, 0) as discount_amount, ( SELECT post_title FROM wp_posts WHERE ID = cl.coupon_id ) as coupon, pl.product_net_revenue, pl.product_gross_revenue, od.total_amount, oim.meta_key, oim.meta_value FROM wp_wc_orders od LEFT JOIN wp_wc_order_product_lookup pl ON pl.order_id = od.id LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = pl.order_item_id LEFT JOIN wp_wc_order_coupon_lookup cl ON cl.order_id = od.id WHERE pl.product_id != 198 AND oim.meta_key in ('Participation Date','First Name','Last Name','Email Address','Date Of Birth','Country','Telephone Number','Gender','ticket-type') AND od.customer_id = $user_id ORDER BY pl.variation_id ASC";
 
-$sql = "SELECT od.id, od.currency, pl.order_item_id, od.customer_id, pl.product_id, od.status, ( SELECT post_title FROM wp_posts WHERE ID = pl.product_id ) AS product, ( SELECT guid FROM wp_posts WHERE ID = ( SELECT meta_value FROM wp_postmeta WHERE post_id = pl.product_id AND meta_key ='_thumbnail_id') ) AS product_image_url, COALESCE(cl.discount_amount, 0) AS discount_amount, ( SELECT post_title FROM wp_posts WHERE ID = cl.coupon_id ) AS coupon, pl.product_net_revenue, pl.product_gross_revenue, od.total_amount, -- Extract individual meta values
+
+$sql = "SELECT od.id, od.currency, od.date_created_gmt,pl.order_item_id, od.customer_id, pl.product_id, od.status, ( SELECT post_title FROM wp_posts WHERE ID = pl.product_id ) AS product, ( SELECT guid FROM wp_posts WHERE ID = ( SELECT meta_value FROM wp_postmeta WHERE post_id = pl.product_id AND meta_key ='_thumbnail_id') ) AS product_image_url, COALESCE(cl.discount_amount, 0) AS discount_amount, ( SELECT post_title FROM wp_posts WHERE ID = cl.coupon_id ) AS coupon, pl.product_net_revenue, pl.product_gross_revenue, od.total_amount, -- Extract individual meta values
  MAX( CASE WHEN oim.meta_key ='Participation Date'THEN oim.meta_value END ) AS participation_date, MAX( CASE WHEN oim.meta_key ='First Name'THEN oim.meta_value END ) AS first_name, MAX( CASE WHEN oim.meta_key ='Last Name'THEN oim.meta_value END ) AS last_name, MAX( CASE WHEN oim.meta_key ='Email Address'THEN oim.meta_value END ) AS email_address, MAX( CASE WHEN oim.meta_key ='Date Of Birth'THEN oim.meta_value END ) AS date_of_birth, MAX( CASE WHEN oim.meta_key ='Country'THEN oim.meta_value END ) AS country, MAX( CASE WHEN oim.meta_key ='Telephone Number'THEN oim.meta_value END ) AS telephone_number, MAX( CASE WHEN oim.meta_key ='Gender'THEN oim.meta_value END ) AS gender, MAX( CASE WHEN oim.meta_key ='ticket-type'THEN oim.meta_value END ) AS ticket_type FROM wp_wc_orders od LEFT JOIN wp_wc_order_product_lookup pl ON pl.order_id = od.id LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = pl.order_item_id LEFT JOIN wp_wc_order_coupon_lookup cl ON cl.order_id = od.id WHERE pl.product_id != 198 AND od.customer_id = $user_id GROUP BY od.id, od.currency, pl.order_item_id, od.customer_id, pl.product_id, od.status, pl.product_net_revenue, pl.product_gross_revenue, od.total_amount, cl.discount_amount, cl.coupon_id, pl.variation_id ORDER BY pl.variation_id ASC";
 
 $rows = $wpdb->get_results($sql);
@@ -41,6 +41,13 @@ foreach ($rows as $row) {
     $orders[$row->id]['product_image'] = $row->product_image_url;
     $orders[$row->id]['type'] = is_null($row->ticket_type) ? 'General' : 'ticket';
 
+    // format time from gtm to sgt 03 Jnue 2024 8:00 am
+    $date_created_gmt = new DateTime($row->date_created_gmt, new DateTimeZone('GMT'));
+    $date_created_gmt->setTimezone(new DateTimeZone('Asia/Singapore'));
+    $formatted_sgt_time = $date_created_gmt->format('d M Y g:i a T');
+
+
+    $orders[$row->id]['date_created_gmt'] = $formatted_sgt_time;
     $orders[$row->id]['discount_amount'] = number_format(floatval($row->discount_amount), 2);
     $orders[$row->id]['coupon'] = $row->coupon ? '( ' . $row->coupon . ' )' : '';
 
@@ -103,63 +110,39 @@ foreach ($orders as $oid => $order) {
 ?>
 
 <div id="order_cards">
-    <?php foreach ($orders as $order) { ?>
 
-        <div class="order_card">
+    <table>
+        <thead>
+            <th>Order No.</th>
+            <th>Product</th>
+            <th>Paid On</th>
+            <th>Amount</th>
+            <th> Invoice </th>
+        </thead>
 
-            <div class="oc_left">
-                <img class="oc_product_image" src="<?= $order['product_image'] ?>" alt="<?= $order['product'] ?>">
-
-                <div class="oc_data">
-                    <h3 class="oc_product_name"><?= $order['product'] ?></h3>
-                    <?php if ($order['type'] == 'ticket') : ?>
-
-                        <h4>Ticket Details:</h4>
-                        <div class="oc_items">
-
-                            <?php foreach ($order['items'] as $item_id => $meta) { ?>
-
-                                <div class="oc_item">
-                                    <ul>
-                                        <?php foreach ($meta as $key => $value) { ?>
-
-                                            <li><?= $key ?> : <?= $value ?> </li>
-
-                                        <?php } ?>
-
-                                    </ul>
+        <tbody>
 
 
-                                </div>
+            <?php foreach ($orders as $order) { ?>
+                <tr>
+                    <td>#<?= $order['id'] ?></td>
+                    <td><?= $order['product'] ?></td>
+                    <td><?= $order['date_created_gmt'] ?></td>
+                    <td><?= $order['currency'] ?><?= $order['total'] ?></td>
+                    <td><button data-id="<?= $order['id'] ?>" class="invoice_download"><span></span>Download</button></td>
+                </tr>
 
-                            <?php } ?>
+            <?php } ?>
 
-                        </div>
+            <!-- if no subscriptions -->
+            <?php if (empty($orders)) { ?>
+                <tr>
+                    <td colspan="5">
+                        <p>No Order Found</p>
+                    </td>
+                </tr>
 
-                    <?php endif; ?>
-
-
-                </div>
-            </div>
-
-            <div class="oc_price_details">
-                <h4 class="order_id"><span>Order ID:</span> #<?= $order['id'] ?> | <span>Order Status:</span> <?= $order['status'] ?></h4>
-
-                <span class="order_product_value"><span>Product Price:</span> <?= $order['currency'] ?><?= $order['items_value'] ?> </span>
-                <span class="order_subtotal"><span>Subtotal:</span> <?= $order['currency'] ?><?= $order['items_value'] ?> </span>
-                <span class="order_discount"><span>Discount:</span> <?= $order['currency'] ?><?= $order['discount_amount'] ?> &nbsp; <?= $order['coupon'] ?></span>
-                <span class="order_total"><span>Total:</span> <?= $order['currency'] ?><?= $order['total'] ?> </span>
-            </div>
-
-
-        </div>
-
-    <?php } ?>
-
-    <!-- if no subscriptions -->
-    <?php if (empty($orders)) { ?>
-
-        <p>No Order Found</p>
-
-    <?php } ?>
+            <?php } ?>
+        </tbody>
+    </table>
 </div>

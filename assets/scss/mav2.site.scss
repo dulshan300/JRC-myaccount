@@ -67,6 +67,66 @@
     gap: 20px;
     position: relative;
 
+    table {
+        text-align: left;
+        border-collapse: collapse;
+
+        th {
+            background: #fefcf2;
+            padding: 15px;
+        }
+
+        td {
+            padding: 15px;
+        }
+    }
+
+    .invoice_download {
+        border: none;
+        display: flex;
+        align-items: center;
+        padding: 5px 15px;
+        background: rgba(#67a855, 0.2);
+        color: #67a855;
+        font-weight: 600;
+        border-radius: 20px;
+        position: relative;
+        gap: 10px;
+        cursor: pointer;
+
+        &:hover {
+            background: rgba(#67a855, 0.3);
+        }
+
+        span {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            background: #67a855;
+            min-width: 10px;
+            min-height: 10px;
+            max-width: 10px;
+            max-height: 10px;
+            border-radius: 50%;
+            position: relative;
+
+            &:after {
+                content: "";
+                position: absolute;
+                background: #fff;
+                min-width: 3px;
+                min-height: 3px;
+                max-width: 3px;
+                max-height: 3px;
+                border-radius: 50%;
+
+            }
+
+        }
+    }
+
+
+
     .order_card {
         * {
             margin: 0;

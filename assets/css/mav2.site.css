@@ -77,6 +77,65 @@
   gap: 20px;
   position: relative;
 }
+#order_cards table {
+  text-align: left;
+  border-collapse: collapse;
+}
+#order_cards table th {
+  background: #fefcf2;
+  padding: 15px;
+}
+#order_cards table td {
+  padding: 15px;
+}
+#order_cards .invoice_download {
+  border: none;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  padding: 5px 15px;
+  background: rgba(103, 168, 85, 0.2);
+  color: #67a855;
+  font-weight: 600;
+  border-radius: 20px;
+  position: relative;
+  gap: 10px;
+  cursor: pointer;
+}
+#order_cards .invoice_download:hover {
+  background: rgba(103, 168, 85, 0.3);
+}
+#order_cards .invoice_download span {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  background: #67a855;
+  min-width: 10px;
+  min-height: 10px;
+  max-width: 10px;
+  max-height: 10px;
+  border-radius: 50%;
+  position: relative;
+}
+#order_cards .invoice_download span:after {
+  content: "";
+  position: absolute;
+  background: #fff;
+  min-width: 3px;
+  min-height: 3px;
+  max-width: 3px;
+  max-height: 3px;
+  border-radius: 50%;
+}
 #order_cards .order_card {
   background: #fff;
   padding: 24px;
