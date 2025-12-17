@@ -82,6 +82,28 @@ final class MAV2_Ajax_Admin
 
         $subscription->save();
 
+        // send mail to the user
+        // Prepare user data for emails
+        $country = $subscription->get_shipping_country();
+
+        $lang = JRC_Helper::get_lang($country);
+
+        $user_email = $subscription->get_billing_email();
+
+        $user_data = [
+            'name' => $subscription->get_shipping_first_name() . " " . $subscription->get_shipping_last_name(),            
+        ];
+
+        $subject = $lang == 'cn' ? "我們很難過您要離開！ 😢您的點心禮盒訂閱已取消。" : "We're sad to see you go! 😢Your Omiyage Snack Box Subscription is cancelled.";
+
+        $this->send_html_email(
+            $user_email,
+            $subject,
+            "subscription_cancel_$lang",
+            $user_data
+        );
+
+
         wp_send_json_success('Successfully Cancelled');
     }
 

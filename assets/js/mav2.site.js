@@ -299,6 +299,14 @@ async function _file_download(data) {
         update_panel.goTo(panel);
     })
 
+    $(document).on('click', '.invoice_download', function () {
+        const order_id = $(this).data('id');
+        console.log(order_id);
+        
+    })
+
+   
+
 
 })(jQuery)
 

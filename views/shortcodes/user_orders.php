@@ -44,7 +44,10 @@ foreach ($rows as $row) {
     // format time from gtm to sgt 03 Jnue 2024 8:00 am
     $date_created_gmt = new DateTime($row->date_created_gmt, new DateTimeZone('GMT'));
     $date_created_gmt->setTimezone(new DateTimeZone('Asia/Singapore'));
-    $formatted_sgt_time = $date_created_gmt->format('d M Y g:i a T');
+    $offset = $date_created_gmt->getOffset() / 3600; // Converts seconds to hours
+    $suffix = ($offset >= 0) ? "+" . $offset : $offset;
+
+    $formatted_sgt_time = $date_created_gmt->format('d M Y g:i a') . " (GMT " . $suffix . ")";
 
 
     $orders[$row->id]['date_created_gmt'] = $formatted_sgt_time;
@@ -129,7 +132,9 @@ foreach ($orders as $oid => $order) {
                     <td><?= $order['product'] ?></td>
                     <td><?= $order['date_created_gmt'] ?></td>
                     <td><?= $order['currency'] ?><?= $order['total'] ?></td>
-                    <td><button data-id="<?= $order['id'] ?>" class="invoice_download"><span></span>Download</button></td>
+                    <td>
+                        <button data-id="<?= $order['id'] ?>" class="invoice_download"><span></span>Download</button>
+                    </td>
                 </tr>
 
             <?php } ?>

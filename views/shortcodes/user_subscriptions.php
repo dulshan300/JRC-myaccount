@@ -149,6 +149,7 @@ foreach ($res as $sub) {
     $temp['plan_raw'] = $sub->plan;
     $temp['plan'] = (intval($sub->plan) > 1 ? $sub->plan . ' Months' : $sub->plan . ' Month') . ' Plan';
     $temp['order_history'] = [];
+    $temp['last_3_orders'] = [];
 
     if (in_array($sub->country, $ch_list)) {
         $lang = 'ch';
@@ -193,7 +194,6 @@ foreach ($res as $sub) {
     $temp['created_at'] = date('j F Y', strtotime($odata->created_at . ' + 8 hours'));
     $temp['product_value'] = number_format(floatval($odata->subtotal), 2);
     $temp['shipping'] = number_format(floatval($odata->shipping), 2);
-    // $temp['discount'] = floatval($odata->discount) > 0 ? number_format(floatval($odata->discount), 2) . " ({$odata->coupon})" : '0.00';
     $temp['discount'] = floatval($odata->discount) > 0 ? number_format(floatval($odata->discount), 2) : '0.00';
     $temp['total'] = number_format(floatval($odata->total_amount), 2);
 
@@ -220,7 +220,6 @@ foreach ($res as $sub) {
     $lo_sql = "SELECT od.id, od.status,od.date_updated_gmt,od.date_created_gmt, COALESCE( ( SELECT comment_content from wp_comments WHERE comment_post_ID = od.id AND comment_content LIKE '%%Tracking number%%'ORDER BY comment_date_gmt DESC LIMIT 1 ),404) as tracking, (SELECT country FROM wp_wc_order_addresses WHERE order_id=od.id LIMIT 1) country from wp_wc_orders od WHERE od.id=%s";
 
     $lo_q = $wpdb->prepare($lo_sql, $last_order_id);
-
     $lo_data = $wpdb->get_row($lo_q);
 
     $lo_data->tracking = mav2_get_tracking($lo_data);
@@ -240,6 +239,7 @@ foreach ($res as $sub) {
             'status' => str_replace('wc-', '', $q_data->status),
             'date' => $q_data->date_created_gmt,
             'date_loc' => $check_stamp,
+            'img' => '',
             'tracking' => mav2_get_tracking($q_data)
         ];
 
@@ -248,8 +248,31 @@ foreach ($res as $sub) {
 
     // echo '<pre>';
     // print_r($temp_history);
+    $temp_history = array_reverse($temp_history);
+    $temp['order_history'] = $temp_history;
 
-    $temp['order_history'] = array_reverse($temp_history);
+    // selecting last 3 orders
+    $temp['last_3_orders'] = array_slice($temp_history, 0, 3);
+    $temp['last_3_orders'] = array_reverse($temp['last_3_orders']);
+
+    // find the image of the last order
+    $sql_for_image = "SELECT img.guid as img FROM wp_posts post LEFT JOIN wp_postmeta pm ON pm.post_id = post.ID AND pm.meta_key ='start-date'LEFT JOIN wp_postmeta pm2 ON pm2.post_id = post.ID AND pm2.meta_key ='end-date'LEFT JOIN wp_postmeta pm3 ON pm3.post_id = post.ID AND pm3.meta_key ='_thumbnail_id'LEFT JOIN wp_posts img ON img.ID = pm3.meta_value WHERE post.post_type ='omiyage'AND pm.meta_value <= %d AND pm2.meta_value >= %d";
+
+
+    foreach ($temp['last_3_orders'] as $key => $lod) {
+
+        // print_r(strtotime($lod['date']));
+        $stamp = strtotime($lod['date']);
+        $img_q = $wpdb->prepare($sql_for_image, $stamp, $stamp);
+        $img_d = $wpdb->get_row($img_q, ARRAY_A);
+
+        if ($img_d) {
+            $temp['last_3_orders'][$key]['img'] = $img_d['img'];
+        }
+    }
+
+
+
 
     $temp['last_order_details'] = $lo_data;
 
@@ -302,6 +325,9 @@ foreach ($res as $sub) {
 }
 
 ?>
+
+
+
 
 <script>
     const _subscription_data = <?php echo json_encode($out_data); ?>;
