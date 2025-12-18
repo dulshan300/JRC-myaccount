@@ -26,7 +26,9 @@
             <span id="confirm_password_error" style="display: none;" class="mav2_error"></span>
         </div>
 
-        <button type="submit">Submit</button>
+        <div class="">
+            <button type="submit">Submit</button>
+        </div>
 
         <div class="mav2_success_alert" style="display: none;">Successfully Updated</div>
     </form>

@@ -91,7 +91,7 @@ final class MAV2_Ajax_Admin
         $user_email = $subscription->get_billing_email();
 
         $user_data = [
-            'name' => $subscription->get_shipping_first_name() . " " . $subscription->get_shipping_last_name(),            
+            'name' => $subscription->get_shipping_first_name() . " " . $subscription->get_shipping_last_name(),
         ];
 
         $subject = $lang == 'cn' ? "我們很難過您要離開！ 😢您的點心禮盒訂閱已取消。" : "We're sad to see you go! 😢Your Omiyage Snack Box Subscription is cancelled.";
@@ -123,13 +123,14 @@ final class MAV2_Ajax_Admin
 
         $billing_first_name = sanitize_text_field($_POST['billing_first_name']);
         $billing_last_name = sanitize_text_field($_POST['billing_last_name']);
-        $billing_email = sanitize_email($_POST['billing_email']);
-        $billing_phone = sanitize_text_field($_POST['billing_phone']);
+        // $billing_email = sanitize_email($_POST['billing_email']);
+        // $billing_phone = sanitize_text_field($_POST['billing_phone']);
         $billing_address_1 = sanitize_text_field($_POST['billing_address_1']);
-        $billing_address_2 = sanitize_text_field($_POST['billing_address_2']);
+        // $billing_address_2 = sanitize_text_field($_POST['billing_address_2']);
         $billing_city = sanitize_text_field($_POST['billing_city']);
         $billing_postcode = sanitize_text_field($_POST['billing_postcode']);
         $billing_country = sanitize_text_field($_POST['billing_country']);
+        $pccc = sanitize_text_field($_POST['pccc']);
 
         // validation errors
         $validation_erros = [];
@@ -142,16 +143,16 @@ final class MAV2_Ajax_Admin
             $validation_erros['billing_last_name'] = 'Last name is required';
         }
 
-        if (! filter_var($billing_email, FILTER_VALIDATE_EMAIL)) {
-            $validation_erros['billing_email'] = 'Email is required';
-        }
+        // if (! filter_var($billing_email, FILTER_VALIDATE_EMAIL)) {
+        //     $validation_erros['billing_email'] = 'Email is required';
+        // }
 
         $pattern = '/^\+?[0-9]{1,3}(\s*|-)?\(?\d{1,4}\)?(\s*|-)?[0-9]{1,5}(\s*|-)?[0-9]{1,5}(\s*|-)?[0-9]{1,5}$/';
 
-        if (preg_match($pattern, $billing_phone)) {
-        } else {
-            $validation_erros['billing_phone'] = 'Phone is required';
-        }
+        // if (preg_match($pattern, $billing_phone)) {
+        // } else {
+        //     $validation_erros['billing_phone'] = 'Phone is required';
+        // }
 
         if (strlen($billing_address_1) < 3) {
             $validation_erros['billing_address_1'] = 'Address is required';
@@ -180,20 +181,20 @@ final class MAV2_Ajax_Admin
 
         update_user_meta($user_id, 'billing_first_name', $billing_first_name);
         update_user_meta($user_id, 'billing_last_name', $billing_last_name);
-        update_user_meta($user_id, 'billing_email', $billing_email);
-        update_user_meta($user_id, 'billing_phone', $billing_phone);
+        // update_user_meta($user_id, 'billing_email', $billing_email);
+        // update_user_meta($user_id, 'billing_phone', $billing_phone);
         update_user_meta($user_id, 'billing_address_1', $billing_address_1);
-        update_user_meta($user_id, 'billing_address_2', $billing_address_2);
+        // update_user_meta($user_id, 'billing_address_2', $billing_address_2);
         update_user_meta($user_id, 'billing_city', $billing_city);
         update_user_meta($user_id, 'billing_postcode', $billing_postcode);
         update_user_meta($user_id, 'billing_country', $billing_country);
 
         update_user_meta($user_id, 'shipping_first_name', $billing_first_name);
         update_user_meta($user_id, 'shipping_last_name', $billing_last_name);
-        update_user_meta($user_id, 'shipping_email', $billing_email);
-        update_user_meta($user_id, 'shipping_phone', $billing_phone);
+        // update_user_meta($user_id, 'shipping_email', $billing_email);
+        // update_user_meta($user_id, 'shipping_phone', $billing_phone);
         update_user_meta($user_id, 'shipping_address_1', $billing_address_1);
-        update_user_meta($user_id, 'shipping_address_2', $billing_address_2);
+        // update_user_meta($user_id, 'shipping_address_2', $billing_address_2);
         update_user_meta($user_id, 'shipping_city', $billing_city);
         update_user_meta($user_id, 'shipping_postcode', $billing_postcode);
         update_user_meta($user_id, 'shipping_country', $billing_country);
@@ -217,7 +218,25 @@ final class MAV2_Ajax_Admin
             $order_ids[] = $sub->get_id();
         }
 
-        wp_send_json_success($order_ids);
+        // update pccc
+       
+        $sql = "SELECT id FROM wp_wc_orders WHERE customer_id = $user_id";
+        $orders = $wpdb->get_results($sql);
+
+        $customer = new WC_Customer($user_id);
+
+        $order_ids = [];
+
+        foreach ($orders as $sub) {
+            $sub_id = $sub->id;
+            $sub = wc_get_order($sub_id);
+            $sub->update_meta_data('pccc-dual', $pccc);          
+            $sub->update_meta_data('sk_pccc', $pccc);          
+            $sub->save();
+            
+        }
+
+        wp_send_json_success('ok');
     }
 
     public function user_account_details_update_form()

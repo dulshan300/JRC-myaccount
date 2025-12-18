@@ -55,7 +55,9 @@ $display_name = $user->display_name;
         </div>
 
 
-        <button type="submit">Submit</button>
+        <div class="">
+            <button type="submit">Submit</button>
+        </div>
 
         <div class="mav2_success_alert" style="display: none;">Successfully Updated</div>
     </form>

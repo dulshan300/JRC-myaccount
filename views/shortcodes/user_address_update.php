@@ -1,4 +1,7 @@
 <?php
+
+global $wpdb;
+
 $user_id = get_current_user_id();
 
 if (empty($user_id)) {
@@ -11,13 +14,19 @@ if (empty($user_id)) {
 
 $billing_first_name = get_user_meta($user_id, 'billing_first_name', true);
 $billing_last_name = get_user_meta($user_id, 'billing_last_name', true);
-$billing_email = get_user_meta($user_id, 'billing_email', true);
-$billing_phone = get_user_meta($user_id, 'billing_phone', true);
+// $billing_email = get_user_meta($user_id, 'billing_email', true);
+// $billing_phone = get_user_meta($user_id, 'billing_phone', true);
 $billing_address_1 = get_user_meta($user_id, 'billing_address_1', true);
-$billing_address_2 = get_user_meta($user_id, 'billing_address_2', true);
+// $billing_address_2 = get_user_meta($user_id, 'billing_address_2', true);
 $billing_city = get_user_meta($user_id, 'billing_city', true);
 $billing_postcode = get_user_meta($user_id, 'billing_postcode', true);
 $billing_country = get_user_meta($user_id, 'billing_country', true);
+
+// get pccc
+$pcc_sql = 'select om.meta_value from wp_wc_orders_meta om LEFT JOIN wp_wc_orders od on od.id = om.order_id where om.meta_key LIKE"%pccc_dual%"and od.customer_id = %s GROUP BY om.meta_value LIMIT 1';
+$pcc_q = $wpdb->prepare($pcc_sql, $user_id);
+$pccc = $wpdb->get_var($pcc_q);
+
 
 $countries_obj = new WC_Countries(); // Initialize the WC_Countries class
 $countries = $countries_obj->get_countries(); // Get the list of countries
@@ -26,7 +35,6 @@ $countries = $countries_obj->get_countries(); // Get the list of countries
 
 <div id="user_address_update">
     <form id="user_address_update_form">
-
 
         <div class="mav2_fg_row">
 
@@ -44,30 +52,16 @@ $countries = $countries_obj->get_countries(); // Get the list of countries
 
         </div>
 
-        <div class="mav2_fg_row">
-
-            <div class="mav2_fg">
-                <label for="billing_email">Email address <span class="astric">*</span></label>
-                <input type="email" name="billing_email" id="billing_email" autocomplete="email" value="<?= $billing_email; ?>" required>
-                <span id="fbilling_email_error" style="display: none;" class="mav2_error"></span>
-            </div>
-
-            <div class="mav2_fg">
-                <label for="billing_phone">Phone <span class="astric">*</span></label>
-                <input type="tel" name="billing_phone" id="billing_phone" value="<?= $billing_phone; ?>" autocomplete="tel" required>
-                <span id="billing_phone_error" style="display: none;" class="mav2_error"></span>
-            </div>
+        <div class="mav2_fg">
+            <label for="billing_address_1">Street address <span class="astric">*</span></label>
+            <input type="text" name="billing_address_1" id="billing_address_1" autocomplete="address-line1" value="<?= $billing_address_1; ?>" required>
+            <span id="billing_address_1_error" style="display: none;" class="mav2_error"></span>
 
         </div>
 
+
         <div class="mav2_fg_row">
 
-            <div class="mav2_fg">
-                <label for="billing_address_1">Street address <span class="astric">*</span></label>
-                <input type="text" name="billing_address_1" id="billing_address_1" autocomplete="address-line1" value="<?= $billing_address_1; ?>" required>
-                <span id="billing_address_1_error" style="display: none;" class="mav2_error"></span>
-                <input type="text" name="billing_address_2" id="billing_address_2" autocomplete="address-line2" value="<?= $billing_address_2; ?>" placeholder="Apartment, suite, unit etc. (optional)">
-            </div>
 
             <div class="mav2_fg">
                 <label for="billing_country">Country / Region <span class="astric">*</span></label>
@@ -80,22 +74,32 @@ $countries = $countries_obj->get_countries(); // Get the list of countries
                 <span id="billing_country_error" style="display: none;" class="mav2_error"></span>
             </div>
 
+            <div class="mav2_fg">
+                <label for="billing_city">City</label>
+                <input type="text" name="billing_city" id="billing_city" value="<?= $billing_city; ?>" autocomplete="address-level2">
+            </div>
+
         </div>
 
 
         <div class="mav2_fg_row">
             <div class="mav2_fg">
-                <label for="billing_postcode">Postcode / ZIP <span class="astric">*</span></label>
+                <label for="billing_postcode">Postcode <span class="astric">*</span></label>
                 <input type="text" name="billing_postcode" id="billing_postcode" value="<?= $billing_postcode; ?>" autocomplete="postal-code" required>
                 <span id="billing_postcode_error" style="display: none;" class="mav2_error"></span>
             </div>
+
             <div class="mav2_fg">
-                <label for="billing_city">Town / City (optional)</label>
-                <input type="text" name="billing_city" id="billing_city" value="<?= $billing_city; ?>" autocomplete="address-level2">
+                <label for="pccc">PCCC </label>
+                <input type="text" name="pccc" id="pccc" value="<?= $pccc; ?>" autocomplete="pccc">
+                <span id="pccc_error" style="display: none;" class="mav2_error"></span>
             </div>
+
         </div>
 
-        <button type="submit">Submit</button>
+        <div class="">
+            <button type="submit">Save</button>
+        </div>
 
         <div class="mav2_success_alert" style="display: none;">Successfully Updated</div>
 
