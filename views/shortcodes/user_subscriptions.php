@@ -238,6 +238,7 @@ foreach ($res as $sub) {
             'id' => $q_data->id,
             'status' => str_replace('wc-', '', $q_data->status),
             'date' => $q_data->date_created_gmt,
+            'date_title' => strtoupper(date('F Y', strtotime($q_data->date_created_gmt))),
             'date_loc' => $check_stamp,
             'img' => '',
             'tracking' => mav2_get_tracking($q_data)
@@ -348,109 +349,79 @@ foreach ($res as $sub) {
 
             <template v-for="sub in subscription_data">
 
-                <div class="sub_card">
-                    <div class="sub_card_header">
-                        <div class="left">
-                            <span class="sub_id"><span>Subscription ID:</span> #{{sub.id}}</span>
-                            <h3 class="sub_product_name">{{sub.product}}</h3>
-                            <h4 class="sub_plan_name">{{sub.plan}}</h4>
-                        </div>
-                        <div class="right">
-                            <div class="traking">
-                                <!-- truck svg -->
-
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M16 3H1V16H16V3Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    <path d="M16 8H20L23 11V16H16V8Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    <path d="M5.5 21C6.88071 21 8 19.8807 8 18.5C8 17.1193 6.88071 16 5.5 16C4.11929 16 3 17.1193 3 18.5C3 19.8807 4.11929 21 5.5 21Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    <path d="M18.5 21C19.8807 21 21 19.8807 21 18.5C21 17.1193 19.8807 16 18.5 16C17.1193 16 16 17.1193 16 18.5C16 19.8807 17.1193 21 18.5 21Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-
-                                <!-- end truck svg -->
-
-                                <div class="tracking_number">
-                                    <span>Track My Latest Order:</span>
-                                    <span v-html="sub.last_order_details.tracking"> </span>
-                                </div>
-
+                <div class="subscription-container">
+                    <div class="monthly-grid">
+                        <div v-for="o3 in sub.last_3_orders" class="month-card">
+                            <h2 class="month-title">{{o3.date_title}}</h2>
+                            <p v-if="o3.status=='processing'" class="status">Processing</p>
+                            <p v-else class="status">Shipped - <span class="tracking" v-html="o3.tracking"></span></p>
+                            <div class="image-wrapper">
+                                <img :src="o3.img" :alt="o3.date_title">
                             </div>
                         </div>
                     </div>
 
-                    <div class="sub_card_details">
-
-                        <!-- plan details -->
-                        <div class="sub_plan_details">
-                            <span class="sub_plan_shipped"><span>No. of Boxes Shipped:&nbsp; </span> {{sub.shipped}}</span>
-                            <span class="sub_plan_created"><span>Subscription Date:&nbsp;</span> {{sub.created_at}}</span>
-                            <span v-if="sub.status != 'wc-cancelled'" class="sub_plan_next_renew"><span>Next Payment Renewal Date:&nbsp;</span> {{sub.next_payment}}</span>
-
-
-                            <div class="sub_plan_status">
-                                <div class="sub_action_buttons">
-                                    <button v-if="sub.status == 'wc-active'" type="button" @click.prevent="showCancleOpenPopup(sub.id,sub.plan_raw)" class="sub_button sub_plan_cancel_sub">Cancel Subscription</button>
-                                    <button v-if="sub.status == 'wc-active'" type="button" @click.prevent="showUpdatePopup(sub.id)" class="sub_button sub_plan_cancel_sub">Change Subscription</button>
-
-                                    <span v-else-if="sub.status == 'wc-cancelled'" class="sub_status sub_plan_inactive">Cancelled</span>
-
-                                    <span v-else class="sub_status sub_plan_pending">Pending</span>
-
-                                </div>
-
-                                <span class="sub_plan_cancel_note">Note: Cancellation & Update will take effect only after your current cycle ends.</span>
-                            </div>
-                        </div>
-
-                        <!-- product values -->
-                        <div class="sub_product_values">
-                            <span class="sub_product_value"><span>Product Value:&nbsp;</span> <span v-html="sub.currency + sub.product_value"> </span></span>
-                            <span class="sub_product_subtotal"><span>Subtotal:&nbsp;</span> <span v-html="sub.currency + sub.product_value"> </span></span>
-                            <span class="sub_product_shipping"><span>Shipping:&nbsp;</span> <span v-html="sub.currency + sub.shipping"> </span></span>
-                            <span class="sub_product_discount"><span>Discount:&nbsp;</span> <span v-html="sub.currency + sub.discount"> </span></span>
-                            <span class="sub_product_total"><span>Total:&nbsp;</span> <span v-html="sub.currency + sub.total"> </span></span>
-                        </div>
-
-                        <!-- address details -->
-
-                        <div class="sub_plan_shipping">
-                            <ul>
-
-                                <li v-for="link in sub.address" class="sub_address_line">{{line}}</li>
-
-                            </ul>
-                        </div>
-
-                    </div>
-                    <div class="order_history">
-                        <div class="oh_header">
-                            <span class="oh_title">Order History</span>
-                            <button type="button" class="arrow">
+                    <div class="details-section">
+                        <div class="details-header">
+                            <h3>SUBSCRIPTION DETAILS</h3>
+                            <!-- <span class="expand-icon">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M11.9999 13.1714L16.9497 8.22168L18.3639 9.63589L11.9999 15.9999L5.63599 9.63589L7.0502 8.22168L11.9999 13.1714Z"></path>
+                                    <path d="M11 11V7H13V11H17V13H13V17H11V13H7V11H11ZM12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20Z"></path>
                                 </svg>
-                            </button>
+                            </span> -->
                         </div>
 
-                        <div style="display: none;" class="order_history_list">
-                            <table class="order_history_table">
-                                <tr>
-                                    <th>Order ID</th>
-                                    <th>Date (GMT)</th>
-                                    <th>Tracking No.</th>
-                                </tr>
+                        <div class="details-content">
+                            <div class="left-col">
+                                <p><span>Subscription:</span> <strong>#{{sub.id}}</strong></p>
+                                <p><span>Plan:</span> {{sub.plan}}</p>
+                                <p><span>Date:</span> {{sub.created_at}}</p>
+                                <p v-if="sub.status != 'wc-cancelled'"><span>Renewal:</span> {{sub.next_payment}}</p>
+                            </div>
+                            <div class="right-col">
+                                <p><span>Shipping:</span> <span v-html="sub.shipping>0?sub.currency + sub.shipping:'Free'"> </span></p>
+                                <p><span>Discount:</span> <span v-html="sub.currency + sub.discount"> </span></p>
+                                <strong class="total"><span>Total:</span> <span v-html="sub.currency + sub.total"> </span></strong>
+                            </div>
+                        </div>
 
-                                <tr v-for="order in sub.order_history" class="order_history_item">
-                                    <td class="order_status">{{ order.id }}</td>
-                                    <td class="order_date">{{ order.date }}</td>
-                                    <td class="order_tracking" v-html="order.tracking"></td>
-                                </tr>
+                        <div class="order_history">
 
+                            <div class="details-header">
+                                <h3>Order History</h3>
+                                <span class="expand-icon arrow">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M11 11V7H13V11H17V13H13V17H11V13H7V11H11ZM12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20Z"></path>
+                                    </svg>
+                                </span>
+                            </div>
 
-                            </table>
+                            <div style="display: none;" class="order_history_list">
+                                <table class="order_history_table">
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Date (GMT)</th>
+                                        <th>Tracking No.</th>
+                                    </tr>
 
+                                    <tr v-for="order in sub.order_history" class="order_history_item">
+                                        <td class="order_status">{{ order.id }}</td>
+                                        <td class="order_date">{{ order.date }}</td>
+                                        <td class="order_tracking" v-html="order.tracking"></td>
+                                    </tr>
+
+                                </table>
+
+                            </div>
+                        </div>
+
+                        <div class="actions">
+                            <button v-if="sub.status == 'wc-active'" @click.prevent="showUpdatePopup(sub.id)" class="btn btn-outline">Change Plan</button>
+                            <button v-if="sub.status == 'wc-active'" @click.prevent="showCancleOpenPopup(sub.id,sub.plan_raw)" class="btn btn-outline">Cancel Plan</button>
+                            <span v-else-if="sub.status == 'wc-cancelled'" class="btn btn-disabled">Cancelled</span>
+                            <span v-else class="btn btn-disabled">Pending</span>
                         </div>
                     </div>
-
                 </div>
 
             </template>

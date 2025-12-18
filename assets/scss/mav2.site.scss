@@ -220,6 +220,243 @@
     gap: 20px;
     position: relative;
 
+    $primary-text: #333;
+    $secondary-text: #666;
+    $accent-color: #8b7355; // Gold/Brownish tone
+    $border-color: #e0dcd0;
+    $bg-color: #fdfcf8;
+
+    .subscription-container {
+        padding: 20px;
+        background-color: $bg-color;
+        color: $primary-text;
+
+        max-width: 780px;
+        width: 100%;
+        margin: 0 auto;
+
+        * {
+            font-family: "Plus Jakarta Sans", Sans-serif;
+        }
+
+        .monthly-grid {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+            justify-content: space-between;
+
+            .month-card {
+                flex: 1;
+                text-align: center;
+                max-width: 200px;
+                width: 100%;
+
+                .month-title {
+                    font-size: 1.1rem;
+                    letter-spacing: 1px;
+                    margin-bottom: 5px;
+                    text-transform: uppercase;
+                    font-weight: 700;
+                }
+
+                .status {
+                    font-size: 0.9rem;
+                    color: $secondary-text;
+                    margin-bottom: 15px;
+
+                    .tracking {
+                        text-decoration: underline;
+                        color: $secondary-text;
+                        a{
+                            color: $secondary-text;
+                        }
+                    }
+                }
+
+                .image-wrapper {
+                    img {
+                        width: 100%;
+                        border-radius: 12px;
+                        display: block;
+                    }
+                }
+            }
+        }
+
+        .details-section {
+
+            padding-top: 5px;
+
+            .details-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                border-bottom: 1px solid $accent-color;
+                padding-bottom: 10px;
+
+                h3 {
+                    font-size: 1.2rem;
+                    letter-spacing: 1px;
+                    margin: 0;
+                    font-weight: 700;
+                }
+
+                .expand-icon {
+
+                    font-size: 1.5rem;
+                    color: $accent-color;
+                    width: 24px;
+                    height: 24px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                }
+            }
+
+            .details-content {
+                display: flex;
+                justify-content: space-between;
+                line-height: 1.8;
+                font-size: 1rem;
+
+                .left-col {
+                    display: flex;
+                    flex-direction: column;
+
+                    p {
+                        margin: 0;
+                        padding: 0;
+                    }
+                }
+
+                .right-col {
+                    text-align: right;
+                    display: flex;
+                    flex-direction: column;
+
+                    p {
+                        margin: 0;
+                        padding: 0;
+                    }
+
+
+                    .total {
+                        font-size: 1.1rem;
+                        margin-top: 10px;
+                    }
+                }
+            }
+
+            .actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 15px;
+                margin-top: 30px;
+
+                .btn {
+                    padding: 12px 30px;
+                    border-radius: 8px;
+                    background: transparent;
+                    border: 1px solid #4a5568;
+                    cursor: pointer;
+                    font-size: 1rem;
+                    transition: all 0.2s;
+
+                    &:hover {
+                        background: #f7fafc;
+                        border-color: #2d3748;
+                    }
+
+                    &.btn-disabled {
+                        background: #dedede;
+                        border-color: #fdfcf8;
+                        color: #9b9a97;
+                    }
+                }
+            }
+
+
+        }      
+
+        .order_history {
+            display: flex;
+            flex-direction: column;
+            margin-top: 20px;
+
+            .oh_header {
+                display: flex;
+                width: 100%;
+                justify-content: space-between;
+                padding: 1% !important;
+
+                padding: 1%;
+                border: 1px solid #eee;
+                border-radius: 8px;
+                background-color: transparent;
+
+                .oh_title {
+                    font-weight: bold !important;
+                    font-size: 1.3em !important;
+                }
+
+                .arrow {
+                    display: flex;
+                    width: 24px;
+                    border-radius: 50%;
+                    border: none;
+                    background: #001A43;
+                    cursor: pointer;
+                    transition: all 0.3s;
+
+                    &.flip {
+                        transform: rotate(180deg);
+                    }
+
+                    svg {
+                        fill: #fff;
+                    }
+
+                }
+            }
+
+            .order_history_list {
+                table {
+                    width: 100%;
+                    text-align: left;
+                    border-collapse: collapse;
+
+                    th {
+                        font-weight: bold !important;
+                        border-bottom: 1px solid gray;
+                    }
+
+                    td,
+                    th {
+                        padding: 10px !important;
+                    }
+                }
+            }
+        }
+    }
+
+    // Simple Responsive adjustment
+    @media (max-width: 768px) {
+        .subscription-container .monthly-grid {
+            flex-direction: column;
+            gap: 20px
+        }
+
+        .details-content {
+            flex-direction: column;
+
+            .right-col {
+                text-align: left;
+            }
+        }
+    }
+
     .sub_card {
 
         * {

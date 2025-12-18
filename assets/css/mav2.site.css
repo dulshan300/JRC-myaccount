@@ -254,6 +254,246 @@
   gap: 20px;
   position: relative;
 }
+#sub_cards .subscription-container {
+  padding: 20px;
+  background-color: #fdfcf8;
+  color: #333;
+  max-width: 780px;
+  width: 100%;
+  margin: 0 auto;
+}
+#sub_cards .subscription-container * {
+  font-family: "Plus Jakarta Sans", Sans-serif;
+}
+#sub_cards .subscription-container .monthly-grid {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 20px;
+  margin-bottom: 40px;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+}
+#sub_cards .subscription-container .monthly-grid .month-card {
+  -webkit-box-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+  text-align: center;
+  max-width: 200px;
+  width: 100%;
+}
+#sub_cards .subscription-container .monthly-grid .month-card .month-title {
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+#sub_cards .subscription-container .monthly-grid .month-card .status {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 15px;
+}
+#sub_cards .subscription-container .monthly-grid .month-card .status .tracking {
+  text-decoration: underline;
+  color: #666;
+}
+#sub_cards .subscription-container .monthly-grid .month-card .status .tracking a {
+  color: #666;
+}
+#sub_cards .subscription-container .monthly-grid .month-card .image-wrapper img {
+  width: 100%;
+  border-radius: 12px;
+  display: block;
+}
+#sub_cards .subscription-container .details-section {
+  padding-top: 5px;
+}
+#sub_cards .subscription-container .details-section .details-header {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #8b7355;
+  padding-bottom: 10px;
+}
+#sub_cards .subscription-container .details-section .details-header h3 {
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  margin: 0;
+  font-weight: 700;
+}
+#sub_cards .subscription-container .details-section .details-header .expand-icon {
+  font-size: 1.5rem;
+  color: #8b7355;
+  width: 24px;
+  height: 24px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  cursor: pointer;
+}
+#sub_cards .subscription-container .details-section .details-content {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  line-height: 1.8;
+  font-size: 1rem;
+}
+#sub_cards .subscription-container .details-section .details-content .left-col {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+}
+#sub_cards .subscription-container .details-section .details-content .left-col p {
+  margin: 0;
+  padding: 0;
+}
+#sub_cards .subscription-container .details-section .details-content .right-col {
+  text-align: right;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+}
+#sub_cards .subscription-container .details-section .details-content .right-col p {
+  margin: 0;
+  padding: 0;
+}
+#sub_cards .subscription-container .details-section .details-content .right-col .total {
+  font-size: 1.1rem;
+  margin-top: 10px;
+}
+#sub_cards .subscription-container .details-section .actions {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: end;
+      -ms-flex-pack: end;
+          justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+}
+#sub_cards .subscription-container .details-section .actions .btn {
+  padding: 12px 30px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid #4a5568;
+  cursor: pointer;
+  font-size: 1rem;
+  -webkit-transition: all 0.2s;
+  transition: all 0.2s;
+}
+#sub_cards .subscription-container .details-section .actions .btn:hover {
+  background: #f7fafc;
+  border-color: #2d3748;
+}
+#sub_cards .subscription-container .details-section .actions .btn.btn-disabled {
+  background: #dedede;
+  border-color: #fdfcf8;
+  color: #9b9a97;
+}
+#sub_cards .subscription-container .order_history {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  margin-top: 20px;
+}
+#sub_cards .subscription-container .order_history .oh_header {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 100%;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  padding: 1% !important;
+  padding: 1%;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background-color: transparent;
+}
+#sub_cards .subscription-container .order_history .oh_header .oh_title {
+  font-weight: bold !important;
+  font-size: 1.3em !important;
+}
+#sub_cards .subscription-container .order_history .oh_header .arrow {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 24px;
+  border-radius: 50%;
+  border: none;
+  background: #001A43;
+  cursor: pointer;
+  -webkit-transition: all 0.3s;
+  transition: all 0.3s;
+}
+#sub_cards .subscription-container .order_history .oh_header .arrow.flip {
+  -webkit-transform: rotate(180deg);
+          transform: rotate(180deg);
+}
+#sub_cards .subscription-container .order_history .oh_header .arrow svg {
+  fill: #fff;
+}
+#sub_cards .subscription-container .order_history .order_history_list table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+#sub_cards .subscription-container .order_history .order_history_list table th {
+  font-weight: bold !important;
+  border-bottom: 1px solid gray;
+}
+#sub_cards .subscription-container .order_history .order_history_list table td,
+#sub_cards .subscription-container .order_history .order_history_list table th {
+  padding: 10px !important;
+}
+@media (max-width: 768px) {
+  #sub_cards .subscription-container .monthly-grid {
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column;
+    gap: 20px;
+  }
+  #sub_cards .details-content {
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column;
+  }
+  #sub_cards .details-content .right-col {
+    text-align: left;
+  }
+}
 #sub_cards .sub_card {
   background: #fff;
   padding: 24px;
