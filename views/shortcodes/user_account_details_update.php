@@ -26,13 +26,13 @@ $display_name = $user->display_name;
         <div class="mav2_fg_row">
 
             <div class="mav2_fg">
-                <label for="first_name">First name *</label>
+                <label for="first_name">First name <span class="astric">*</span></label>
                 <input type="text" name="first_name" id="first_name" autocomplete="given-name" value="<?= $first_name; ?>" required>
                 <span id="first_name_error" style="display: none;" class="mav2_error"></span>
             </div>
 
             <div class="mav2_fg">
-                <label for="last_name">Last name *</label>
+                <label for="last_name">Last name <span class="astric">*</span></label>
                 <input type="text" name="last_name" id="last_name" autocomplete="family-name" value="<?= $last_name; ?>" required>
                 <span id="last_name_error" style="display: none;" class="mav2_error"></span>
             </div>
@@ -41,13 +41,13 @@ $display_name = $user->display_name;
 
         <div class="mav2_fg_row">
             <div class="mav2_fg">
-                <label for="display_name">Display name *</label>
+                <label for="display_name">Display name <span class="astric">*</span></label>
                 <input type="text" name="display_name" id="display_name" value="<?= $display_name; ?>" required>
                 <span id="display_name_error" style="display: none;" class="mav2_error"></span>
             </div>
 
             <div class="mav2_fg">
-                <label for="email">Email *</label>
+                <label for="email">Email <span class="astric">*</span></label>
                 <input type="text" name="email" id="email" value="<?= $email; ?>" required>
                 <span id="ua_email_error" style="display: none;" class="mav2_error"></span>
             </div>

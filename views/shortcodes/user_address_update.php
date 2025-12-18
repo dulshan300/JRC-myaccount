@@ -31,13 +31,13 @@ $countries = $countries_obj->get_countries(); // Get the list of countries
         <div class="mav2_fg_row">
 
             <div class="mav2_fg">
-                <label for="billing_first_name">First name *</label>
+                <label for="billing_first_name">First name <span class="astric">*</span></label>
                 <input type="text" name="billing_first_name" id="billing_first_name" autocomplete="given-name" value="<?= $billing_first_name; ?>" required>
                 <span id="billing_first_name_error" style="display: none;" class="mav2_error"></span>
             </div>
 
             <div class="mav2_fg">
-                <label for="billing_last_name">Last name *</label>
+                <label for="billing_last_name">Last name <span class="astric">*</span></label>
                 <input type="text" name="billing_last_name" id="billing_last_name" autocomplete="family-name" value="<?= $billing_last_name; ?>" required>
                 <span id="billing_last_name_error" style="display: none;" class="mav2_error"></span>
             </div>
@@ -47,13 +47,13 @@ $countries = $countries_obj->get_countries(); // Get the list of countries
         <div class="mav2_fg_row">
 
             <div class="mav2_fg">
-                <label for="billing_email">Email address *</label>
+                <label for="billing_email">Email address <span class="astric">*</span></label>
                 <input type="email" name="billing_email" id="billing_email" autocomplete="email" value="<?= $billing_email; ?>" required>
                 <span id="fbilling_email_error" style="display: none;" class="mav2_error"></span>
             </div>
 
             <div class="mav2_fg">
-                <label for="billing_phone">Phone *</label>
+                <label for="billing_phone">Phone <span class="astric">*</span></label>
                 <input type="tel" name="billing_phone" id="billing_phone" value="<?= $billing_phone; ?>" autocomplete="tel" required>
                 <span id="billing_phone_error" style="display: none;" class="mav2_error"></span>
             </div>
@@ -63,14 +63,14 @@ $countries = $countries_obj->get_countries(); // Get the list of countries
         <div class="mav2_fg_row">
 
             <div class="mav2_fg">
-                <label for="billing_address_1">Street address *</label>
+                <label for="billing_address_1">Street address <span class="astric">*</span></label>
                 <input type="text" name="billing_address_1" id="billing_address_1" autocomplete="address-line1" value="<?= $billing_address_1; ?>" required>
                 <span id="billing_address_1_error" style="display: none;" class="mav2_error"></span>
                 <input type="text" name="billing_address_2" id="billing_address_2" autocomplete="address-line2" value="<?= $billing_address_2; ?>" placeholder="Apartment, suite, unit etc. (optional)">
             </div>
 
             <div class="mav2_fg">
-                <label for="billing_country">Country / Region *</label>
+                <label for="billing_country">Country / Region <span class="astric">*</span></label>
                 <select name="billing_country" id="billing_country" required>
                     <option value="">Select a country / region…</option>
                     <?php foreach ($countries as $key => $value) { ?>
@@ -85,7 +85,7 @@ $countries = $countries_obj->get_countries(); // Get the list of countries
 
         <div class="mav2_fg_row">
             <div class="mav2_fg">
-                <label for="billing_postcode">Postcode / ZIP *</label>
+                <label for="billing_postcode">Postcode / ZIP <span class="astric">*</span></label>
                 <input type="text" name="billing_postcode" id="billing_postcode" value="<?= $billing_postcode; ?>" autocomplete="postal-code" required>
                 <span id="billing_postcode_error" style="display: none;" class="mav2_error"></span>
             </div>

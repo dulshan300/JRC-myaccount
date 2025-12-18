@@ -267,7 +267,8 @@
                     .tracking {
                         text-decoration: underline;
                         color: $secondary-text;
-                        a{
+
+                        a {
                             color: $secondary-text;
                         }
                     }
@@ -378,7 +379,7 @@
             }
 
 
-        }      
+        }
 
         .order_history {
             display: flex;
@@ -749,17 +750,27 @@
         }
 
         .mav2_fg {
+            position: relative;
             flex: 1;
             display: flex;
             flex-direction: column;
             gap: 5px;
 
             label {
-                display: block;
-                font-size: 1rem;
-                margin-bottom: 5px;
-                font-weight: 600;
-                color: #333;
+                position: absolute;
+                z-index: 1;
+                background: #fff;
+                font-size: 12px !important;
+                border-radius: 30px;
+                padding: 0 5px !important;
+                font-weight: bold !important;
+                top: -9px;
+                left: 12px;
+                color: black;
+
+                span.astric{
+                    color: red;
+                }
             }
 
             .with_icon {
@@ -784,12 +795,13 @@
                 width: 100%;
                 padding: 8px 15px;
                 background-color: #ffffff;
-                border: 1px solid var(--e-global-color-accent);
-                border-radius: 5px;
+                border: 1px solid #D2D5DA;
+                border-radius: 8px;
                 font-size: 16px;
                 color: rgb(88, 87, 87);
                 height: 50px;
                 max-height: 50px;
+                box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.09);
 
                 &:focus {
                     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .1);
