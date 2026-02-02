@@ -47,8 +47,11 @@ foreach ($cancelling_coupons as $key => $coupon_code) {
 
         <div class="jrc_popup_panel">
 
-            <button v-if="canClose" @click.prevent="$emit('close')" type="button" class="jrc_popup_panel_header_control_close">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x">
+            <button v-if="canClose" @click.prevent="$emit('close')" type="button"
+                class="jrc_popup_panel_header_control_close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="lucide lucide-x-icon lucide-x">
                     <path d="M18 6 6 18" />
                     <path d="m6 6 12 12" />
                 </svg>
@@ -138,50 +141,50 @@ foreach ($cancelling_coupons as $key => $coupon_code) {
             }
 
             const reasons = ref([{
-                    id: 1,
-                    text: "The subscription cost is too high",
-                    action: "switch-plan"
-                },
-                {
-                    id: 2,
-                    text: "The variety of snacks is limited",
-                    action: null
-                },
-                {
-                    id: 3,
-                    text: "Too many snacks delivered each month",
-                    action: null
-                },
-                {
-                    id: 4,
-                    text: "Poor snack quality",
-                    action: "feedback"
-                },
-                {
-                    id: 5,
-                    text: "I only wanted a one-time subscription",
-                    action: "discount"
-                },
-                {
-                    id: 6,
-                    text: "Frequent delivery delays",
-                    action: null
-                },
-                {
-                    id: 7,
-                    text: "I've lost interest in receiving regular snacks",
-                    action: null
-                },
-                {
-                    id: 8,
-                    text: "I've moved to a new address",
-                    action: "address"
-                },
-                {
-                    id: 9,
-                    text: "Others or additional feedback",
-                    action: "feedback"
-                }
+                id: 1,
+                text: "The subscription cost is too high",
+                action: "switch-plan"
+            },
+            {
+                id: 2,
+                text: "The variety of snacks is limited",
+                action: null
+            },
+            {
+                id: 3,
+                text: "Too many snacks delivered each month",
+                action: null
+            },
+            {
+                id: 4,
+                text: "Poor snack quality",
+                action: "feedback"
+            },
+            {
+                id: 5,
+                text: "I only wanted a one-time subscription",
+                action: "discount"
+            },
+            {
+                id: 6,
+                text: "Frequent delivery delays",
+                action: null
+            },
+            {
+                id: 7,
+                text: "I've lost interest in receiving regular snacks",
+                action: null
+            },
+            {
+                id: 8,
+                text: "I've moved to a new address",
+                action: "address"
+            },
+            {
+                id: 9,
+                text: "Others or additional feedback",
+                action: "feedback"
+            }
             ]);
 
             const msg = ref('hello world');
@@ -209,7 +212,7 @@ foreach ($cancelling_coupons as $key => $coupon_code) {
             const other_reasons = ref('');
             const other_reasons_error = ref(false);
 
-            const setProcessing = (status = false, text = 'Processing...', ) => {
+            const setProcessing = (status = false, text = 'Processing...',) => {
                 processing_text.value = text;
                 processing.value = status;
                 if (status) setPanel(PANELS.LOADING);
@@ -514,6 +517,49 @@ foreach ($cancelling_coupons as $key => $coupon_code) {
                 showUpdatePopup();
             }
 
+            const downloadInvoice = async (subid) => {
+
+                const formData = new FormData();
+                formData.append('action', 'mav2_download_subscription_invoice');
+                formData.append('id', subid);
+                formData.append('nonce', mav2.nonce);
+
+                fetch(mav2.ajaxurl, {
+                    method: 'POST', // Use POST if you are sending invoice data
+                    body: formData, // Example data
+
+                })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        // $('#order_processing').fadeOut(200);
+                        return response.blob(); // Convert the response to a Blob
+                    })
+                    .then(blob => {                    
+                        
+                        // Create a local URL for the binary data
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+
+                        a.style.display = 'none';
+                        a.href = url;
+
+                        // Set the filename based on the source data (e.g., Invoice 12345)
+                        a.download = `Invoice_${subid}.pdf`;
+
+                        document.body.appendChild(a);
+                        a.click(); // Trigger the download
+
+                        // Cleanup
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        // $('#order_processing').fadeOut(200);
+                    })
+                    .catch(error => {
+                        console.error('Download failed:', error);
+                        // $('#order_processing').fadeOut(200);
+                    });
+
+            }
 
             return {
                 msg,
@@ -542,6 +588,7 @@ foreach ($cancelling_coupons as $key => $coupon_code) {
                 confirmUpdate,
                 processCancel,
                 cancel_plan_change,
+                downloadInvoice,
                 acceptCouponOffer,
                 cancel_anyway_handler
             }

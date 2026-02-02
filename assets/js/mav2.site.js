@@ -9,9 +9,6 @@ window.vueLoader = (properties) => {
     });
 };
 
-
-
-
 async function _ajax(data) {
     const fd = new FormData();
 
@@ -24,7 +21,8 @@ async function _ajax(data) {
     return axios.post(mav2.ajaxurl, fd, {
         headers: {
             'Content-Type': 'multipart/form-data'
-        }
+        },
+
     });
 }
 
@@ -299,13 +297,106 @@ async function _file_download(data) {
         update_panel.goTo(panel);
     })
 
-    $(document).on('click', '.invoice_download', function () {
+    $(document).on('click', '.invoice_download', async function () {
         const order_id = $(this).data('id');
         console.log(order_id);
-        
+
+        const formData = new FormData();
+        formData.append('action', 'mav2_prepair_invoice');
+        formData.append('id', order_id);
+        formData.append('nonce', mav2.nonce);
+
+        $('#order_processing').fadeIn(300);
+
+        fetch(mav2.ajaxurl, {
+            method: 'POST', // Use POST if you are sending invoice data
+            body: formData, // Example data
+
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                $('#order_processing').fadeOut(200);
+                return response.blob(); // Convert the response to a Blob
+            })
+            .then(blob => {
+                // Create a local URL for the binary data
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+
+                a.style.display = 'none';
+                a.href = url;
+
+                // Set the filename based on the source data (e.g., Invoice 12345)
+                a.download = `Invoice_${order_id}.pdf`;
+
+                document.body.appendChild(a);
+                a.click(); // Trigger the download
+
+                // Cleanup
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                $('#order_processing').fadeOut(200);
+            })
+            .catch(error => { console.error('Download failed:', error); $('#order_processing').fadeOut(200); });
+
     })
 
-   
+    $(document).on('click', '.view_items_button', async function (e) {
+        e.preventDefault();
+        const order_id = $(this).data('id');
+
+        const data = {
+            action: 'mav2_get_invoice',
+            id: order_id
+        }
+
+        $('#order_processing').fadeIn(300);
+
+        const res = await _ajax(data);
+
+        const invoiceData = res.data;
+
+
+        // 1. Fill basic text fields
+        $('#display-id').text(invoiceData.id);
+        $('#display-date').text(invoiceData.date);
+        $('#display-address').html(invoiceData.address); // Use .html() for <br> support
+        $('#display-subtotal').html(invoiceData.subtotal); // Use .html() for HTML entities like &#36;
+        $('#display-shipping').html(invoiceData.shipping);
+        $('#display-discount').html(invoiceData.discount);
+        $('#display-tax').html(invoiceData.tax);
+        $('#display-total').html(invoiceData.total);
+
+        // 2. Clear and fill the items table
+        let itemsHtml = '';
+        invoiceData.items.forEach(function (item) {
+            itemsHtml += `
+                <tr>
+                    <td>${item.name}</td>
+                    <td class="text-center">${item.quantity}</td>
+                    <td class="text-right">${item.unit_price}</td>
+                    <td class="text-right">${item.price}</td>
+                </tr>`;
+        });
+        $('#display-items').html(itemsHtml);
+        $('#order_processing').fadeOut(200);
+        $('#invoiceModal').fadeIn(300);
+
+        console.log(res);
+
+    })
+
+    $(document).on('click', '.close-modal', function () {
+        $('#invoiceModal').fadeOut(200);
+    });
+
+    $(window).on('click', function (event) {
+        if ($(event.target).is('#invoiceModal')) {
+            $('#invoiceModal').fadeOut(200);
+        }
+    });
+
+
 
 
 })(jQuery)

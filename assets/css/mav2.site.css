@@ -136,6 +136,101 @@
   max-height: 3px;
   border-radius: 50%;
 }
+#order_cards .modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+#order_cards .modal-content {
+  position: relative;
+  background: #F8F7F2;
+  /* Matching the cream background */
+  width: 90%;
+  max-width: 700px;
+  margin: 50px auto;
+  padding: 40px;
+  border-radius: 12px;
+  font-family: sans-serif;
+  -webkit-box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-height: 95vh;
+  overflow-y: auto;
+}
+#order_cards .close-modal {
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  font-size: 28px;
+  cursor: pointer;
+  color: #666;
+}
+#order_cards .invoice-number {
+  font-size: 24px;
+  margin: 0;
+}
+#order_cards .invoice-date {
+  color: #333;
+  margin-bottom: 30px;
+}
+#order_cards .invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+#order_cards .invoice-table th {
+  border-top: 2px solid #333;
+  border-bottom: 2px solid #333;
+  padding: 10px;
+  text-align: left;
+  font-size: 14px;
+  background: transparent;
+}
+#order_cards .invoice-table td {
+  padding: 15px 10px;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+}
+#order_cards .totals-section {
+  width: 40%;
+  float: right;
+  margin-top: 20px;
+}
+#order_cards .total-row {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  padding: 5px 0;
+  font-size: 14px;
+}
+#order_cards .border-bottom {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+}
+#order_cards .final-total {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  font-weight: bold;
+  font-size: 20px;
+  padding-top: 15px;
+}
+#order_cards .text-right {
+  text-align: right;
+}
+#order_cards .text-center {
+  text-align: center;
+}
 #order_cards .order_card {
   background: #fff;
   padding: 24px;
@@ -1009,6 +1104,15 @@
   background: rgba(128, 128, 128, 0.2);
   border: 1px solid rgba(128, 128, 128, 0.2);
   color: rgba(128, 128, 128, 0.8);
+}
+
+.view_items_button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.view_items_button:hover {
+  text-decoration: underline;
 }
 
 #payment_methods {

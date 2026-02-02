@@ -1,6 +1,7 @@
 {
     "require": {
-        "stripe/stripe-php": "^14.9"
+        "stripe/stripe-php": "^14.9",
+        "mpdf/mpdf": "^8.2"
     },
     "require-dev": {
         "laravel/pint": "^1.18"

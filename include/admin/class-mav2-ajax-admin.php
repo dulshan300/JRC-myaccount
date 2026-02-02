@@ -3,7 +3,7 @@
 /**
  * Prevent direct access to the file.
  */
-if (! defined('ABSPATH')) {
+if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
@@ -173,7 +173,7 @@ final class MAV2_Ajax_Admin
             $validation_erros['billing_country'] = 'Country is required';
         }
 
-        if (! empty($validation_erros)) {
+        if (!empty($validation_erros)) {
             wp_send_json($validation_erros, 422);
 
             return;
@@ -207,8 +207,6 @@ final class MAV2_Ajax_Admin
 
         $customer = new WC_Customer($user_id);
 
-        $order_ids = [];
-
         foreach ($subscriptions as $sub) {
             $sub_id = $sub->id;
             $sub = wc_get_order($sub_id);
@@ -219,22 +217,33 @@ final class MAV2_Ajax_Admin
         }
 
         // update pccc
-       
-        $sql = "SELECT id FROM wp_wc_orders WHERE customer_id = $user_id";
-        $orders = $wpdb->get_results($sql);
 
-        $customer = new WC_Customer($user_id);
+        $sql = "SELECT id FROM wp_wc_orders WHERE customer_id = $user_id";
+
+        $orders = $wpdb->get_results($sql);
 
         $order_ids = [];
 
         foreach ($orders as $sub) {
             $sub_id = $sub->id;
             $sub = wc_get_order($sub_id);
-            $sub->update_meta_data('pccc-dual', $pccc);          
-            $sub->update_meta_data('sk_pccc', $pccc);          
+            $sub->update_meta_data('pccc-dual', $pccc);
+            $sub->update_meta_data('sk_pccc', $pccc);
             $sub->save();
-            
         }
+
+        // send email
+        $email = $customer->get_email();
+        $country = $customer->get_billing_country();
+
+        $lang = JRC_Helper::get_lang($country);
+        $subjects = [
+            'en' => 'Address Updated',
+            'cn' => '地址已更新'
+        ];
+        $subject = $subjects[$lang];
+
+        $this->send_html_email($email, $subject, "customer_address_update/$lang");
 
         wp_send_json_success('ok');
     }
@@ -243,7 +252,7 @@ final class MAV2_Ajax_Admin
     {
         $user = wp_get_current_user();
 
-        if (! is_user_logged_in()) {
+        if (!is_user_logged_in()) {
             wp_send_json_error('Please login');
 
             return;
@@ -275,7 +284,7 @@ final class MAV2_Ajax_Admin
             $validation_erros['ua_email'] = 'Email is required';
         }
 
-        if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $validation_erros['ua_email'] = 'Email is invalid';
         }
 
@@ -283,11 +292,11 @@ final class MAV2_Ajax_Admin
 
         $email_check = email_exists($email);
 
-        if (! $email_check === false & $email_check !== $user_id) {
+        if (!$email_check === false & $email_check !== $user_id) {
             $validation_erros['ua_email'] = 'Email already exists';
         }
 
-        if (! empty($validation_erros)) {
+        if (!empty($validation_erros)) {
             wp_send_json($validation_erros, 422);
 
             return;
@@ -307,7 +316,7 @@ final class MAV2_Ajax_Admin
     {
         $user = wp_get_current_user();
 
-        if (! is_user_logged_in()) {
+        if (!is_user_logged_in()) {
             wp_send_json_error('Please login');
 
             return;
@@ -321,7 +330,7 @@ final class MAV2_Ajax_Admin
         // validating password
         // check current password
 
-        if (! wp_check_password($current_password, $user->user_pass, $user->ID)) {
+        if (!wp_check_password($current_password, $user->user_pass, $user->ID)) {
 
             $validation_erros['current_password'] = 'Current password is incorrect';
         }
@@ -397,7 +406,7 @@ final class MAV2_Ajax_Admin
         // get user options
         $customer_id = get_user_meta(get_current_user_id(), 'wp__stripe_customer_id', true);
 
-        if (! empty($customer_id)) {
+        if (!empty($customer_id)) {
 
             try {
                 // check customer in stripe account
@@ -540,7 +549,7 @@ final class MAV2_Ajax_Admin
             }
         }
 
-        if (! $has_stripe) {
+        if (!$has_stripe) {
             return [
                 'has_stripe' => $has_stripe,
                 'secret_key' => false,
@@ -577,7 +586,7 @@ final class MAV2_Ajax_Admin
             $rates[$c->post_title] = floatval($r);
         }
 
-        $currency =  strtoupper($currency);
+        $currency = strtoupper($currency);
         $val = floatval($val);
         if (isset($rates[$currency])) {
             return $val * $rates[$currency];
@@ -600,7 +609,7 @@ final class MAV2_Ajax_Admin
 
         $final_v_list = [];
 
-        $default_plan =  [
+        $default_plan = [
             'id' => 'XPCgf',
             'product_id' => $product_id,
             'type' => 1, // 1 = simple 2 = prepaid
@@ -622,7 +631,7 @@ final class MAV2_Ajax_Admin
             $price = $per_month_price * $pieces * $factor;
             $save = round($per_month_price * $pieces - $price, 2);
 
-            $final_v_list[] =  [
+            $final_v_list[] = [
                 'id' => $v['slug'],
                 'type' => 2,
                 'product_id' => $product_id,
@@ -737,7 +746,6 @@ final class MAV2_Ajax_Admin
 
     public function update_subscription_plan()
     {
-
         // Validate request
         $headers = getallheaders();
         if (!isset($headers['X-From'])) {
@@ -827,7 +835,7 @@ final class MAV2_Ajax_Admin
         $sub_start_date = $last_order->get_date_created()->date('Y-m-d H:i:s');
         // get first day of the month
         $sub_start_date = date('Y-m-01', strtotime($sub_start_date));
-        $next_renew_At = date('3 F Y', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
+        $next_renew_At = date('3 F Y', strtotime($sub_start_date . ' + ' . ($remaining_peases) . ' month'));
         // $next_renew_At = date('Y-m-01', strtotime($sub_start_date));
 
         $user_data = [
@@ -859,7 +867,7 @@ final class MAV2_Ajax_Admin
 
         $admin_emails = [];
 
-        $admin_emails =  JRC_Helper::get_setting('admin_emails');
+        $admin_emails = JRC_Helper::get_setting('admin_emails');
         $admin_emails = explode(',', $admin_emails);
         $admin_emails = array_map('trim', $admin_emails);
         $admin_emails = array_filter($admin_emails, 'is_email');
@@ -1196,7 +1204,8 @@ final class MAV2_Ajax_Admin
         $fullfilled = array_merge([$parent_order_id], $fullfilled);
 
         $last_order = wc_get_order(end($fullfilled));
-        $sub_start_date = $last_order->date_updated_gmt;
+
+        $sub_start_date = $last_order->get_date_created()->date('Y-m-01');        
 
         $_next_renew = date('Y-m-d', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
         $next_renew_At_n = date('3 F Y', strtotime($_next_renew));
@@ -1216,11 +1225,218 @@ final class MAV2_Ajax_Admin
         ];
     }
 
+    private function get_invoice_data($order_id)
+    {
+
+        // prep order data
+        // order id
+        // custore billing info
+        // order date
+        // order total
+        // order subtotal
+        // order tax
+        // order shipping
+        // order discount
+        // order items
+
+        $order = wc_get_order($order_id);
+
+        if (empty($order)) {
+            return [];
+        }
+
+        $data_collection = [];
+
+        $data_collection['id'] = $order_id;
+
+
+        // check if its a virtual order or not
+        $data_collection['is_virtual'] = !$order->has_shipping_address();
+
+        $shipping_data = [
+            $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(),
+            $order->get_billing_address_1(),
+            $order->get_billing_address_2(),
+            $order->get_billing_city(),
+            $order->get_billing_postcode(),
+            $order->get_billing_country(),
+        ];
+
+        $shipping_data = array_filter($shipping_data, (function ($val) {
+            if (trim($val) != "") {
+                return $val;
+            }
+        }));
+
+        $currency = $order->get_currency();
+        $symbol = get_woocommerce_currency_symbol($currency);
+
+        $currency_format = $currency != 'TWD' ? $currency . $symbol : $symbol;
+
+        $data_collection['currency'] = $currency_format;
+
+        $data_collection['address'] = implode('<br>', $shipping_data);
+
+        $data_collection['date'] = $order->get_date_created()->format('d M Y H:i a');
+
+        $data_collection['subtotal'] = $currency_format . number_format($order->get_subtotal(), 2);
+
+        $data_collection['discount'] = $currency_format . number_format($order->get_total_discount(), 2);
+
+        $data_collection['total'] = $currency_format . number_format($order->get_total(), 2);
+
+        $data_collection['tax'] = $currency_format . number_format($order->get_total_tax(), 2);
+
+        $data_collection['shipping'] = $order->get_shipping_total() > 0 ? $currency_format . number_format($order->get_shipping_total(), 2) : 'Free';
+
+        $order_items = $order->get_items();
+
+        foreach ($order_items as $item) {
+            $temp = [
+                'name' => $item->get_name(),
+                'quantity' => $item->get_quantity(),
+                'unit_price' => $currency_format . number_format($item->get_subtotal() / $item->get_quantity(), 2),
+                'price' => $currency_format . number_format($item->get_total(), 2),
+                'subtotal' => $currency_format . number_format($item->get_subtotal(), 2),
+            ];
+
+            $data_collection['items'][] = $temp;
+        }
+
+        return $data_collection;
+    }
+
+    public function get_invoice()
+    {
+        $order_id = $_POST['id'];
+        $data_collection = $this->get_invoice_data($order_id);
+        wp_send_json($data_collection);
+    }
+
+
+    public function prepair_invoice()
+    {
+        $order_id = $_POST['id'];
+        // $order = wc_get_order('56556'); 
+        $data_collection = $this->get_invoice_data($order_id);
+
+        $template_path = MAV2_PATH . 'views/invoices/default.php';
+
+        ob_start();
+        extract($data_collection);
+        include $template_path;
+        $html = ob_get_contents();
+        ob_end_clean();
+
+        if (empty(trim($html))) {
+            wp_send_json_error('Generated HTML is empty. Check your template logic.');
+            exit;
+        }
+
+        try {
+
+            $mpdf = new \Mpdf\Mpdf([
+                'mode' => 'utf-8',
+                'autoScriptToLang' => true,
+                'autoLangToFont' => true,
+                'format' => 'A4',
+                'margin_left' => 15,
+                'margin_right' => 15,
+                'margin_top' => 15,
+                'margin_bottom' => 15,
+            ]);
+
+            $mpdf->WriteHTML($html);
+            $string = $mpdf->Output("", 'S');
+
+            // Clear buffer to prevent corruption
+            if (ob_get_length())
+                ob_end_clean();
+
+            header('Content-Type: application/pdf');
+            header('Content-Disposition: attachment; filename="' . $order_id . '.pdf"');
+            header('Content-Length: ' . strlen($string));
+            echo $string;
+        } catch (\Exception $e) {
+            wp_send_json_error('mPDF Error: ' . $e->getMessage());
+        }
+        exit;
+    }
+
+    public function download_subscription_invoice()
+    {
+        global $wpdb;
+
+        $order_id = $_POST['id'];
+        $subscription = wcs_get_subscription($order_id);
+        $parent_order_id = $subscription->get_parent_id();
+        $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
+        $renewals = $subscription->get_meta('_subscription_renewal_order_ids_cache');
+        $renewals[] = $parent_order_id;
+
+        $renews_ids_str = implode(',', $renewals);
+        $sql_latest_renew = "SELECT id FROM {$wpdb->prefix}wc_orders WHERE id IN ({$renews_ids_str}) AND total_amount>0 ORDER BY date_created_gmt DESC limit 1";
+        $result = $wpdb->get_var($sql_latest_renew);
+
+        $invoice_data = $this->get_invoice_data($result);
+        $invoice_data['id'] = $order_id;
+        $renew_dates = $this->get_subscription_renewal_date($subscription);
+
+        $invoice_data['plan'] = $current_plan . ($current_plan > 1 ? ' Months' : ' Month');
+        $invoice_data['renewal_date'] = $renew_dates['next_renew_At_n'];
+
+
+
+        $template_path = MAV2_PATH . 'views/invoices/subscription.php';
+
+        ob_start();
+        extract($invoice_data);
+        include $template_path;
+        $html = ob_get_contents();
+        ob_end_clean();
+
+        if (empty(trim($html))) {
+            wp_send_json_error('Generated HTML is empty. Check your template logic.');
+            exit;
+        }
+
+        try {
+
+            $mpdf = new \Mpdf\Mpdf([
+                'mode' => 'utf-8',
+                'autoScriptToLang' => true,
+                'autoLangToFont' => true,
+                'format' => 'A4',
+                'margin_left' => 15,
+                'margin_right' => 15,
+                'margin_top' => 15,
+                'margin_bottom' => 15,
+            ]);
+
+            $mpdf->WriteHTML($html);
+            $string = $mpdf->Output("", 'S');
+
+            // Clear buffer to prevent corruption
+            if (ob_get_length())
+                ob_end_clean();
+
+            header('Content-Type: application/pdf');
+            header('Content-Disposition: attachment; filename="' . $order_id . '.pdf"');
+            header('Content-Length: ' . strlen($string));
+            echo $string;
+        } catch (\Exception $e) {
+            wp_send_json_error('mPDF Error: ' . $e->getMessage());
+        }
+        exit;
+
+    }
+
+
     /*
-    * Get prepaid plan by subscription
-    * @param WC_Subscription $subscription
-    * @return array (plan)
-    */
+     * Get prepaid plan by subscription
+     * @param WC_Subscription $subscription
+     * @return array (plan)
+     */
     private function get_prepaid_plan_by_sub($subscription)
     {
         if (!class_exists('WC_Subscription')) {
@@ -1267,6 +1483,8 @@ final class MAV2_Ajax_Admin
         // Get the template content
         $template_path = MAV2_PATH . "views/emails/{$template}.php";
 
+        error_log('sending email to: ' . $to);
+
         if (!file_exists($template_path)) {
             return new WP_Error('email_template_missing');
         }
@@ -1294,7 +1512,7 @@ final class MAV2_Ajax_Admin
     private function send_admin_emails($template, $subject, $data)
     {
         $admin_emails = [];
-        $admin_emails =  JRC_Helper::get_setting('admin_emails');
+        $admin_emails = JRC_Helper::get_setting('admin_emails');
         $admin_emails = explode(',', $admin_emails);
         $admin_emails = array_map('trim', $admin_emails);
         $admin_emails = array_filter($admin_emails, 'is_email');

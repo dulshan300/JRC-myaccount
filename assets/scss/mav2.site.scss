@@ -125,6 +125,109 @@
         }
     }
 
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+    }
+
+    .modal-content {
+        position: relative;
+        background: #F8F7F2;
+        /* Matching the cream background */
+        width: 90%;
+        max-width: 700px;
+        margin: 50px auto;
+        padding: 40px;
+        border-radius: 12px;
+        font-family: sans-serif;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+
+    .close-modal {
+        position: absolute;
+        right: 20px;
+        top: 15px;
+        font-size: 28px;
+        cursor: pointer;
+        color: #666;
+    }
+
+
+
+    .invoice-number {
+        font-size: 24px;
+        margin: 0;
+    }
+
+    .invoice-date {
+        color: #333;
+        margin-bottom: 30px;
+    }
+
+    .invoice-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .invoice-table th {
+        border-top: 2px solid #333;
+        border-bottom: 2px solid #333;
+        padding: 10px;
+        text-align: left;
+        font-size: 14px;
+        background: transparent;
+    }
+
+    .invoice-table td {
+        padding: 15px 10px;
+        border-bottom: 1px solid #ddd;
+        font-size: 14px;
+    }
+
+    .totals-section {
+        width: 40%;
+        float: right;
+        margin-top: 20px;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        font-size: 14px;
+    }
+
+    .border-bottom {
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+    }
+
+    .final-total {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+        font-size: 20px;
+        padding-top: 15px;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
 
 
     .order_card {
@@ -768,7 +871,7 @@
                 left: 12px;
                 color: black;
 
-                span.astric{
+                span.astric {
                     color: red;
                 }
             }
@@ -833,7 +936,7 @@
             color: #fff;
             border: 1px solid var(--e-global-color-primary);
             border-radius: 8px;
-            padding: 15px 60px;           
+            padding: 15px 60px;
             transition: all 0.2s;
 
             &:hover {
@@ -851,6 +954,15 @@
     }
 }
 
+.view_items_button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline
+    }
+}
 
 #payment_methods {
 
@@ -1670,6 +1782,7 @@
         }
     }
 }
+
 
 /* Fade animation */
 .fade-enter-active,

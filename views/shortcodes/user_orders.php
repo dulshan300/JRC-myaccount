@@ -14,7 +14,7 @@ global $wpdb;
 
 
 $sql = "SELECT od.id, od.currency, od.date_created_gmt,pl.order_item_id, od.customer_id, pl.product_id, od.status, ( SELECT post_title FROM wp_posts WHERE ID = pl.product_id ) AS product, ( SELECT guid FROM wp_posts WHERE ID = ( SELECT meta_value FROM wp_postmeta WHERE post_id = pl.product_id AND meta_key ='_thumbnail_id') ) AS product_image_url, COALESCE(cl.discount_amount, 0) AS discount_amount, ( SELECT post_title FROM wp_posts WHERE ID = cl.coupon_id ) AS coupon, pl.product_net_revenue, pl.product_gross_revenue, od.total_amount, -- Extract individual meta values
- MAX( CASE WHEN oim.meta_key ='Participation Date'THEN oim.meta_value END ) AS participation_date, MAX( CASE WHEN oim.meta_key ='First Name'THEN oim.meta_value END ) AS first_name, MAX( CASE WHEN oim.meta_key ='Last Name'THEN oim.meta_value END ) AS last_name, MAX( CASE WHEN oim.meta_key ='Email Address'THEN oim.meta_value END ) AS email_address, MAX( CASE WHEN oim.meta_key ='Date Of Birth'THEN oim.meta_value END ) AS date_of_birth, MAX( CASE WHEN oim.meta_key ='Country'THEN oim.meta_value END ) AS country, MAX( CASE WHEN oim.meta_key ='Telephone Number'THEN oim.meta_value END ) AS telephone_number, MAX( CASE WHEN oim.meta_key ='Gender'THEN oim.meta_value END ) AS gender, MAX( CASE WHEN oim.meta_key ='ticket-type'THEN oim.meta_value END ) AS ticket_type FROM wp_wc_orders od LEFT JOIN wp_wc_order_product_lookup pl ON pl.order_id = od.id LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = pl.order_item_id LEFT JOIN wp_wc_order_coupon_lookup cl ON cl.order_id = od.id WHERE pl.product_id != 198 AND od.customer_id = $user_id GROUP BY od.id, od.currency, pl.order_item_id, od.customer_id, pl.product_id, od.status, pl.product_net_revenue, pl.product_gross_revenue, od.total_amount, cl.discount_amount, cl.coupon_id, pl.variation_id ORDER BY pl.variation_id ASC";
+ MAX( CASE WHEN oim.meta_key ='Participation Date'THEN oim.meta_value END ) AS participation_date, MAX( CASE WHEN oim.meta_key ='First Name'THEN oim.meta_value END ) AS first_name, MAX( CASE WHEN oim.meta_key ='Last Name'THEN oim.meta_value END ) AS last_name, MAX( CASE WHEN oim.meta_key ='Email Address'THEN oim.meta_value END ) AS email_address, MAX( CASE WHEN oim.meta_key ='Date Of Birth'THEN oim.meta_value END ) AS date_of_birth, MAX( CASE WHEN oim.meta_key ='Country'THEN oim.meta_value END ) AS country, MAX( CASE WHEN oim.meta_key ='Telephone Number'THEN oim.meta_value END ) AS telephone_number, MAX( CASE WHEN oim.meta_key ='Gender'THEN oim.meta_value END ) AS gender, MAX( CASE WHEN oim.meta_key ='ticket-type'THEN oim.meta_value END ) AS ticket_type FROM wp_wc_orders od LEFT JOIN wp_wc_order_product_lookup pl ON pl.order_id = od.id LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = pl.order_item_id LEFT JOIN wp_wc_order_coupon_lookup cl ON cl.order_id = od.id WHERE pl.product_id != 198 AND od.customer_id = $user_id GROUP BY od.id, od.currency, pl.order_item_id, od.customer_id, pl.product_id, od.status, pl.product_net_revenue, pl.product_gross_revenue, od.total_amount, cl.discount_amount, cl.coupon_id, pl.variation_id ORDER BY od.date_created_gmt DESC";
 
 $rows = $wpdb->get_results($sql);
 
@@ -117,10 +117,10 @@ foreach ($orders as $oid => $order) {
     <table>
         <thead>
             <th>Order No.</th>
-            <th>Product</th>
+            <th>Item/s</th>
             <th>Paid On</th>
             <th>Amount</th>
-            <th> Invoice </th>
+            <th>Invoice </th>
         </thead>
 
         <tbody>
@@ -129,11 +129,11 @@ foreach ($orders as $oid => $order) {
             <?php foreach ($orders as $order) { ?>
                 <tr>
                     <td>#<?= $order['id'] ?></td>
-                    <td><?= $order['product'] ?></td>
+                    <td><button data-id="<?= $order['id'] ?>" class="view_items_button">View items</button></td>
                     <td><?= $order['date_created_gmt'] ?></td>
                     <td><?= $order['currency'] ?><?= $order['total'] ?></td>
                     <td>
-                        <button data-id="<?= $order['id'] ?>" class="invoice_download"><span></span>Download</button>
+                        <button type="button" data-id="<?= $order['id'] ?>" class="invoice_download"><span></span>Download</button>
                     </td>
                 </tr>
 
@@ -150,4 +150,65 @@ foreach ($orders as $oid => $order) {
             <?php } ?>
         </tbody>
     </table>
+
+    <div id="order_processing" style="display: none;">
+        <div class="processing">
+            <div class="loader">
+                <div class="mav2-custom-loader"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="invoiceModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+
+            <h1 class="invoice-number">Invoice: #<span id="display-id"></span></h1>
+            <p class="invoice-date">Date: <span id="display-date"></span></p>
+
+            <div class="billed-section" style="margin-bottom: 20px;">
+                <strong>BILLED TO:</strong><br>
+                <span id="display-address"></span>
+            </div>
+
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-right">Unit Price</th>
+                        <th class="text-right">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="display-items">
+                </tbody>
+            </table>
+
+            <div class="totals-section">
+                <div class="total-row">
+                    <span>Subtotal</span>
+                    <span id="display-subtotal"></span>
+                </div>
+                <div class="total-row">
+                    <span>Shipping</span>
+                    <span id="display-shipping"></span>
+                </div>
+                <div class="total-row">
+                    <span>Discount</span>
+                    <span id="display-discount"></span>
+                </div>
+                <div class="total-row border-bottom">
+                    <span>Tax</span>
+                    <span id="display-tax"></span>
+                </div>
+                <div class="final-total">
+                    <span>Total</span>
+                    <span id="display-total"></span>
+                </div>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+    </div>
+
+
 </div>

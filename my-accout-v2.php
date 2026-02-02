@@ -19,9 +19,13 @@ define('MAV2_VERSION', '1.0');
 define('MAV2_ASSIST_VER', '1.2.1.39');
 
 // if StripeClient not found then load it
-if (!class_exists('Stripe\StripeClient')) {
-    require_once MAV2_PATH . 'vendor/stripe/stripe-php/init.php';
-}
+
+// if (!class_exists('Stripe\StripeClient')) {
+//     require_once MAV2_PATH . 'vendor/stripe/stripe-php/init.php';
+// }
+
+require_once __DIR__ . '/vendor/autoload.php';
+
 
 require_once MAV2_PATH . 'include/admin/class-mav2-admin.php';
 require_once MAV2_PATH . 'include/admin/class-mav2-ajax-admin.php';
