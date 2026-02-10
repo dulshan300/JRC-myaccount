@@ -1223,7 +1223,7 @@ final class MAV2_Ajax_Admin
 
         $sub_start_date = $last_order->get_date_created()->date('Y-m-01');
 
-        $_next_renew = date('Y-m-d', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
+        $_next_renew = date('Y-m-d', strtotime($sub_start_date . ' + ' . ($remaining_peases) . ' month'));
         $next_renew_At_n = date('3 F Y', strtotime($_next_renew));
         $next_renew_At = date('jS \of F Y', strtotime($_next_renew));
 
