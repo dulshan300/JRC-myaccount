@@ -667,9 +667,9 @@ final class MAV2_Ajax_Admin
         $payment_details = $this->user_get_payment_methods($subscription->get_user_id());
 
         if (count($payment_details) == 0) {
-            wp_send_json_error('Sorry, This feature is only available for users who have a payment method. Please add a payment method to your account.');
+            // wp_send_json_error('Sorry, This feature is only available for users who have a payment method. Please add a payment method to your account.');
 
-            return;
+            // return;
         }
 
         // check if there is discount_coupon applied
@@ -731,12 +731,18 @@ final class MAV2_Ajax_Admin
 
         $renewal_days = $this->get_subscription_renewal_date($subscription);
 
+        // grab renew discounts
+        $acceptance_list = get_option('webp_coupon_acceptance_list', []);
+        $coupon_code = isset($acceptance_list[$sub_id]) ? $acceptance_list[$sub_id] : null;
+
+
         wp_send_json_success([
             'next_renew_at' => $renewal_days["next_renew_At"],
             'next_renew_At_n' => $renewal_days["next_renew_At_n"],
             'current_plan' => $current_plan,
             'plans' => $available_plans,
-            'discount_coupons' => $this->get_cancelling_coupon_usage($subscription)
+            'discount_coupons' => $this->get_cancelling_coupon_usage($subscription),
+            'coupons' => $coupon_code ?? ''
             // 'meta' => $subscription->get_meta_data(),
             // 'prepaid_plans' => $this->get_prepaid_details(),
             // 'remain' => $remaining_peases + 1,
@@ -1038,6 +1044,22 @@ final class MAV2_Ajax_Admin
         $sub_id = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';
         $coupon = isset($_POST['coupon']) ? sanitize_text_field($_POST['coupon']) : false;
 
+        $subscription = wcs_get_subscription($sub_id);
+
+        if (!$subscription) {
+            wp_send_json(['status' => 'error', 'message' => 'Invalid subscription']);
+
+            return;
+        }
+
+        $payment_details = $this->user_get_payment_methods($subscription->get_user_id());
+
+        if (count($payment_details) == 0) {
+            wp_send_json_error('Sorry, This feature is only available for users who have a payment method. Please add a payment method to your account.');
+
+            return;
+        }
+
         if (empty($sub_id)) {
             wp_send_json(['status' => 'error', 'message' => 'Invalid subscription ID']);
 
@@ -1050,13 +1072,7 @@ final class MAV2_Ajax_Admin
             'webp_coupon_acceptance_list' => get_option('webp_coupon_acceptance_list', [])
         ];
 
-        $subscription = wcs_get_subscription($sub_id);
 
-        if (!$subscription) {
-            wp_send_json(['status' => 'error', 'message' => 'Invalid subscription']);
-
-            return;
-        }
         $cancelling_coupon = $coupon;
         if ($coupon === false) {
             $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
@@ -1205,7 +1221,7 @@ final class MAV2_Ajax_Admin
 
         $last_order = wc_get_order(end($fullfilled));
 
-        $sub_start_date = $last_order->get_date_created()->date('Y-m-01');        
+        $sub_start_date = $last_order->get_date_created()->date('Y-m-01');
 
         $_next_renew = date('Y-m-d', strtotime($sub_start_date . ' + ' . ($remaining_peases + 1) . ' month'));
         $next_renew_At_n = date('3 F Y', strtotime($_next_renew));

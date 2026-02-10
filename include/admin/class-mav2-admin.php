@@ -83,7 +83,7 @@ final class MAV2_Admin
             wp_enqueue_style('mav2-site-css', MAV2_ASSETS_URL . 'css/mav2.site.css', [], $this->get_timestamp('css/mav2.site.css'));
 
             wp_enqueue_script('mav2-axios', MAV2_ASSETS_URL . 'vendors/axios.js', [], $this->get_timestamp('vendors/axios.js'), true);
-            wp_enqueue_script('mav2-vuejs', MAV2_ASSETS_URL . 'vendors/vue.js', [], $this->get_timestamp('vendors/vue.js'), true);
+            wp_enqueue_script('mav2-vuejs', MAV2_ASSETS_URL . 'vendors/vue.js', ['jquery'], $this->get_timestamp('vendors/vue.js'), false);
             wp_enqueue_script('mav2-site-js', MAV2_ASSETS_URL . 'js/mav2.site.js', ['jquery', 'mav2-axios', 'mav2-vuejs'], $this->get_timestamp('js/mav2.site.js'), true);
 
             wp_localize_script('mav2-site-js', 'mav2', [

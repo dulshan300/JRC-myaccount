@@ -320,7 +320,7 @@ foreach ($res as $sub) {
 
     $last_date = strtotime($lo_q->date_updated_gmt . ' + 8 hours');
     $order = wc_get_order($last_box);
-    $_next_payment = date('j F Y', strtotime(date('Y-m-03', $last_date) . ' +' . ($sub->plan > 1 ? $sub->to_ship : 1) . ' month'));
+    $_next_payment = date('j F Y', strtotime(date('Y-m-03', $last_date) . ' +' . ($sub->plan > 1 ? $sub->to_ship + 1 : 1) . ' month'));
 
     if ($lang == 'ch') {
         $_next_payment = date('Y年n月j日', strtotime($_next_payment));
