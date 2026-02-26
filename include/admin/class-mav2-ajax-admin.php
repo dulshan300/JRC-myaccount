@@ -675,7 +675,7 @@ final class MAV2_Ajax_Admin
         // check if there is discount_coupon applied
         $webp_coupon_acceptance_list = get_option('webp_coupon_acceptance_list', []);
         if (isset($webp_coupon_acceptance_list[$sub_id]) && !$isAdmin) {
-            wp_send_json_error('You have opted in for all renewal discount. Please contact our store administrator to request for a change of plan type.');
+            //wp_send_json_error('You have opted in for all renewal discount. Please contact our store administrator to request for a change of plan type.');
         }
 
         $currency = $this->get_formatted_currency($subscription);
@@ -1212,18 +1212,19 @@ final class MAV2_Ajax_Admin
             $lang = 'ko';
         }
 
+        $plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
         $remaining_peases = intval($subscription->get_meta('_ps_prepaid_renewals_available'));
         $parent_order_id = $subscription->get_parent_id();
 
-        $fullfilled = $subscription->get_meta('_ps_prepaid_fulfilled_orders');
+        $fullfilled = $subscription->get_meta('_subscription_renewal_order_ids_cache');
         $fullfilled = is_array($fullfilled) ? $fullfilled : [];
-        $fullfilled = array_merge([$parent_order_id], $fullfilled);
+        $fullfilled = array_merge($fullfilled, [$parent_order_id]);
 
-        $last_order = wc_get_order(end($fullfilled));
+        $last_order = wc_get_order($fullfilled[0]);
 
         $sub_start_date = $last_order->get_date_created()->date('Y-m-01');
 
-        $_next_renew = date('Y-m-d', strtotime($sub_start_date . ' + ' . ($remaining_peases) . ' month'));
+        $_next_renew = date('Y-m-d', strtotime($sub_start_date . ' + ' . ($plan > 1 ? $remaining_peases + 1 : 1) . ' month'));
         $next_renew_At_n = date('3 F Y', strtotime($_next_renew));
         $next_renew_At = date('jS \of F Y', strtotime($_next_renew));
 
