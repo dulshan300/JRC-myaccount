@@ -1067,9 +1067,19 @@ final class MAV2_Ajax_Admin
         }
 
         // Get options in one go
+
+        $coupon_usage = get_option('cancelling_coupons_usages', []);
+        if (!is_array($coupon_usage)) {
+            $coupon_usage = [];
+        }
+        $coupon_acceptance_list = get_option('webp_coupon_acceptance_list', []);
+        if (!is_array($coupon_acceptance_list)) {
+            $coupon_acceptance_list = [];
+        }
+
         $options = [
-            'cancelling_coupons_usages' => get_option('cancelling_coupons_usages', []),
-            'webp_coupon_acceptance_list' => get_option('webp_coupon_acceptance_list', [])
+            'cancelling_coupons_usages' => $coupon_usage,
+            'webp_coupon_acceptance_list' => $coupon_acceptance_list
         ];
 
 
@@ -1096,7 +1106,7 @@ final class MAV2_Ajax_Admin
 
         // Update options
         $options['webp_coupon_acceptance_list'][$sub_id] = $cancelling_coupon;
-        $options['cancelling_coupons_usages'][$sub_id] = intval($options['cancelling_coupons_usages'][$sub_id] ?? 0) + 1;
+        $options['cancelling_coupons_usages'][$sub_id] = intval($options['cancelling_coupons_usages'][$sub_id] ?? 0) + 1;       
 
         // Batch update options
         update_option('webp_coupon_acceptance_list', $options['webp_coupon_acceptance_list']);
