@@ -231,6 +231,17 @@
 #order_cards .text-center {
   text-align: center;
 }
+#order_cards .order_card * {
+  margin: 0;
+  padding: 0;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  list-style: none;
+  font-family: "Nunito Sans", sans-serif !important;
+  font-optical-sizing: auto;
+  font-size: 14px;
+  font-weight: 600;
+}
 #order_cards .order_card {
   background: #fff;
   padding: 24px;
@@ -246,17 +257,6 @@
       -ms-flex-pack: justify;
           justify-content: space-between;
   gap: 15px;
-}
-#order_cards .order_card * {
-  margin: 0;
-  padding: 0;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
-  list-style: none;
-  font-family: "Nunito Sans", sans-serif !important;
-  font-optical-sizing: auto;
-  font-size: 14px;
-  font-weight: 600;
 }
 @media only screen and (max-width: 768px) {
   #order_cards .order_card {
@@ -589,6 +589,17 @@
     text-align: left;
   }
 }
+#sub_cards .sub_card * {
+  margin: 0;
+  padding: 0;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  list-style: none;
+  font-family: "Nunito Sans", sans-serif !important;
+  font-optical-sizing: auto;
+  font-size: 14px;
+  font-weight: 600;
+}
 #sub_cards .sub_card {
   background: #fff;
   padding: 24px;
@@ -605,17 +616,6 @@
       -ms-flex-direction: column;
           flex-direction: column;
   gap: 15px;
-}
-#sub_cards .sub_card * {
-  margin: 0;
-  padding: 0;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
-  list-style: none;
-  font-family: "Nunito Sans", sans-serif !important;
-  font-optical-sizing: auto;
-  font-size: 14px;
-  font-weight: 600;
 }
 #sub_cards .sub_card .sub_card_details {
   display: -webkit-box;
@@ -1554,6 +1554,12 @@
   letter-spacing: 0%;
   color: #535862;
 }
+.jrc_popup_panel * {
+  margin: 0;
+  padding: 0;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
 .jrc_popup_panel {
   position: relative;
   width: 100%;
@@ -1571,12 +1577,6 @@
   gap: 15px;
   max-height: 95vh;
   overflow-y: auto;
-}
-.jrc_popup_panel * {
-  margin: 0;
-  padding: 0;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
 }
 .jrc_popup_panel_header_control {
   display: -webkit-box;
@@ -1728,12 +1728,12 @@
   gap: 10px;
   list-style: none;
 }
-.jrc_popup#cancel_open {
-  text-align: center;
-}
 .jrc_popup#cancel_open button.cancel {
   font-size: 14px;
   text-decoration: underline;
+}
+.jrc_popup#cancel_open {
+  text-align: center;
 }
 .jrc_popup#cancel_open .jrc_popup_panel_content {
   display: -webkit-box;
@@ -1895,9 +1895,6 @@
 .jrc_plans .jrc_plan.pending_plan .plan_check {
   display: none;
 }
-.jrc_plans .jrc_plan p.plan_summery {
-  color: #585757;
-}
 .jrc_plans .jrc_plan p.plan_summery strong {
   font-weight: 600;
 }
@@ -1907,6 +1904,9 @@
   font-size: 16px;
   line-height: 20px;
   letter-spacing: 0%;
+}
+.jrc_plans .jrc_plan p.plan_summery {
+  color: #585757;
 }
 .jrc_plans .jrc_plan p.plan_note,
 .jrc_plans .jrc_plan span {
@@ -2026,4 +2026,68 @@
     -webkit-transform: scale(1);
             transform: scale(1);
   }
+}
+.alert-banner {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background-color: #fff9db;
+  border: 1px solid #fcc419;
+  border-radius: 8px;
+}
+.alert-banner * {
+  font-family: var(--e-global-typography-primary-font-family) !important;
+}
+.alert-banner {
+  margin: 20px auto;
+}
+.alert-banner__icon {
+  -ms-flex-negative: 0;
+      flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: #e67e22;
+  margin-top: 2px;
+}
+.alert-banner__icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.alert-banner__body {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  gap: 8px;
+}
+.alert-banner__title {
+  margin: 0;
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  color: #212529 !important;
+}
+.alert-banner__content {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  gap: 12px;
+}
+.alert-banner__content p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #495057;
+}
+.alert-banner__content p span {
+  text-decoration: underline;
 }/*# sourceMappingURL=mav2.site.css.map */

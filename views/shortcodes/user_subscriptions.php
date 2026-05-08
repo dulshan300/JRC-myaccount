@@ -201,7 +201,8 @@ foreach ($res as $sub) {
     $odata = $wpdb->get_row($osql);
     $temp['created_at'] = date('j F Y', strtotime($odata->created_at . ' + 8 hours'));
     $temp['product_value'] = number_format(floatval($odata->subtotal), 2);
-    $temp['shipping'] = number_format(floatval($odata->shipping), 2);
+    $shipping_convert = JRC_Helper::convert_currency($odata->shipping,'SGD',$sub->currency);
+    $temp['shipping'] = number_format(floatval($shipping_convert), 2);
     $temp['discount'] = floatval($odata->discount) > 0 ? number_format(floatval($odata->discount), 2) : '0.00';
     $temp['total'] = number_format(floatval($odata->total_amount), 2);
 

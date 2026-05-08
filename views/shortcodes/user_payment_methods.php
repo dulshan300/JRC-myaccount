@@ -9,6 +9,7 @@ if (empty($user)) {
 }
 
 $user_id = $user->ID;
+$user_email = $user->user_email;
 // $user_id = 1791;
 
 // get woocommerce customer
@@ -48,10 +49,90 @@ foreach ($tokens as $token) {
         ], true));
     }
 }
+$user_locale = get_user_locale();
+$lang = substr($user_locale, 0, 2);
+
+
+$show_waring = false;
+$email_list = [
+    'ultima1229@gmail.com',
+    "vincentwws1988@gmail.com",
+    "wuchengzhe227@gmail.com",
+    "hungpo_huang@yahoo.com.tw",
+    "s9160801@gmail.com",
+    "ansonnth1128@gmail.com",
+    "kenjo28@hotmail.com",
+    "z112z112@yahoo.com.tw",
+    "a0929862832@gmail.com",
+    "idkevinjuang@gmail.com",
+    "m197877@gmail.com",
+    "qqaway0516@hotmail.com",
+    "leo910117660@gmail.com",
+    "awankana@gmail.com",
+    "truss.tw@gmail.com",
+    "miles_lai@hotmail.com",
+    "0215aldrich@gmail.com",
+    "hippoace@hotmail.com",
+    "wen511206@yahoo.com.tw",
+    "wenfang12608891@gmail.com",
+    "snailmd@hotmail.com",
+    "thehours74@gmail.com",
+    "mayt3ng@hotmail.com",
+    "nervous.tests-0o@icloud.com",
+    "blackdeviljack@gmail.com",
+    "j12031226@gmail.com",
+    "anthonyhungyulin@gmail.com",
+    "jc.enewsletter@gmail.com",
+    "jinyao.lin@gmail.com",
+    "webpotatosg@gmail.com"
+];
+
+if (count($token_details) == 0 && array_search($user_email, $email_list) !== true) {
+    $show_waring = true;
+}
 
 ?>
 
 <div id="payment_methods">
+
+    <?php if ($show_waring): ?>
+        <?php if ($lang == 'en'): ?>
+            <div class="alert-banner">
+                <div class="alert-banner__icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L1 21h22L12 2zm0 3.45l8.27 14.55H3.73L12 5.45zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z" />
+                    </svg>
+                </div>
+                <div class="alert-banner__body">
+                    <h3 class="alert-banner__title">Important</h3>
+                    <div class="alert-banner__content">
+                        <p>We've upgraded to a new payment system to serve you better.</p>
+                        <p>To ensure uninterrupted delivery of your subscription, please take a moment to update your payment
+                            details.</p>
+                        <p>If no updates are made, your subscription will continue as usual and charges <span>may be applied to
+                                your
+                                current payment method</span> on file unless cancelled before your next billing date.</p>
+                    </div>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="alert-banner">
+                <div class="alert-banner__icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L1 21h22L12 2zm0 3.45l8.27 14.55H3.73L12 5.45zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z" />
+                    </svg>
+                </div>
+                <div class="alert-banner__body">
+                    <h3 class="alert-banner__title">Important</h3>
+                    <div class="alert-banner__content">
+                        <p>我們已升級新的付款系統以為您提供更好的服務。</p>
+                        <p>為確保您的訂閱不受中斷請撥空更新您的付款資訊。</p>
+                        <p>若未更新付款資訊，您的訂閱將照常繼續，並將於下一個計費日前自動從您目前登錄的付款方式扣款（除非您在此之前取消訂閱）。</p>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+    <?php endif; ?>
 
     <div class="dt">
         <table class="pm_tokens_table">
@@ -123,14 +204,14 @@ foreach ($tokens as $token) {
             jQuery(parent).find('.processing').fadeOut();
         }
 
-        jQuery(document).ready(function($) {
+        jQuery(document).ready(function ($) {
 
             var stripe = Stripe('<?= apply_filters('get_stripe_keys', 'publishable_key') ?>');
             var elements = stripe.elements();
             var card = elements.create('card');
             card.mount('#card-element');
 
-            card.addEventListener('change', function(event) {
+            card.addEventListener('change', function (event) {
                 var displayError = document.getElementById('card-errors');
                 if (event.error) {
                     displayError.textContent = event.error.message;
@@ -141,7 +222,7 @@ foreach ($tokens as $token) {
 
             function fill_table(tokens) {
                 let body_data = "";
-                tokens.forEach(function(token) {
+                tokens.forEach(function (token) {
 
                     body_data += `<tr>
                                             <td>${token.card_type}</td>
@@ -157,7 +238,7 @@ foreach ($tokens as $token) {
 
             var form = document.getElementById('payment-form');
 
-            form.addEventListener('submit', function(event) {
+            form.addEventListener('submit', function (event) {
                 event.preventDefault();
 
                 stripe.createPaymentMethod({
@@ -166,7 +247,7 @@ foreach ($tokens as $token) {
                     billing_details: {
                         name: '<?= $user->display_name ?>',
                     },
-                }).then(function(result) {
+                }).then(function (result) {
                     if (result.error) {
                         var errorElement = document.getElementById('card-errors');
                         errorElement.textContent = result.error.message;
@@ -180,7 +261,7 @@ foreach ($tokens as $token) {
                                 nonce: mav2.nonce,
                                 token: result.paymentMethod,
                             },
-                            success: function(tokens) {
+                            success: function (tokens) {
                                 hide_processing('#payment_methods');
                                 fill_table(tokens)
                                 mav2_show_success_from('#payment_methods');
@@ -194,7 +275,7 @@ foreach ($tokens as $token) {
 
             });
 
-            $(document).on('click', '.remove_token', function() {
+            $(document).on('click', '.remove_token', function () {
                 var token_id = $(this).data('id');
                 const conf = confirm('Are you sure?');
                 if (!conf) {
@@ -213,7 +294,7 @@ foreach ($tokens as $token) {
                             nonce: mav2.nonce,
                             id: token_id
                         },
-                        success: function(tokens) {
+                        success: function (tokens) {
                             hide_processing('#payment_methods');
                             mav2_show_success_from('#payment_methods');
 
@@ -224,7 +305,7 @@ foreach ($tokens as $token) {
 
                             fill_table(tokens.data)
                         },
-                        error: function(xhr, error) {
+                        error: function (xhr, error) {
                             hide_processing('#payment_methods');
                             console.log([xhr, error]);
 

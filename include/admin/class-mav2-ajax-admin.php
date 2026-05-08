@@ -1106,7 +1106,7 @@ final class MAV2_Ajax_Admin
 
         // Update options
         $options['webp_coupon_acceptance_list'][$sub_id] = $cancelling_coupon;
-        $options['cancelling_coupons_usages'][$sub_id] = intval($options['cancelling_coupons_usages'][$sub_id] ?? 0) + 1;       
+        $options['cancelling_coupons_usages'][$sub_id] = intval($options['cancelling_coupons_usages'][$sub_id] ?? 0) + 1;
 
         // Batch update options
         update_option('webp_coupon_acceptance_list', $options['webp_coupon_acceptance_list']);
@@ -1307,28 +1307,46 @@ final class MAV2_Ajax_Admin
         $data_collection['date'] = $order->get_date_created()->format('d M Y H:i a');
 
         $data_collection['subtotal'] = $currency_format . number_format($order->get_subtotal(), 2);
-
         $data_collection['discount'] = $currency_format . number_format($order->get_total_discount(), 2);
+
+        $data_collection['subtotal_after_discount'] = $currency_format . number_format($order->get_subtotal() - $order->get_total_discount(), 2);
 
         $data_collection['total'] = $currency_format . number_format($order->get_total(), 2);
 
-        $data_collection['tax'] = $currency_format . number_format($order->get_total_tax(), 2);
+        $data_collection['tax'] = 0;
+        $data_collection['tax_ratio'] = 0;
 
         $data_collection['shipping'] = $order->get_shipping_total() > 0 ? $currency_format . number_format($order->get_shipping_total(), 2) : 'Free';
 
         $order_items = $order->get_items();
 
         foreach ($order_items as $item) {
+
+            $subtotal_with_tax = $item->get_subtotal();
+            // $total_with_tax = $item->get_total();
+            $total_with_tax = $subtotal_with_tax;
+            $subtotal = $subtotal_with_tax;
+            $total = $subtotal_with_tax;
+            if ($currency == 'SGD') {
+                $subtotal = $subtotal_with_tax / (1.09);
+                $data_collection['tax'] += $subtotal_with_tax - $subtotal;
+                $data_collection['tax_ratio'] = 9;
+
+                $total = $total_with_tax / (1.09);
+            }
+
             $temp = [
                 'name' => $item->get_name(),
                 'quantity' => $item->get_quantity(),
-                'unit_price' => $currency_format . number_format($item->get_subtotal() / $item->get_quantity(), 2),
-                'price' => $currency_format . number_format($item->get_total(), 2),
-                'subtotal' => $currency_format . number_format($item->get_subtotal(), 2),
+                'unit_price' => $currency_format . number_format($subtotal / $item->get_quantity(), 2),
+                'price' => $currency_format . number_format($subtotal, 2),
+                'subtotal' => $currency_format . number_format($subtotal, 2),
             ];
 
             $data_collection['items'][] = $temp;
         }
+
+        $data_collection['tax'] = $currency_format . number_format($data_collection['tax'], 2);
 
         return $data_collection;
     }
