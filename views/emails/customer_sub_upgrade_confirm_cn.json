@@ -17,6 +17,7 @@
         "block-1771310065284-665",
         "block-1771309651315",
         "block-1771309733337-191",
+        "block-1778644056813",
         "block-1771310100543-54",
         "block-1768486490727",
         "block-1778638948793",
@@ -678,6 +679,24 @@
         "alt": "Sample product",
         "linkHref": "https://www.instagram.com/japanrailclub/",
         "contentAlignment": "middle"
+      }
+    }
+  },
+  "block-1778644056813": {
+    "type": "Html",
+    "data": {
+      "style": {
+        "fontSize": 16,
+        "textAlign": "center",
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "contents": "如果您有任何疑问或需要帮助，请随时通过 \n                <a\n                  href=\"mailto:info@japanrailclub.com\"\n                  style=\"color: #236fa1; text-decoration: underline;\"\n                  >info@japanrailclub.com</a> 联系我们——我们非常乐意为您提供帮助！"
       }
     }
   }

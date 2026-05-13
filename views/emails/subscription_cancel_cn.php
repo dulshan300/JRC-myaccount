@@ -18,7 +18,7 @@
             <td>
               <div style="padding:16px 24px 16px 24px;text-align:center">
                 <a
-                  href="https://www.japanrailclub.com/zh/?utm_source=owned&amp;utm_medium=orderconfirmation"
+                  href="https://www.japanrailclub.com/?utm_source=owned&amp;utm_medium=orderconfirmation"
                   style="text-decoration:none"
                   target="_blank"
                   ><img
@@ -28,108 +28,68 @@
                     style="width:125px;outline:none;border:none;text-decoration:none;vertical-align:middle;display:inline-block;max-width:100%"
                 /></a>
               </div>
-              <h2
-                style='font-weight:bold;text-align:center;margin:0;font-family:ui-rounded, "Hiragino Maru Gothic ProN", Quicksand, Comfortaa, Manjari, "Arial Rounded MT Bold", Calibri, source-sans-pro, sans-serif;font-size:24px;padding:16px 40px 16px 40px'
-              >
-                Your Subscription Has Been Updated!
-              </h2>
               <div style="padding:16px 24px 16px 24px">
                 <hr
                   style="width:100%;border:none;border-top:1px solid #CCCCCC;margin:0"
                 />
               </div>
-              <div
-                style="font-size:15px;text-align:center;padding:16px 24px 16px 24px"
+              <h2
+                style='font-weight:bold;text-align:center;margin:0;font-family:ui-rounded, "Hiragino Maru Gothic ProN", Quicksand, Comfortaa, Manjari, "Arial Rounded MT Bold", Calibri, source-sans-pro, sans-serif;font-size:24px;padding:0px 40px 0px 40px'
               >
-                Hi <?=$name ?>,
+                您的 JAPAN RAIL CLUB 訂閱已被取消。
+              </h2>
+              <div
+                style="font-size:15px;text-align:center;padding:16px 24px 0px 24px"
+              >
+                您好 <?= $name ?>,
               </div>
               <div
-                style="font-size:15px;text-align:center;padding:0px 24px 16px 24px"
+                style="font-size:15px;text-align:center;padding:0px 24px 0px 24px"
               >
-                Great news—your JAPAN RAIL CLUB subscription has been
-                successfully updated!
+                此邮件旨在通知您，您的 Sakuraco 订阅已正式取消。取消详情如下：
               </div>
-              <div
-                style="font-size:15px;text-align:center;padding:0px 24px 16px 24px"
-              >
-                <div
-                  style="background-color: #efefef; padding:10px 30px; text-align: left;"
+              <div style="font-size:16px;padding:0px 24px 0px 24px">
+                <table
+                  style="width: 100%; max-width: 600px; border-collapse: separate; border-spacing: 0; background-color: #f8f9fa; border-radius: 12px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333333; margin: 20px 0;"
                 >
-                  <p>Here are the details of your new plan:</p>
-                  <p>
-                    <strong>Plan</strong>: Omiyage Snack Box Subscription<br />
-                    <strong>Updated Plan Price</strong>: <?= $price ?><br />
-                    <strong>Updated Plan Duration</strong>: <?= $new_plan ?><br />
-                    <strong>Effective From</strong>: <?= $end_date ?>
-                  </p>
-                </div>
+                  <tbody>
+                    <tr>
+                      <td
+                        style="padding: 24px 0 12px 24px; font-weight: bold; font-size: 14px; width: 150px; vertical-align: top;"
+                      >
+                        订阅方案
+                      </td>
+                      <td
+                        style="padding: 24px 24px 12px 0; text-align: right; font-size: 14px; color: #444444;"
+                      >
+                        <?=$plan;?>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        style="padding: 12px 0 24px 24px; font-weight: bold; font-size: 14px; vertical-align: top;"
+                      >
+                        取消日期
+                      </td>
+                      <td
+                        style="padding: 12px 24px 24px 0; text-align: right; font-size: 14px; color: #444444;"
+                      >
+                        <?=$cancelled_date;?> SGT
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
               <div
-                style="font-size:15px;text-align:center;padding:0px 24px 16px 24px"
+                style="font-size:15px;text-align:center;padding:0px 24px 0px 24px"
               >
-                Your current plan will remain active until . After that, your
-                new plan will kick in automatically—no action needed on your
-                part.
+                如果您预付的订阅中仍有剩余的月度礼盒，您仍将收到这些礼盒。如果存在任何未结清的款项，我们将立即进行扣款。
               </div>
               <div
-                style="font-size:15px;text-align:center;padding:0px 24px 16px 24px"
+                style="font-size:16px;text-align:center;padding:16px 24px 0px 24px"
               >
-                If you have any questions or need assistance, feel free to reach
-                out to us—we're always happy to help!
-              </div>
-              <div style="font-size:15px;padding:0px 24px 16px 24px">
-                Wish to update your subscription, payment method, or delivery
-                preferences?
-              </div>
-              <div style="text-align:center;padding:16px 24px 16px 24px">
-                <a
-                  href="https://www.japanrailclub.com/my-account/"
-                  style="color:#FFFFFF;font-size:16px;font-weight:bold;background-color:#001A43;border-radius:4px;display:inline-block;padding:12px 20px;text-decoration:none"
-                  target="_blank"
-                  ><span
-                    ><!--[if mso
-                      ]><i
-                        style="letter-spacing: 20px;mso-font-width:-100%;mso-text-raise:30"
-                        hidden
-                        >&nbsp;</i
-                      ><!
-                    [endif]--></span
-                  ><span>View My Subscription</span
-                  ><span
-                    ><!--[if mso
-                      ]><i
-                        style="letter-spacing: 20px;mso-font-width:-100%"
-                        hidden
-                        >&nbsp;</i
-                      ><!
-                    [endif]--></span
-                  ></a
-                >
-              </div>
-              <div
-                style="font-size:15px;text-align:center;padding:0px 24px 16px 24px"
-              >
-                Thank you for being a part of the JAPAN RAIL CLUB family! We're
-                excited to keep delivering the flavours of Japan to your
-                doorstep!
-              </div>
-              <div
-                style="font-size:16px;text-align:center;padding:16px 24px 16px 24px"
-              >
-                If you have any questions or need assistance, feel free to reach
-                out to us at
-                <a
-                  href="mailto:info@japanrailclub.com"
-                  style="color: #236fa1; text-decoration: underline;"
-                  >info@japanrailclub.com</a
-                >
-                —we're always happy to help!
-              </div>
-              <div
-                style="font-size:15px;text-align:center;padding:0px 24px 16px 24px"
-              >
-                Warm regards,<br />
-                <b>The JAPAN RAIL CLUB Team</b>
+                如需更多帮助，请联系我们的
+                <a href="mailto:info@japanrailclub.com">支持团队。</a>
               </div>
               <div style="padding:16px 16px 16px 16px">
                 <hr
@@ -137,11 +97,11 @@
                 />
               </div>
               <div
-                style="font-weight:bold;text-align:center;padding:0px 24px 0px 24px"
+                style="font-size:17px;font-weight:bold;text-align:center;padding:16px 24px 16px 24px"
               >
-                Get an insider&#x27;s look at JAPAN RAIL CLUB on social media!
+                帶你深入一探 JAPAN RAIL CLUB 的幕後花絮！
               </div>
-              <div style="padding:16px 24px 0px 24px">
+              <div style="padding:0px 24px 0px 24px">
                 <table
                   align="center"
                   width="100%"
@@ -171,7 +131,9 @@
                       <td
                         style="box-sizing:content-box;vertical-align:middle;padding-left:8px;padding-right:0"
                       >
-                        <div style="padding:0px 24px 0px 0px;text-align:center">
+                        <div
+                          style="padding:16px 24px 16px 0px;text-align:center"
+                        >
                           <a
                             href="https://www.instagram.com/japanrailclub/"
                             style="text-decoration:none"

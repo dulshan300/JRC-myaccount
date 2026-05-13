@@ -105,6 +105,17 @@
                 我們很高興能持續將日本的美味送到您家門口！"
               </div>
               <div
+                style="font-size:16px;text-align:center;padding:16px 24px 16px 24px"
+              >
+                如果您有任何疑问或需要帮助，请随时通过
+                <a
+                  href="mailto:info@japanrailclub.com"
+                  style="color: #236fa1; text-decoration: underline;"
+                  >info@japanrailclub.com</a
+                >
+                联系我们——我们非常乐意为您提供帮助！
+              </div>
+              <div
                 style="font-size:15px;text-align:center;padding:0px 24px 16px 24px"
               >
                 祝一切順心美好，<br />

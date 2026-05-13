@@ -8,22 +8,17 @@
       "fontFamily": "ROUNDED_SANS",
       "childrenIds": [
         "block-1768480373238",
-        "block-1768480528297",
         "block-1771303064720",
+        "block-1768480528297",
         "block-1771303107975",
         "block-1771304084548-920",
-        "block-1771310044702-340",
-        "block-1771310057420-325",
-        "block-1771310065284-665",
-        "block-1771309632112-69",
-        "block-1771309651315",
-        "block-1771309733337-191",
-        "block-1778642906543",
-        "block-1771310100543-54",
+        "block-1778647476047",
+        "block-1771309344719-898",
+        "block-1778647736635",
         "block-1768486490727",
-        "block-1778638668533",
-        "block-1778638699355",
-        "block-1778638661592-89",
+        "block-1778647965815",
+        "block-1778647974245",
+        "block-1778647825876-17",
         "block-1768486511489",
         "block-1768486549813-576"
       ]
@@ -45,7 +40,7 @@
         "width": 125,
         "url": "https://www.japanrailclub.com/wp-content/uploads/2024/07/Japan-Rail-Club-Email-Logo.jpg",
         "alt": "Japan Rail Club",
-        "linkHref": "https://www.japanrailclub.com/zh/?utm_source=owned&utm_medium=orderconfirmation",
+        "linkHref": "https://www.japanrailclub.com/?utm_source=owned&utm_medium=orderconfirmation",
         "contentAlignment": "middle"
       }
     }
@@ -54,15 +49,15 @@
     "type": "Heading",
     "data": {
       "props": {
-        "text": "Your Subscription Has Been Updated!",
+        "text": "Your JAPAN RAIL CLUB Subscription has been cancelled.",
         "level": "h2"
       },
       "style": {
         "fontFamily": "ROUNDED_SANS",
         "textAlign": "center",
         "padding": {
-          "top": 16,
-          "bottom": 16,
+          "top": 0,
+          "bottom": 0,
           "right": 40,
           "left": 40
         }
@@ -440,13 +435,13 @@
         "textAlign": "center",
         "padding": {
           "top": 16,
-          "bottom": 16,
+          "bottom": 0,
           "right": 24,
           "left": 24
         }
       },
       "props": {
-        "contents": "Hi  <?=$name ?>,"
+        "contents": "Hi <?= $name ?>,"
       }
     }
   },
@@ -458,39 +453,39 @@
         "textAlign": "center",
         "padding": {
           "top": 0,
-          "bottom": 16,
+          "bottom": 0,
           "right": 24,
           "left": 24
         }
       },
       "props": {
-        "contents": "Great news—your JAPAN RAIL CLUB subscription has been successfully updated!"
+        "contents": "This is to inform you that your subscription to Sakuraco has been effectively canceled. Details of the cancelation are as follows:"
       }
     }
   },
-  "block-1771309632112-69": {
+  "block-1771309344719-898": {
     "type": "Html",
     "data": {
       "style": {
         "fontSize": 15,
-        "textAlign": null,
+        "textAlign": "center",
         "padding": {
           "top": 0,
-          "bottom": 16,
+          "bottom": 0,
           "right": 24,
           "left": 24
         }
       },
       "props": {
-        "contents": "Wish to update your subscription, payment method, or delivery preferences?"
+        "contents": "You will still be receiving the remaining monthly boxes (if any) in your prepaid subscription. If there are any outstanding payments, we will collect them immediately."
       }
     }
   },
-  "block-1771309651315": {
-    "type": "Button",
+  "block-1778647343910": {
+    "type": "Text",
     "data": {
       "style": {
-        "textAlign": "center",
+        "fontWeight": "normal",
         "padding": {
           "top": 16,
           "bottom": 16,
@@ -499,103 +494,47 @@
         }
       },
       "props": {
-        "buttonBackgroundColor": "#001A43",
-        "text": "View My Subscription",
-        "url": "https://www.japanrailclub.com/my-account/"
+        "text": "My new text block"
       }
     }
   },
-  "block-1771309733337-191": {
+  "block-1778647476047": {
     "type": "Html",
     "data": {
       "style": {
-        "fontSize": 15,
-        "textAlign": "center",
+        "fontSize": 16,
+        "textAlign": null,
         "padding": {
           "top": 0,
-          "bottom": 16,
+          "bottom": 0,
           "right": 24,
           "left": 24
         }
       },
       "props": {
-        "contents": "Thank you for being a part of the JAPAN RAIL CLUB family! We're excited to keep delivering the flavours of Japan to your doorstep!"
+        "contents": "<table style=\"width: 100%; max-width: 600px; border-collapse: separate; border-spacing: 0; background-color: #f8f9fa; border-radius: 12px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333333; margin: 20px 0;\">\n    <tbody>\n        <tr>\n            <td style=\"padding: 24px 0 12px 24px; font-weight: bold; font-size: 14px; width: 150px; vertical-align: top;\">\n                Plan\n            </td>\n            <td style=\"padding: 24px 24px 12px 0; text-align: right; font-size: 14px; color: #444444;\">\n                <?=$plan;?>\n            </td>\n        </tr>\n        <tr>\n            <td style=\"padding: 12px 0 24px 24px; font-weight: bold; font-size: 14px; vertical-align: top;\">\n                Cancelation Date\n            </td>\n            <td style=\"padding: 12px 24px 24px 0; text-align: right; font-size: 14px; color: #444444;\">\n                 <?=$cancelled_date;?> SGT\n            </td>\n        </tr>\n    </tbody>\n</table>"
       }
     }
   },
-  "block-1771310044702-340": {
+  "block-1778647736635": {
     "type": "Html",
     "data": {
       "style": {
-        "fontSize": 15,
+        "fontSize": 16,
         "textAlign": "center",
         "padding": {
-          "top": 0,
-          "bottom": 16,
+          "top": 16,
+          "bottom": 0,
           "right": 24,
           "left": 24
         }
       },
       "props": {
-        "contents": "<div style=\"background-color: #efefef; padding:10px 30px; text-align: left;\">\n\n                                    <p>Here are the details of your new plan:</p>\n                                    <p>\n                                        <strong>Plan</strong>: Omiyage Snack Box Subscription<br />\n                                        <strong>Updated Plan Price</strong>: <?= $price ?><br />\n                                        <strong>Updated Plan Duration</strong>: <?= $new_plan ?><br />\n                                        <strong>Effective From</strong>: <?= $end_date ?>\n                                    </p>\n\n                                </div>"
+        "contents": "If you need more assistance, please contact our \n<a href=\"mailto:info@japanrailclub.com\">support team.</a>"
       }
     }
   },
-  "block-1771310057420-325": {
-    "type": "Html",
-    "data": {
-      "style": {
-        "fontSize": 15,
-        "textAlign": "center",
-        "padding": {
-          "top": 0,
-          "bottom": 16,
-          "right": 24,
-          "left": 24
-        }
-      },
-      "props": {
-        "contents": "Your current plan will remain active until . After that, your new plan will kick in automatically—no action needed on your part."
-      }
-    }
-  },
-  "block-1771310065284-665": {
-    "type": "Html",
-    "data": {
-      "style": {
-        "fontSize": 15,
-        "textAlign": "center",
-        "padding": {
-          "top": 0,
-          "bottom": 16,
-          "right": 24,
-          "left": 24
-        }
-      },
-      "props": {
-        "contents": "If you have any questions or need assistance, feel free to reach out to us—we're always happy to help!"
-      }
-    }
-  },
-  "block-1771310100543-54": {
-    "type": "Html",
-    "data": {
-      "style": {
-        "fontSize": 15,
-        "textAlign": "center",
-        "padding": {
-          "top": 0,
-          "bottom": 16,
-          "right": 24,
-          "left": 24
-        }
-      },
-      "props": {
-        "contents": " Warm regards,<br />\n                                <b>The JAPAN RAIL CLUB Team</b>"
-      }
-    }
-  },
-  "block-1778638661592-89": {
+  "block-1778647825876-17": {
     "type": "Divider",
     "data": {
       "style": {
@@ -611,15 +550,16 @@
       }
     }
   },
-  "block-1778638668533": {
+  "block-1778647965815": {
     "type": "Text",
     "data": {
       "style": {
+        "fontSize": 17,
         "fontWeight": "bold",
         "textAlign": "center",
         "padding": {
-          "top": 0,
-          "bottom": 0,
+          "top": 16,
+          "bottom": 16,
           "right": 24,
           "left": 24
         }
@@ -629,12 +569,12 @@
       }
     }
   },
-  "block-1778638699355": {
+  "block-1778647974245": {
     "type": "ColumnsContainer",
     "data": {
       "style": {
         "padding": {
-          "top": 16,
+          "top": 0,
           "bottom": 0,
           "right": 24,
           "left": 24
@@ -646,12 +586,12 @@
         "columns": [
           {
             "childrenIds": [
-              "block-1778638708630"
+              "block-1778647981763"
             ]
           },
           {
             "childrenIds": [
-              "block-1778638711015"
+              "block-1778647987440"
             ]
           },
           {
@@ -661,7 +601,7 @@
       }
     }
   },
-  "block-1778638708630": {
+  "block-1778647981763": {
     "type": "Image",
     "data": {
       "style": {
@@ -681,13 +621,13 @@
       }
     }
   },
-  "block-1778638711015": {
+  "block-1778647987440": {
     "type": "Image",
     "data": {
       "style": {
         "padding": {
-          "top": 0,
-          "bottom": 0,
+          "top": 16,
+          "bottom": 16,
           "right": 24,
           "left": 0
         },
@@ -698,24 +638,6 @@
         "alt": "Sample product",
         "linkHref": "https://www.instagram.com/japanrailclub/",
         "contentAlignment": "middle"
-      }
-    }
-  },
-  "block-1778642906543": {
-    "type": "Html",
-    "data": {
-      "style": {
-        "fontSize": 16,
-        "textAlign": "center",
-        "padding": {
-          "top": 16,
-          "bottom": 16,
-          "right": 24,
-          "left": 24
-        }
-      },
-      "props": {
-        "contents": "If you have any questions or need assistance, feel free to reach out to us at\n                <a\n                  href=\"mailto:info@japanrailclub.com\"\n                  style=\"color: #236fa1; text-decoration: underline;\"\n                  >info@japanrailclub.com</a> —we're always happy to help!"
       }
     }
   }

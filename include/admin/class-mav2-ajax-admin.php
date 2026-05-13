@@ -59,6 +59,30 @@ final class MAV2_Ajax_Admin
         $sub = $wpdb->get_row($sql);
 
         $subscription = wcs_get_subscription($subId);
+        if (!$subscription) {
+            wp_send_json_error('Subscription not found');
+            return;
+        }
+
+        $country = $subscription->get_shipping_country();
+
+        $lang = JRC_Helper::get_lang($country);
+
+        $current_plan = max(1, intval($subscription->get_meta('_ps_prepaid_pieces')));
+
+        $date = new DateTime('now', new DateTimeZone('Asia/Singapore'));
+        $cancelled_date = "";
+        $plan = "";
+        if ($lang == 'en') {
+            $cancelled_date = $date->format('M d, Y H:i T');
+            $plan = $current_plan == 1 ? "{$current_plan} Month Plan" : "{$current_plan} Months Plan";
+        }
+
+        if ($lang == 'cn') {
+            $cancelled_date = $date->format('Y年m月d日 H:i T');
+            $plan = $current_plan == 1 ? "{$current_plan} 个月套餐" : "{$current_plan} 个月套餐";
+        }
+
 
         $note_text = "";
 
@@ -84,14 +108,14 @@ final class MAV2_Ajax_Admin
 
         // send mail to the user
         // Prepare user data for emails
-        $country = $subscription->get_shipping_country();
 
-        $lang = JRC_Helper::get_lang($country);
 
         $user_email = $subscription->get_billing_email();
 
         $user_data = [
             'name' => $subscription->get_shipping_first_name() . " " . $subscription->get_shipping_last_name(),
+            'cancelled_date' => $cancelled_date,
+            'plan' => $plan,
         ];
 
         $subject = $lang == 'cn' ? "我們很難過您要離開！ 😢您的點心禮盒訂閱已取消。" : "We're sad to see you go! 😢Your Omiyage Snack Box Subscription is cancelled.";
