@@ -131,12 +131,18 @@ function mav2_get_tracking($order)
             // 2. Added rel="noopener noreferrer" for security with target="_blank"
             $order->tracking = "<a href=\"{$link}\" target=\"_blank\" rel=\"noopener noreferrer\">{$trackingNumber}</a>";
 
+            // 2026-05-08 temporty using just tracking number
+            $order->tracking = $trackingNumber;
+
+
         } elseif (preg_match($pattern_US, $order->tracking, $matches)) {
             // US Tracking
             $trackingNumber = $matches[1];
             $us_link = 'https://parcelsapp.com/en/tracking/' . $trackingNumber;
 
             $order->tracking = "<a href=\"{$us_link}\" target=\"_blank\" rel=\"noopener noreferrer\">{$trackingNumber}</a>";
+            // 2026-05-08 temporty using just tracking number
+            $order->tracking = $trackingNumber;
         }
     }
 
@@ -201,7 +207,7 @@ foreach ($res as $sub) {
     $odata = $wpdb->get_row($osql);
     $temp['created_at'] = date('j F Y', strtotime($odata->created_at . ' + 8 hours'));
     $temp['product_value'] = number_format(floatval($odata->subtotal), 2);
-    $shipping_convert = JRC_Helper::convert_currency($odata->shipping,'SGD',$sub->currency);
+    $shipping_convert = JRC_Helper::convert_currency($odata->shipping, 'SGD', $sub->currency);
     $temp['shipping'] = number_format(floatval($shipping_convert), 2);
     $temp['discount'] = floatval($odata->discount) > 0 ? number_format(floatval($odata->discount), 2) : '0.00';
     $temp['total'] = number_format(floatval($odata->total_amount), 2);

@@ -1,0 +1,756 @@
+{
+  "root": {
+    "type": "EmailLayout",
+    "data": {
+      "backdropColor": "#FDF9ED",
+      "borderRadius": 12,
+      "canvasColor": "#FAFAFA",
+      "textColor": "#262626",
+      "fontFamily": "MODERN_SANS",
+      "childrenIds": [
+        "block-1718112079198",
+        "block-1718112223636",
+        "block-1718111972464",
+        "block-1778637624184",
+        "block-1778610822692",
+        "block-1778637645809",
+        "block-1778637658553",
+        "block-1778637694558",
+        "block-1778610827426-179",
+        "block-1778637891002",
+        "block-1778637756883",
+        "block-1778637772334",
+        "block-1778637843375",
+        "block-1771223186424",
+        "block-1778598064624",
+        "block-1778598083098",
+        "block-1778598009836",
+        "block-1778637795638"
+      ]
+    }
+  },
+  "block-1718111972464": {
+    "type": "Heading",
+    "data": {
+      "props": {
+        "text": " 🎉 You've Activated Your Discount!",
+        "level": "h2"
+      },
+      "style": {
+        "color": "#001a43",
+        "fontWeight": "bold",
+        "textAlign": "center",
+        "padding": {
+          "top": 16,
+          "bottom": 0,
+          "right": 24,
+          "left": 24
+        }
+      }
+    }
+  },
+  "block-1718112079198": {
+    "type": "Image",
+    "data": {
+      "style": {
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 24,
+          "left": 24
+        },
+        "textAlign": "center"
+      },
+      "props": {
+        "width": null,
+        "height": 80,
+        "url": "https://www.japanrailclub.com/wp-content/uploads/2024/07/Japan-Rail-Club-Email-Logo.jpg",
+        "alt": "Japan Rail Logo",
+        "linkHref": "https://www.japanrailclub.com",
+        "contentAlignment": "middle"
+      }
+    }
+  },
+  "block-1718112223636": {
+    "type": "Divider",
+    "data": {
+      "style": {
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 40,
+          "left": 40
+        }
+      },
+      "props": {
+        "lineColor": "#CCCCCC"
+      }
+    }
+  },
+  "block-1771223186424": {
+    "type": "Divider",
+    "data": {
+      "style": {
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 0,
+          "left": 0
+        }
+      },
+      "props": {
+        "lineColor": "#CCCCCC"
+      }
+    }
+  },
+  "block-1771223239328": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "color": "#8d7f7f",
+        "fontSize": 12,
+        "fontWeight": "bold",
+        "padding": {
+          "top": 12,
+          "bottom": 0,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "Order Date"
+      }
+    }
+  },
+  "block-1771223253859": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "color": "#737373",
+        "fontSize": 12,
+        "fontWeight": "bold",
+        "padding": {
+          "top": 16,
+          "bottom": 0,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "Order Number"
+      }
+    }
+  },
+  "block-1771223268635": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "color": "#737373",
+        "fontSize": 12,
+        "fontWeight": "normal",
+        "padding": {
+          "top": 16,
+          "bottom": 0,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "Payment"
+      }
+    }
+  },
+  "block-1771223356399-611": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "color": "#8d7f7f",
+        "fontSize": 12,
+        "fontWeight": "bold",
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "{{ordr Date}}"
+      }
+    }
+  },
+  "block-1771223356399-551": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "color": "#737373",
+        "fontSize": 12,
+        "fontWeight": "bold",
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "#{{order_id}}"
+      }
+    }
+  },
+  "block-1771223356399-719": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "color": "#737373",
+        "fontSize": 12,
+        "fontWeight": "normal",
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "{{payment_method}}"
+      }
+    }
+  },
+  "block-1771228548517": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "fontWeight": "bold",
+        "padding": {
+          "top": 0,
+          "bottom": 0,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "Subtotal"
+      }
+    }
+  },
+  "block-1771228587917-35": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "fontWeight": "normal",
+        "padding": {
+          "top": 8,
+          "bottom": 8,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "Taxes"
+      }
+    }
+  },
+  "block-1771228588653-233": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "fontWeight": "normal",
+        "padding": {
+          "top": 8,
+          "bottom": 8,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "Discount"
+      }
+    }
+  },
+  "block-1771228625993": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "fontWeight": "normal",
+        "textAlign": "right",
+        "padding": {
+          "top": 0,
+          "bottom": 0,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "{{subtotal}}"
+      }
+    }
+  },
+  "block-1771228646333-623": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "fontWeight": "normal",
+        "textAlign": "right",
+        "padding": {
+          "top": 8,
+          "bottom": 8,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "{{shipping}}"
+      }
+    }
+  },
+  "block-1771228670990-798": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "fontWeight": "normal",
+        "textAlign": "right",
+        "padding": {
+          "top": 8,
+          "bottom": 8,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "{{taxes}}"
+      }
+    }
+  },
+  "block-1771228678534-603": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "fontWeight": "normal",
+        "textAlign": "right",
+        "padding": {
+          "top": 8,
+          "bottom": 8,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "{{discount}}"
+      }
+    }
+  },
+  "block-1771229143667": {
+    "type": "Image",
+    "data": {
+      "style": {
+        "padding": {
+          "top": 0,
+          "bottom": 0,
+          "right": 0,
+          "left": 0
+        }
+      },
+      "props": {
+        "url": "https://assets.usewaypoint.com/sample-image.jpg",
+        "alt": "Sample product",
+        "linkHref": null,
+        "contentAlignment": "top"
+      }
+    }
+  },
+  "block-1771229188833": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "fontSize": 12,
+        "fontWeight": "bold",
+        "padding": {
+          "top": 0,
+          "bottom": 0,
+          "right": 0,
+          "left": 0
+        }
+      },
+      "props": {
+        "text": "{{itme_name}}"
+      }
+    }
+  },
+  "block-1771229231267-963": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "fontSize": 12,
+        "fontWeight": "bold",
+        "padding": {
+          "top": 8,
+          "bottom": 0,
+          "right": 0,
+          "left": 0
+        }
+      },
+      "props": {
+        "text": "{{itme_name}}"
+      }
+    }
+  },
+  "block-1778597589848": {
+    "type": "Html",
+    "data": {
+      "style": {
+        "fontSize": 16,
+        "textAlign": null,
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "contents": ""
+      }
+    }
+  },
+  "block-1778597684070": {
+    "type": "Html",
+    "data": {
+      "style": {
+        "fontSize": 16,
+        "textAlign": null,
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "contents": "<strong>Hello world</strong>"
+      }
+    }
+  },
+  "block-1778597966109": {
+    "type": "Html",
+    "data": {
+      "style": {
+        "fontSize": 16,
+        "textAlign": "right",
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "contents": "<span><?= $order_total ?></span>"
+      }
+    }
+  },
+  "block-1778598009836": {
+    "type": "Divider",
+    "data": {
+      "style": {
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 0,
+          "left": 0
+        }
+      },
+      "props": {
+        "lineColor": "#CCCCCC"
+      }
+    }
+  },
+  "block-1778598064624": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "fontWeight": "bold",
+        "textAlign": "center",
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "Get an insider's look at JAPAN RAIL CLUB on social media!"
+      }
+    }
+  },
+  "block-1778598083098": {
+    "type": "ColumnsContainer",
+    "data": {
+      "style": {
+        "padding": {
+          "top": 0,
+          "bottom": 0,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "columnsCount": 2,
+        "columnsGap": 16,
+        "columns": [
+          {
+            "childrenIds": [
+              "block-1778598089119"
+            ]
+          },
+          {
+            "childrenIds": [
+              "block-1778598110043"
+            ]
+          },
+          {
+            "childrenIds": []
+          }
+        ]
+      }
+    }
+  },
+  "block-1778598089119": {
+    "type": "Image",
+    "data": {
+      "style": {
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 0,
+          "left": 24
+        },
+        "textAlign": "center"
+      },
+      "props": {
+        "url": "https://www.japanrailclub.com/wp-content/uploads/2026/05/facebook-24.png",
+        "alt": "Sample product",
+        "linkHref": "https://www.facebook.com/JAPANRAILCLUB/",
+        "contentAlignment": "middle"
+      }
+    }
+  },
+  "block-1778598110043": {
+    "type": "Image",
+    "data": {
+      "style": {
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 24,
+          "left": 0
+        },
+        "textAlign": "center"
+      },
+      "props": {
+        "url": "https://www.japanrailclub.com/wp-content/uploads/2026/05/instagram-grey-outline-22754_24.png",
+        "alt": "Sample product",
+        "linkHref": "https://www.instagram.com/japanrailclub/",
+        "contentAlignment": "middle"
+      }
+    }
+  },
+  "block-1778610822692": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "fontWeight": "normal",
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "Thank you for staying with us! Your exclusive discount has been successfully applied to your subscription."
+      }
+    }
+  },
+  "block-1778610827426-179": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "fontWeight": "normal",
+        "padding": {
+          "top": 0,
+          "bottom": 0,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": " Wish to update your subscription, payment method, or delivery preferences?"
+      }
+    }
+  },
+  "block-1778637624184": {
+    "type": "Html",
+    "data": {
+      "style": {
+        "fontSize": 16,
+        "textAlign": null,
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "contents": "<p>Dear <?=$name ?>,</p>"
+      }
+    }
+  },
+  "block-1778637645809": {
+    "type": "Html",
+    "data": {
+      "style": {
+        "fontSize": 16,
+        "textAlign": null,
+        "padding": {
+          "top": 16,
+          "bottom": 0,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "contents": "There's nothing more you need to do — simply sit back, relax, and look forward to your next <strong>Omiyage Snack Box,</strong> filled with authentic treats from Japan."
+      }
+    }
+  },
+  "block-1778637658553": {
+    "type": "Image",
+    "data": {
+      "style": {
+        "padding": {
+          "top": 0,
+          "bottom": 0,
+          "right": 24,
+          "left": 24
+        },
+        "textAlign": "center"
+      },
+      "props": {
+        "height": 200,
+        "url": "https://www.japanrailclub.com/wp-content/uploads/2025/07/Japan-Rail-Club-Omiyage-Box.webp",
+        "alt": "Sample product",
+        "linkHref": null,
+        "contentAlignment": "middle"
+      }
+    }
+  },
+  "block-1778637694558": {
+    "type": "Html",
+    "data": {
+      "style": {
+        "fontSize": 16,
+        "textAlign": null,
+        "padding": {
+          "top": 0,
+          "bottom": 0,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "contents": "<p style=\"background-color:#fefaf1;padding:16px;margin-top:24px;border-radius:8px;text-align:left\">\n                                <strong>Subscription Summary</strong><br /><br />\n                                <strong>Plan</strong>: <?= $plan ?><br />\n                                <strong>Renewal Date</strong>: <?= $effective_from_n ?><br />\n                                <strong>Renewal Price</strong>: <?= $discounted_price ?>&nbsp;(U.P. <?= $original_price ?>)<br />\n                                <strong>You Saved</strong>: <?= $savings ?><br />\n                            </p>"
+      }
+    }
+  },
+  "block-1778637756883": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "fontWeight": "normal",
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": " We truly appreciate your continued support and look forward to sharing more of Japan’s finest flavours with you."
+      }
+    }
+  },
+  "block-1778637772334": {
+    "type": "Html",
+    "data": {
+      "style": {
+        "fontSize": 16,
+        "textAlign": null,
+        "padding": {
+          "top": 0,
+          "bottom": 0,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "contents": "<p>\n                                Questions? Reach us anytime at\n                                <a href=\"mailto:info@japanrailclub.com\" target=\"_blank\">info@japanrailclub.com</a>\n                            </p>"
+      }
+    }
+  },
+  "block-1778637795638": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "fontWeight": "normal",
+        "textAlign": "center",
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "You have received this email as a registered user of JR East\n                            Business Development SEA Ptd. Ltd."
+      }
+    }
+  },
+  "block-1778637843375": {
+    "type": "Text",
+    "data": {
+      "style": {
+        "fontWeight": "normal",
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "text": "Thank you again for choosing JAPAN RAIL CLUB."
+      }
+    }
+  },
+  "block-1778637891002": {
+    "type": "Button",
+    "data": {
+      "style": {
+        "textAlign": "center",
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "right": 24,
+          "left": 24
+        }
+      },
+      "props": {
+        "buttonBackgroundColor": "#001A43",
+        "text": "Manage Subscription",
+        "url": "https://www.japanrailclub.com/my-account"
+      }
+    }
+  }
+}
