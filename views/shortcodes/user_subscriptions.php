@@ -359,6 +359,9 @@ foreach ($res as $sub) {
 
     <template v-if="true">
 
+        <!-- ── LIST VIEW ── -->
+        <template v-if="!selectedSubId">
+
         <!-- tab bar -->
         <div class="sub-tabs">
             <button :class="['sub-tab', { active: activeTab === 'active' }]"
@@ -469,6 +472,77 @@ foreach ($res as $sub) {
 
 
         </div>
+
+        </template><!-- /list view -->
+
+        <!-- ── DETAIL VIEW ── -->
+        <template v-else-if="selectedSub">
+
+            <!-- Back button (same pattern as orders page) -->
+            <button class="sub-detail-back" @click="closeSubDetail">&#8592; Back</button>
+
+            <!-- Banner -->
+            <div class="sub-detail-banner">
+                <div class="sub-detail-banner-text">
+                    <template v-if="selectedSub.status === 'wc-active'">
+                        You are currently on a <strong>JAPANESE SNACK SUBSCRIPTION BOX</strong>
+                        plan paying {{ selectedSub.plan_raw == 1 ? 'every 1 month' : 'every ' + selectedSub.plan_raw + ' months' }}
+                    </template>
+                    <template v-else>
+                        Your <strong>JAPANESE SNACK SUBSCRIPTION BOX</strong> is currently cancelled.
+                    </template>
+                </div>
+            </div>
+
+            <!-- Detail rows -->
+            <div class="sub-detail-body">
+
+                <!-- ACTIVE -->
+                <template v-if="selectedSub.status === 'wc-active'">
+                    <div class="sub-detail-row">
+                        <span class="sub-detail-icon sub-icon-info"></span>
+                        <span class="sub-detail-label">Monthly Cost:</span>
+                        <span class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></span>
+                    </div>
+                    <div class="sub-detail-row">
+                        <span class="sub-detail-icon sub-icon-cal"></span>
+                        <span class="sub-detail-label">Next payment due:</span>
+                        <span class="sub-detail-value">{{ selectedSub.next_payment }}</span>
+                    </div>
+
+                    <div class="sub-detail-actions">
+                        <button @click.prevent="showUpdatePopup(selectedSub.id)" class="sub-btn-primary">
+                            CHANGE PLAN &amp; ADD-ONS
+                        </button>
+                        <a href="<?php echo esc_url( wc_get_account_endpoint_url('edit-address') ); ?>"
+                           class="sub-btn-outline">
+                            CHANGE SHIPPING &amp; BILLING
+                        </a>
+                    </div>
+
+                    <p class="sub-cancel-link">
+                        I would like to.
+                        <a href="#" @click.prevent="showCancleOpenPopup(selectedSub.id, selectedSub.plan_raw)">Cancel Subscription</a>
+                    </p>
+                </template>
+
+                <!-- CANCELLED / INACTIVE -->
+                <template v-else>
+                    <div class="sub-detail-row">
+                        <span class="sub-detail-icon sub-icon-info"></span>
+                        <span class="sub-detail-label">Monthly Cost:</span>
+                        <span class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></span>
+                    </div>
+                    <div class="sub-detail-row">
+                        <span class="sub-detail-icon sub-icon-card"></span>
+                        <span class="sub-detail-label">Payment:</span>
+                        <span class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total + ' will be charged upon reactivation'"></span>
+                    </div>
+                </template>
+
+            </div>
+
+        </template><!-- /detail view -->
 
         <!-- Data processing and loading panel -->
         <Transition name="fade">

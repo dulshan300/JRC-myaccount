@@ -207,9 +207,16 @@ foreach ($cancelling_coupons as $key => $coupon_code) {
 
             const selectedSubId = ref(null);
 
+            const selectedSub = computed(() =>
+                subscription_data.value.find(s => s.id === selectedSubId.value) || null
+            );
+
             const openSubDetail = (id) => {
                 selectedSubId.value = id;
-                // step 2 will implement navigation/panel logic here
+            };
+
+            const closeSubDetail = () => {
+                selectedSubId.value = null;
             };
 
             const show_sub_edit_popup = ref(false);
@@ -612,7 +619,9 @@ foreach ($cancelling_coupons as $key => $coupon_code) {
                 acceptCouponOffer,
                 cancel_anyway_handler,
                 selectedSubId,
-                openSubDetail
+                selectedSub,
+                openSubDetail,
+                closeSubDetail
             }
         }
     });

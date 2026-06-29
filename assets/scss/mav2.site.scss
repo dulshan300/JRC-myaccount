@@ -317,6 +317,132 @@
     }
 }
 
+/* ── Subscription detail view ── */
+
+.sub-detail-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #374151;
+    padding: 0 0 16px;
+    font-weight: 500;
+
+    &:hover { color: #000; }
+}
+
+.sub-detail-banner {
+    position: relative;
+    background-color: #C4873B;
+    background-image: url('https://www.japanrailclub.com/wp-content/uploads/2026/05/2605-ocha-retreat-hero-banner-desktop.jpg');
+    background-size: cover;
+    background-position: right top;
+    border-radius: 12px;
+    padding: 36px 28px;
+    overflow: hidden;
+    margin-bottom: 24px;
+
+    .sub-detail-banner-text {
+        position: relative;
+        z-index: 1;
+        font-size: 15px;
+        color: #fff;
+        line-height: 1.6;
+        max-width: 420px;
+        text-shadow: 0 1px 4px rgba(0,0,0,0.45);
+
+        strong { font-weight: 700; }
+    }
+}
+
+.sub-detail-body {
+    padding: 8px 0;
+}
+
+.sub-detail-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    font-size: 14px;
+    color: #374151;
+
+    .sub-detail-label { font-weight: 500; min-width: 160px; }
+    .sub-detail-value { color: #111; }
+}
+
+.sub-detail-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: inline-block;
+    background-color: #f97316;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 14px;
+}
+
+.sub-icon-info { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/%3E%3C/svg%3E"); }
+.sub-icon-cal  { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M19 4h-1V2h-2v2H8V2H6v2H5C3.89 4 3 4.9 3 6v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zM7 12h5v5H7z'/%3E%3C/svg%3E"); }
+.sub-icon-card { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z'/%3E%3C/svg%3E"); }
+
+.sub-detail-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 24px 0 16px;
+
+    .sub-btn-primary,
+    .sub-btn-outline,
+    a.sub-btn-outline {
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .sub-btn-primary {
+        background: #f97316;
+        color: #fff;
+        border: 2px solid #f97316;
+
+        &:hover { background: #ea6c07; border-color: #ea6c07; }
+    }
+
+    .sub-btn-outline,
+    a.sub-btn-outline {
+        background: #fff;
+        color: #f97316;
+        border: 2px solid #f97316;
+
+        &:hover { background: #fff7ed; }
+    }
+}
+
+.sub-cancel-link {
+    font-size: 13px;
+    color: #6b7280;
+    text-align: center;
+    margin-top: 8px;
+
+    a {
+        color: #f97316;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+}
+
+/* ── End subscription detail view ── */
+
 .sub-list-card {
     display: flex;
     align-items: center;
