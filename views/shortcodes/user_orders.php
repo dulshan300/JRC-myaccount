@@ -3,153 +3,162 @@ $user_id = get_current_user_id();
 
 if (empty($user_id)) {
     echo 'Please login to see your orders';
-
     return;
 }
 
-// echo "<pre>";
-
 global $wpdb;
 
-
-
-$sql = "SELECT od.id, od.currency, od.date_created_gmt,pl.order_item_id, od.customer_id, pl.product_id, od.status, ( SELECT post_title FROM wp_posts WHERE ID = pl.product_id ) AS product, ( SELECT guid FROM wp_posts WHERE ID = ( SELECT meta_value FROM wp_postmeta WHERE post_id = pl.product_id AND meta_key ='_thumbnail_id') ) AS product_image_url, COALESCE(cl.discount_amount, 0) AS discount_amount, ( SELECT post_title FROM wp_posts WHERE ID = cl.coupon_id ) AS coupon, pl.product_net_revenue, pl.product_gross_revenue, od.total_amount, -- Extract individual meta values
- MAX( CASE WHEN oim.meta_key ='Participation Date'THEN oim.meta_value END ) AS participation_date, MAX( CASE WHEN oim.meta_key ='First Name'THEN oim.meta_value END ) AS first_name, MAX( CASE WHEN oim.meta_key ='Last Name'THEN oim.meta_value END ) AS last_name, MAX( CASE WHEN oim.meta_key ='Email Address'THEN oim.meta_value END ) AS email_address, MAX( CASE WHEN oim.meta_key ='Date Of Birth'THEN oim.meta_value END ) AS date_of_birth, MAX( CASE WHEN oim.meta_key ='Country'THEN oim.meta_value END ) AS country, MAX( CASE WHEN oim.meta_key ='Telephone Number'THEN oim.meta_value END ) AS telephone_number, MAX( CASE WHEN oim.meta_key ='Gender'THEN oim.meta_value END ) AS gender, MAX( CASE WHEN oim.meta_key ='ticket-type'THEN oim.meta_value END ) AS ticket_type FROM wp_wc_orders od LEFT JOIN wp_wc_order_product_lookup pl ON pl.order_id = od.id LEFT JOIN wp_woocommerce_order_itemmeta oim ON oim.order_item_id = pl.order_item_id LEFT JOIN wp_wc_order_coupon_lookup cl ON cl.order_id = od.id WHERE pl.product_id != 198 AND od.customer_id = $user_id GROUP BY od.id, od.currency, pl.order_item_id, od.customer_id, pl.product_id, od.status, pl.product_net_revenue, pl.product_gross_revenue, od.total_amount, cl.discount_amount, cl.coupon_id, pl.variation_id ORDER BY od.date_created_gmt DESC";
+$sql = $wpdb->prepare(
+    "SELECT
+        od.id,
+        od.type,
+        od.status,
+        od.currency,
+        od.date_created_gmt,
+        od.total_amount,
+        (
+            SELECT meta_value
+            FROM wp_wc_orders_meta
+            WHERE order_id = od.id
+              AND meta_key = '_ps_prepaid_pieces'
+            LIMIT 1
+        ) AS subscription_plan
+    FROM wp_wc_orders od
+    WHERE od.customer_id = %d
+      AND od.type IN ('shop_order', 'shop_subscription', 'shop_order_renewal')
+    ORDER BY od.date_created_gmt DESC",
+    $user_id
+);
 
 $rows = $wpdb->get_results($sql);
 
-$orders = [];
-
-$_itmes_value = [];
-
-$tickets_meta = [
-    "first_name" => "First Name",
-    "participation_date" => "Participation Date",
-    "last_name" => "Last Name",
-    "email_address" => "Email Address",
-    "date_of_birth" => "Date Of Birth",
-    "country" => "Country",
-    "telephone_number" => "Telephone Number",
-    "gender" => 'Gender',
-    "ticket_type" => 'Ticket Type'
-];
-
-foreach ($rows as $row) {
-    $orders[$row->id]['id'] = $row->id;
-    $orders[$row->id]['status'] = ucwords(str_replace('wc-', '', $row->status));
-    $orders[$row->id]['product'] = $row->product;
-    $orders[$row->id]['product_image'] = $row->product_image_url;
-    $orders[$row->id]['type'] = is_null($row->ticket_type) ? 'General' : 'ticket';
-
-    // format time from gtm to sgt 03 Jnue 2024 8:00 am
-    $date_created_gmt = new DateTime($row->date_created_gmt, new DateTimeZone('GMT'));
-    $date_created_gmt->setTimezone(new DateTimeZone('Asia/Singapore'));
-    $offset = $date_created_gmt->getOffset() / 3600; // Converts seconds to hours
-    $suffix = ($offset >= 0) ? "+" . $offset : $offset;
-
-    $formatted_sgt_time = $date_created_gmt->format('d M Y g:i a') . " (GMT " . $suffix . ")";
-
-
-    $orders[$row->id]['date_created_gmt'] = $formatted_sgt_time;
-    $orders[$row->id]['discount_amount'] = number_format(floatval($row->discount_amount), 2);
-    $orders[$row->id]['coupon'] = $row->coupon ? '( ' . $row->coupon . ' )' : '';
-
-    if (array_search($row->order_item_id, $_itmes_value) === false) {
-        $orders[$row->id]['items_value'] += floatval($row->product_net_revenue);
-        $_itmes_value[] = $row->order_item_id;
+if (!function_exists('mav2_orders_payment_status')) {
+    function mav2_orders_payment_status($status)
+    {
+        $paid    = ['wc-completed', 'wc-processing', 'wc-active', 'wc-pending-cancel'];
+        $failed  = ['wc-failed', 'wc-cancelled', 'wc-refunded', 'wc-expired'];
+        if (in_array($status, $paid))   return ['label' => 'Paid',    'class' => 'mav2-badge-paid'];
+        if (in_array($status, $failed)) return ['label' => 'Failed',  'class' => 'mav2-badge-failed'];
+        return ['label' => 'Pending', 'class' => 'mav2-badge-pending'];
     }
-
-    $orders[$row->id]['total'] = number_format(floatval($row->total_amount), 2);
-    $orders[$row->id]['currency'] = get_woocommerce_currency_symbol($row->currency);
-
-    // clean meta key
-    $key = $row->meta_key;
-    $key = str_replace('-', ' ', $key);
-    $key = ucwords($key);
-
-    $items = [];
-
-    foreach ($tickets_meta as $key => $value) {
-        if (!is_null($row->$key)) {
-            $items[$value] = $row->$key;
-        }
-    }
-
-    $orders[$row->id]['items'][$row->order_item_id] = $items;
 }
 
-$meta_order = ['First Name', 'Last Name', 'Email Address', 'Ticket Type', 'Participation Date', 'Date Of Birth', 'Country'];
-
-// format items data
-
-foreach ($orders as $oid => $order) {
-    $order_items = $order['items'];
-
-    foreach ($order_items as $id => $values) {
-        $new_order = [];
-
-        foreach ($meta_order as $key) {
-
-            if (array_search($key, array_keys($values)) !== false) {
-                $new_order[$key] = $values[$key];
-            }
-        }
-
-        $full_name = [$new_order['First Name'], $new_order['Last Name']];
-        $full_name = implode(' ', $full_name);
-        unset($new_order['First Name']);
-        unset($new_order['Last Name']);
-        $_temp = [];
-        $_temp['Full Name'] = $full_name;
-
-        $new_order = array_merge($_temp, $new_order);
-        $order['items'][$id] = $new_order;
+if (!function_exists('mav2_orders_fulfillment_status')) {
+    function mav2_orders_fulfillment_status($status)
+    {
+        if ($status === 'wc-completed') return ['label' => 'Completed', 'class' => 'mav2-badge-completed'];
+        return ['label' => 'Processing', 'class' => 'mav2-badge-processing'];
     }
+}
 
-    $order['items_value'] = number_format($order['items_value'], 2);
+if (!function_exists('mav2_orders_subscription_plan')) {
+    function mav2_orders_subscription_plan($plan_raw)
+    {
+        if (is_null($plan_raw) || $plan_raw === '') return '-';
+        $n = intval($plan_raw);
+        if ($n === 1) return 'Monthly';
+        return $n . ' months';
+    }
+}
 
-    $orders[$oid] = $order;
+$orders = [];
+$myaccount_url = wc_get_page_permalink('myaccount');
+
+foreach ($rows as $row) {
+    $date = new DateTime($row->date_created_gmt, new DateTimeZone('GMT'));
+    $date->setTimezone(new DateTimeZone('Asia/Singapore'));
+
+    $orders[] = [
+        'id'                 => $row->id,
+        'date'               => $date->format('d M Y'),
+        'subscription_plan'  => mav2_orders_subscription_plan($row->subscription_plan),
+        'payment_status'     => mav2_orders_payment_status($row->status),
+        'fulfillment_status' => mav2_orders_fulfillment_status($row->status),
+        'total'              => number_format(floatval($row->total_amount), 2),
+        'currency'           => get_woocommerce_currency_symbol($row->currency),
+        'order_url'          => wc_get_endpoint_url('view-order', $row->id, $myaccount_url),
+    ];
 }
 ?>
 
+<style>
+    #mav2-orders-table { width: 100%; border-collapse: collapse; }
+    #mav2-orders-table th,
+    #mav2-orders-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 14px; }
+    #mav2-orders-table th { font-weight: 600; background: #f9fafb; }
+    #mav2-orders-table td a { color: inherit; text-decoration: underline; }
+    .mav2-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+    .mav2-badge-paid        { background: #d1fae5; color: #065f46; }
+    .mav2-badge-failed      { background: #fee2e2; color: #991b1b; }
+    .mav2-badge-pending     { background: #fef3c7; color: #92400e; }
+    .mav2-badge-completed   { background: #dbeafe; color: #1e40af; }
+    .mav2-badge-processing  { background: #ede9fe; color: #5b21b6; }
+    #mav2-orders-pagination { display: flex; align-items: center; gap: 12px; margin-top: 16px; justify-content: flex-end; }
+    #mav2-orders-pagination button { padding: 6px 14px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; cursor: pointer; font-size: 13px; }
+    #mav2-orders-pagination button:disabled { opacity: 0.4; cursor: default; }
+    #mav2-page-info { font-size: 13px; color: #6b7280; }
+</style>
+
 <div id="order_cards">
 
-    <table>
+    <table id="mav2-orders-table">
         <thead>
-            <th>Order No.</th>
-            <th>Item/s</th>
-            <th>Paid On</th>
-            <th>Amount</th>
-            <th>Invoice </th>
+            <tr>
+                <th>Order</th>
+                <th>Date</th>
+                <th>Subscription Plan</th>
+                <th>Payment Status</th>
+                <th>Fulfillment Status</th>
+                <th>Total</th>
+                <th>Invoice</th>
+            </tr>
         </thead>
-
         <tbody>
 
-
-            <?php foreach ($orders as $order) { ?>
-                <tr>
-                    <td>#<?= $order['id'] ?></td>
-                    <td><button data-id="<?= $order['id'] ?>" class="view_items_button">View items</button></td>
-                    <td><?= $order['date_created_gmt'] ?></td>
+            <?php foreach ($orders as $index => $order) { ?>
+                <tr class="mav2-order-row" data-row-index="<?= $index ?>">
+                    <td>
+                        <a href="<?= esc_url($order['order_url']) ?>" target="_blank" rel="noopener">
+                            #<?= esc_html($order['id']) ?>
+                        </a>
+                    </td>
+                    <td><?= esc_html($order['date']) ?></td>
+                    <td><?= esc_html($order['subscription_plan']) ?></td>
+                    <td>
+                        <span class="mav2-badge <?= $order['payment_status']['class'] ?>">
+                            <?= $order['payment_status']['label'] ?>
+                        </span>
+                    </td>
+                    <td>
+                        <span class="mav2-badge <?= $order['fulfillment_status']['class'] ?>">
+                            <?= $order['fulfillment_status']['label'] ?>
+                        </span>
+                    </td>
                     <td><?= $order['currency'] ?><?= $order['total'] ?></td>
                     <td>
-                        <button type="button" data-id="<?= $order['id'] ?>" class="invoice_download"><span></span>Download</button>
+                        <button type="button" data-id="<?= $order['id'] ?>" class="invoice_download">
+                            <span></span>Download
+                        </button>
                     </td>
                 </tr>
-
             <?php } ?>
 
-            <!-- if no subscriptions -->
             <?php if (empty($orders)) { ?>
                 <tr>
-                    <td colspan="5">
-                        <p>No Order Found</p>
-                    </td>
+                    <td colspan="7"><p>No Orders Found</p></td>
                 </tr>
-
             <?php } ?>
+
         </tbody>
     </table>
+
+    <?php if (!empty($orders)) { ?>
+    <div id="mav2-orders-pagination">
+        <button id="mav2-prev-page" disabled>&#8592; Previous</button>
+        <span id="mav2-page-info"></span>
+        <button id="mav2-next-page">Next &#8594;</button>
+    </div>
+    <?php } ?>
 
     <div id="order_processing" style="display: none;">
         <div class="processing">
@@ -210,5 +219,36 @@ foreach ($orders as $oid => $order) {
         </div>
     </div>
 
-
 </div>
+
+<script>
+(function () {
+    const PER_PAGE   = 5;
+    let currentPage  = 1;
+    const rows       = Array.from(document.querySelectorAll('.mav2-order-row'));
+    const totalPages = Math.max(1, Math.ceil(rows.length / PER_PAGE));
+    const prevBtn    = document.getElementById('mav2-prev-page');
+    const nextBtn    = document.getElementById('mav2-next-page');
+    const pageInfo   = document.getElementById('mav2-page-info');
+
+    function render() {
+        const start = (currentPage - 1) * PER_PAGE;
+        const end   = start + PER_PAGE;
+        rows.forEach(function (row, i) {
+            row.style.display = (i >= start && i < end) ? '' : 'none';
+        });
+        pageInfo.textContent    = 'Page ' + currentPage + ' of ' + totalPages;
+        prevBtn.disabled        = currentPage === 1;
+        nextBtn.disabled        = currentPage === totalPages;
+    }
+
+    prevBtn.addEventListener('click', function () {
+        if (currentPage > 1) { currentPage--; render(); }
+    });
+    nextBtn.addEventListener('click', function () {
+        if (currentPage < totalPages) { currentPage++; render(); }
+    });
+
+    render();
+})();
+</script>
