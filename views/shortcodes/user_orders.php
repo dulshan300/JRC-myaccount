@@ -167,9 +167,11 @@ foreach ($rows as $row) {
                     </td>
                     <td><?= $order['currency'] ?><?= $order['total'] ?></td>
                     <td>
+                        <?php if (floatval($order['total']) > 0): ?>
                         <button type="button" data-id="<?= $order['id'] ?>" class="invoice_download">
                             <span></span>Download
                         </button>
+                        <?php endif; ?>
                     </td>
                 </tr>
             <?php } ?>
@@ -378,7 +380,7 @@ foreach ($rows as $row) {
             + '</table>'
 
             + '<div class="mav2-detail-actions">'
-            +   '<button type="button" data-id="' + esc(d.id) + '" class="invoice_download"><span></span>Download Invoice</button>'
+            +   (d.total_raw > 0 ? '<button type="button" data-id="' + esc(d.id) + '" class="invoice_download"><span></span>Download Invoice</button>' : '')
             + '</div>';
 
         detailBody.innerHTML = html;

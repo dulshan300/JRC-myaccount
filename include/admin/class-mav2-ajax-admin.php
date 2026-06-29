@@ -1717,6 +1717,7 @@ final class MAV2_Ajax_Admin
             'discount'          => $currency_symbol . number_format(floatval($order->get_total_discount()), 2),
             'tax'               => $currency_symbol . number_format(floatval($order->get_total_tax()), 2),
             'total'             => $currency_symbol . number_format(floatval($order->get_total()), 2),
+            'total_raw'         => floatval($order->get_total()),
         ];
 
         wp_send_json_success($data);

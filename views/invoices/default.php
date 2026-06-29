@@ -230,8 +230,6 @@
 
 <div style="clear: both;"></div>
 
-<div class="thank-you">Thank you!</div>
-
 <table class="footer-table">
     <tr>
         <td class="">
