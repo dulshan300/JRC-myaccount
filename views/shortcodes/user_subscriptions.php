@@ -359,10 +359,18 @@ foreach ($res as $sub) {
 
     <template v-if="true">
 
+        <!-- tab bar -->
+        <div class="sub-tabs">
+            <button :class="['sub-tab', { active: activeTab === 'active' }]"
+                    @click="activeTab = 'active'">Active</button>
+            <button :class="['sub-tab', { active: activeTab === 'inactive' }]"
+                    @click="activeTab = 'inactive'">Inactive</button>
+        </div>
+
         <!-- generate html -->
         <div id="sub_cards">
 
-            <template v-for="sub in subscription_data">
+            <template v-for="sub in activeTab === 'active' ? activeSubscriptions : inactiveSubscriptions">
 
                 <div class="subscription-container">
                     <div class="monthly-grid">
@@ -450,8 +458,9 @@ foreach ($res as $sub) {
 
             </template>
 
-            <!-- if no subscriptions -->
-            <p v-if="!subscription_data.length">No Subscriptions Found</p>
+            <!-- if no subscriptions in current tab -->
+            <p v-if="activeTab === 'active' && !activeSubscriptions.length">No active subscriptions found.</p>
+            <p v-if="activeTab === 'inactive' && !inactiveSubscriptions.length">No inactive subscriptions found.</p>
 
 
         </div>

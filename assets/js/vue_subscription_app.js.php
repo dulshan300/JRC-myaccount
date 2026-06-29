@@ -190,6 +190,16 @@ foreach ($cancelling_coupons as $key => $coupon_code) {
             const msg = ref('hello world');
 
             const subscription_data = ref([..._subscription_data]);
+
+            const activeTab = ref('active');
+
+            const activeSubscriptions = computed(() =>
+                subscription_data.value.filter(s => s.status === 'wc-active')
+            );
+            const inactiveSubscriptions = computed(() =>
+                subscription_data.value.filter(s => s.status !== 'wc-active')
+            );
+
             // [1,3,6,12]
             const eligible_coupons_plans = ref(<?php echo json_encode($eligible_coupons); ?>);
             const coupon_box = ref({});
@@ -564,6 +574,9 @@ foreach ($cancelling_coupons as $key => $coupon_code) {
             return {
                 msg,
                 subscription_data,
+                activeTab,
+                activeSubscriptions,
+                inactiveSubscriptions,
                 show_sub_edit_popup,
                 current_panel,
                 processing,

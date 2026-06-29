@@ -317,6 +317,31 @@
     }
 }
 
+.sub-tabs {
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 24px;
+
+    .sub-tab {
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 10px 20px;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        color: #999;
+        margin-bottom: -1px;
+        transition: color 0.2s, border-color 0.2s;
+
+        &.active {
+            color: #001A43;
+            border-bottom-color: #001A43;
+            font-weight: 600;
+        }
+    }
+}
+
 #sub_cards {
     display: flex;
     flex-direction: column;
