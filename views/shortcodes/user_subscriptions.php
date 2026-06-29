@@ -91,8 +91,19 @@ $sql = "SELECT
             order_id = od.id
             AND meta_key = '_ps_scheduled_to_be_cancelled'
             AND meta_value = 'yes'
-    ) AS prepaid_cancel
-    
+    ) AS prepaid_cancel,
+    (
+        SELECT
+            comment_date_gmt
+        FROM
+            wp_comments
+        WHERE
+            comment_post_ID = od.id
+            AND comment_content LIKE '%cancelled by the user%'
+        ORDER BY comment_date_gmt DESC
+        LIMIT 1
+    ) AS cancelled_at_raw
+
 from
     wp_wc_orders od
 left join
@@ -337,6 +348,10 @@ foreach ($res as $sub) {
 
     $temp['next_payment'] = $_next_payment;
 
+    $temp['cancelled_at'] = !empty($sub->cancelled_at_raw)
+        ? date('M d, Y H:i \J\S\T', strtotime($sub->cancelled_at_raw . ' +8 hours'))
+        : null;
+
     $out_data[] = $temp;
 }
 
@@ -514,10 +529,11 @@ foreach ($res as $sub) {
                         <button @click.prevent="showUpdatePopup(selectedSub.id)" class="sub-btn-primary">
                             CHANGE PLAN &amp; ADD-ONS
                         </button>
-                        <a href="<?php echo esc_url( wc_get_account_endpoint_url('edit-address') ); ?>"
+                        <!-- CHANGE SHIPPING & BILLING disabled until feature is available -->
+                        <!-- <a href="<?php echo esc_url( wc_get_account_endpoint_url('edit-address') ); ?>"
                            class="sub-btn-outline">
                             CHANGE SHIPPING &amp; BILLING
-                        </a>
+                        </a> -->
                     </div>
 
                     <p class="sub-cancel-link">
@@ -532,6 +548,11 @@ foreach ($res as $sub) {
                         <span class="sub-detail-icon sub-icon-info"></span>
                         <span class="sub-detail-label">Monthly Cost:</span>
                         <span class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></span>
+                    </div>
+                    <div class="sub-detail-row" v-if="selectedSub.cancelled_at">
+                        <span class="sub-detail-icon sub-icon-cal"></span>
+                        <span class="sub-detail-label">Cancelled On:</span>
+                        <span class="sub-detail-value">{{ selectedSub.cancelled_at }}</span>
                     </div>
                     <div class="sub-detail-row">
                         <span class="sub-detail-icon sub-icon-card"></span>
