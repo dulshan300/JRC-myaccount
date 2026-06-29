@@ -372,6 +372,36 @@ foreach ($res as $sub) {
 
             <template v-for="sub in activeTab === 'active' ? activeSubscriptions : inactiveSubscriptions">
 
+                <!-- compact list card -->
+                <div class="sub-list-card" @click="openSubDetail(sub.id)">
+                    <div class="sub-thumb-wrap">
+                        <img
+                            :src="sub.last_3_orders.length ? sub.last_3_orders[sub.last_3_orders.length - 1].img : ''"
+                            class="sub-thumb"
+                            alt="Subscription image"
+                        />                       
+                    </div>
+
+                    <div class="sub-list-body">
+                        <div class="sub-list-top">
+                            <span class="sub-name">{{ sub.product }}</span>
+                            <span class="sub-freq-badge">
+                                {{ sub.plan_raw == 1 ? 'Every month' : 'Every ' + sub.plan_raw + ' months' }}
+                            </span>
+                        </div>
+                        <div class="sub-list-price" v-html="sub.currency + sub.total"></div>
+                        <a class="sub-view-link" @click.stop="openSubDetail(sub.id)">View plan</a>
+                    </div>
+
+                    <div class="sub-list-arrow">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- *** PRESERVED FOR STEP 2 — detail panel HTML (do not delete) ***
                 <div class="subscription-container">
                     <div class="monthly-grid">
                         <div v-for="o3 in sub.last_3_orders" class="month-card">
@@ -383,17 +413,10 @@ foreach ($res as $sub) {
                             </div>
                         </div>
                     </div>
-
                     <div class="details-section">
                         <div class="details-header">
                             <h3>SUBSCRIPTION DETAILS</h3>
-                            <!-- <span class="expand-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M11 11V7H13V11H17V13H13V17H11V13H7V11H11ZM12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20Z"></path>
-                                </svg>
-                            </span> -->
                         </div>
-
                         <div class="details-content">
                             <div class="left-col">
                                 <p><span>Subscription:</span> <strong>#{{sub.id}}</strong></p>
@@ -402,59 +425,41 @@ foreach ($res as $sub) {
                                 <p v-if="sub.status != 'wc-cancelled'"><span>Renewal:</span> {{sub.next_payment}}</p>
                             </div>
                             <div class="right-col">
-                                <p><span>Shipping:</span> <span
-                                        v-html="sub.shipping>0?sub.currency + sub.shipping:'Free'"> </span></p>
+                                <p><span>Shipping:</span> <span v-html="sub.shipping>0?sub.currency + sub.shipping:'Free'"> </span></p>
                                 <p><span>Discount:</span> <span v-html="sub.currency + sub.discount"> </span></p>
-                                <strong class="total"><span>Total:</span> <span v-html="sub.currency + sub.total">
-                                    </span></strong>
+                                <strong class="total"><span>Total:</span> <span v-html="sub.currency + sub.total"></span></strong>
                             </div>
                         </div>
-
                         <div class="order_history">
-
                             <div class="details-header">
                                 <h3>Order History</h3>
                                 <span class="expand-icon arrow">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                        <path
-                                            d="M11 11V7H13V11H17V13H13V17H11V13H7V11H11ZM12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20Z">
-                                        </path>
+                                        <path d="M11 11V7H13V11H17V13H13V17H11V13H7V11H11ZM12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20Z"></path>
                                     </svg>
                                 </span>
                             </div>
-
                             <div style="display: none;" class="order_history_list">
                                 <table class="order_history_table">
-                                    <tr>
-                                        <th>Order ID</th>
-                                        <th>Date (GMT)</th>
-                                        <th>Tracking No.</th>
-                                    </tr>
-
+                                    <tr><th>Order ID</th><th>Date (GMT)</th><th>Tracking No.</th></tr>
                                     <tr v-for="order in sub.order_history" class="order_history_item">
                                         <td class="order_status">{{ order.id }}</td>
                                         <td class="order_date">{{ order.date }}</td>
                                         <td class="order_tracking" v-html="order.tracking"></td>
                                     </tr>
-
                                 </table>
-
                             </div>
                         </div>
-
                         <div class="actions">
-                            <button @click.prevent="downloadInvoice(sub.id)" class="btn btn-outline">Download
-                                Invoice</button>
-                            <button v-if="sub.status == 'wc-active'" @click.prevent="showUpdatePopup(sub.id)"
-                                class="btn btn-outline">Change Plan</button>
-                            <button v-if="sub.status == 'wc-active'"
-                                @click.prevent="showCancleOpenPopup(sub.id,sub.plan_raw)" class="btn btn-outline">Cancel
-                                Plan</button>
+                            <button @click.prevent="downloadInvoice(sub.id)" class="btn btn-outline">Download Invoice</button>
+                            <button v-if="sub.status == 'wc-active'" @click.prevent="showUpdatePopup(sub.id)" class="btn btn-outline">Change Plan</button>
+                            <button v-if="sub.status == 'wc-active'" @click.prevent="showCancleOpenPopup(sub.id,sub.plan_raw)" class="btn btn-outline">Cancel Plan</button>
                             <span v-else-if="sub.status == 'wc-cancelled'" class="btn btn-disabled">Cancelled</span>
                             <span v-else class="btn btn-disabled">Pending</span>
                         </div>
                     </div>
                 </div>
+                END STEP 2 PRESERVED HTML ***-->
 
             </template>
 

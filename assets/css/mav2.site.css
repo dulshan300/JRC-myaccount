@@ -338,6 +338,121 @@
   margin-bottom: 5px;
 }
 
+.sub-list-card {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+
+.sub-list-card:last-child {
+  border-bottom: none;
+}
+
+.sub-list-card .sub-thumb-wrap {
+  position: relative;
+  -ms-flex-negative: 0;
+      flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+}
+
+.sub-list-card .sub-thumb-wrap .sub-thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  -o-object-fit: cover;
+     object-fit: cover;
+  display: block;
+}
+
+.sub-list-card .sub-thumb-wrap .sub-item-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #111;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+.sub-list-card .sub-list-body {
+  -webkit-box-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+  min-width: 0;
+}
+
+.sub-list-card .sub-list-body .sub-list-top {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.sub-list-card .sub-list-body .sub-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: #111;
+}
+
+.sub-list-card .sub-list-body .sub-freq-badge {
+  background: #f0f0f0;
+  color: #555;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.sub-list-card .sub-list-body .sub-list-price {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.sub-list-card .sub-list-body .sub-view-link {
+  font-size: 13px;
+  color: #0b5ccc;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.sub-list-card .sub-list-arrow {
+  -ms-flex-negative: 0;
+      flex-shrink: 0;
+  color: #999;
+}
+
+.sub-list-card .sub-list-arrow svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
 .sub-tabs {
   display: -webkit-box;
   display: -ms-flexbox;

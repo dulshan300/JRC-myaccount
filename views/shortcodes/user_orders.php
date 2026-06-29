@@ -25,8 +25,7 @@ $sql = $wpdb->prepare(
         ) AS subscription_plan
     FROM wp_wc_orders od
     WHERE od.customer_id = %d
-      AND od.type IN ('shop_order', 'shop_subscription', 'shop_order_renewal')
-      AND od.total_amount > 0
+      AND od.type IN ('shop_order', 'shop_subscription', 'shop_order_renewal')     
     ORDER BY od.date_created_gmt DESC",
     $user_id
 );

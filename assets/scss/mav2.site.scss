@@ -317,6 +317,99 @@
     }
 }
 
+.sub-list-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+
+    &:last-child { border-bottom: none; }
+
+    .sub-thumb-wrap {
+        position: relative;
+        flex-shrink: 0;
+        width: 72px;
+        height: 72px;
+
+        .sub-thumb {
+            width: 72px;
+            height: 72px;
+            border-radius: 10px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .sub-item-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #111;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
+    .sub-list-body {
+        flex: 1;
+        min-width: 0;
+
+        .sub-list-top {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .sub-name {
+            font-weight: 700;
+            font-size: 15px;
+            color: #111;
+        }
+
+        .sub-freq-badge {
+            background: #f0f0f0;
+            color: #555;
+            font-size: 12px;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .sub-list-price {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .sub-view-link {
+            font-size: 13px;
+            color: #0b5ccc;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    }
+
+    .sub-list-arrow {
+        flex-shrink: 0;
+        color: #999;
+
+        svg {
+            width: 20px;
+            height: 20px;
+            display: block;
+        }
+    }
+}
+
 .sub-tabs {
     display: flex;
     border-bottom: 1px solid #e0e0e0;
