@@ -83,11 +83,12 @@ foreach ($rows as $row) {
 ?>
 
 <style>
+    /* ── Table view ── */
     #mav2-orders-table { width: 100%; border-collapse: collapse; }
     #mav2-orders-table th,
     #mav2-orders-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 14px; }
     #mav2-orders-table th { font-weight: 600; background: #f9fafb; }
-    #mav2-orders-table td a { color: inherit; text-decoration: underline; }
+    #mav2-orders-table td a.mav2-order-link { color: inherit; text-decoration: underline; cursor: pointer; }
     .mav2-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
     .mav2-badge-paid        { background: #d1fae5; color: #065f46; }
     .mav2-badge-failed      { background: #fee2e2; color: #991b1b; }
@@ -98,10 +99,40 @@ foreach ($rows as $row) {
     #mav2-orders-pagination button { padding: 6px 14px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; cursor: pointer; font-size: 13px; }
     #mav2-orders-pagination button:disabled { opacity: 0.4; cursor: default; }
     #mav2-page-info { font-size: 13px; color: #6b7280; }
+
+    /* ── Detail view ── */
+    #mav2-detail-view { display: none; }
+    #mav2-back-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; font-size: 14px; color: #374151; padding: 0 0 16px; font-weight: 500; }
+    #mav2-back-btn:hover { color: #000; }
+    .mav2-detail-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .mav2-detail-header h2 { margin: 0 0 4px; font-size: 20px; }
+    .mav2-detail-header .mav2-detail-meta { font-size: 13px; color: #6b7280; }
+    .mav2-detail-header .mav2-detail-meta span { margin-right: 16px; }
+    .mav2-detail-badges { display: flex; gap: 8px; align-items: center; }
+    .mav2-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    @media (max-width: 600px) { .mav2-detail-grid { grid-template-columns: 1fr; } }
+    .mav2-detail-section h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; margin: 0 0 8px; }
+    .mav2-detail-section p { margin: 0 0 4px; font-size: 14px; }
+    .mav2-detail-items-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    .mav2-detail-items-table th,
+    .mav2-detail-items-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 14px; vertical-align: middle; }
+    .mav2-detail-items-table th { font-weight: 600; background: #f9fafb; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
+    .mav2-detail-items-table th:not(:first-child),
+    .mav2-detail-items-table td:not(:first-child) { text-align: right; }
+    .mav2-item-name-cell { display: flex; align-items: center; gap: 12px; }
+    .mav2-item-img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; background: #f3f4f6; flex-shrink: 0; }
+    .mav2-item-placeholder { width: 48px; height: 48px; border-radius: 6px; background: #f3f4f6; flex-shrink: 0; }
+    .mav2-summary-table { width: 100%; max-width: 320px; margin-left: auto; margin-bottom: 24px; }
+    .mav2-summary-table td { padding: 6px 0; font-size: 14px; }
+    .mav2-summary-table td:last-child { text-align: right; }
+    .mav2-summary-table .mav2-total-row td { font-weight: 700; font-size: 15px; border-top: 1px solid #e5e7eb; padding-top: 10px; }
+    .mav2-detail-loading { padding: 40px; text-align: center; color: #6b7280; font-size: 14px; }
+    .mav2-detail-actions { margin-top: 8px; }
 </style>
 
 <div id="order_cards">
 
+<div id="mav2-table-view">
     <table id="mav2-orders-table">
         <thead>
             <tr>
@@ -119,7 +150,7 @@ foreach ($rows as $row) {
             <?php foreach ($orders as $index => $order) { ?>
                 <tr class="mav2-order-row" data-row-index="<?= $index ?>">
                     <td>
-                        <a href="<?= esc_url($order['order_url']) ?>" target="_blank" rel="noopener">
+                        <a href="#" class="mav2-order-link" data-id="<?= esc_attr($order['id']) ?>">
                             #<?= esc_html($order['id']) ?>
                         </a>
                     </td>
@@ -160,6 +191,13 @@ foreach ($rows as $row) {
         <button id="mav2-next-page">Next &#8594;</button>
     </div>
     <?php } ?>
+</div><!-- /#mav2-table-view -->
+
+<div id="mav2-detail-view">
+    <button id="mav2-back-btn">&#8592; Back to Orders</button>
+    <div id="mav2-detail-loading" class="mav2-detail-loading">Loading order details&hellip;</div>
+    <div id="mav2-detail-content"></div>
+</div>
 
     <div id="order_processing" style="display: none;">
         <div class="processing">
@@ -224,6 +262,8 @@ foreach ($rows as $row) {
 
 <script>
 (function () {
+
+    /* ── Pagination ── */
     const PER_PAGE   = 5;
     let currentPage  = 1;
     const rows       = Array.from(document.querySelectorAll('.mav2-order-row'));
@@ -232,24 +272,158 @@ foreach ($rows as $row) {
     const nextBtn    = document.getElementById('mav2-next-page');
     const pageInfo   = document.getElementById('mav2-page-info');
 
-    function render() {
+    function renderTable() {
         const start = (currentPage - 1) * PER_PAGE;
         const end   = start + PER_PAGE;
         rows.forEach(function (row, i) {
             row.style.display = (i >= start && i < end) ? '' : 'none';
         });
-        pageInfo.textContent    = 'Page ' + currentPage + ' of ' + totalPages;
-        prevBtn.disabled        = currentPage === 1;
-        nextBtn.disabled        = currentPage === totalPages;
+        if (pageInfo) pageInfo.textContent = 'Page ' + currentPage + ' of ' + totalPages;
+        if (prevBtn)  prevBtn.disabled     = currentPage === 1;
+        if (nextBtn)  nextBtn.disabled     = currentPage === totalPages;
     }
 
-    prevBtn.addEventListener('click', function () {
-        if (currentPage > 1) { currentPage--; render(); }
+    if (prevBtn) prevBtn.addEventListener('click', function () {
+        if (currentPage > 1) { currentPage--; renderTable(); }
     });
-    nextBtn.addEventListener('click', function () {
-        if (currentPage < totalPages) { currentPage++; render(); }
+    if (nextBtn) nextBtn.addEventListener('click', function () {
+        if (currentPage < totalPages) { currentPage++; renderTable(); }
     });
 
-    render();
+    renderTable();
+
+    /* ── Detail view ── */
+    const tableView  = document.getElementById('mav2-table-view');
+    const detailView = document.getElementById('mav2-detail-view');
+    const detailLoad = document.getElementById('mav2-detail-loading');
+    const detailBody = document.getElementById('mav2-detail-content');
+    const backBtn    = document.getElementById('mav2-back-btn');
+
+    function esc(str) {
+        var d = document.createElement('div');
+        d.textContent = str != null ? String(str) : '';
+        return d.innerHTML;
+    }
+
+    function buildAddressLines(addr) {
+        var parts = [addr.name, addr.company, addr.address_1, addr.address_2,
+                     addr.city, addr.state, addr.postcode, addr.country];
+        return parts.filter(function (p) { return p && p.trim(); })
+                    .map(function (p) { return '<p>' + esc(p) + '</p>'; })
+                    .join('');
+    }
+
+    function renderDetail(d) {
+        var itemsHTML = d.items.map(function (item) {
+            var imgHTML = item.image
+                ? '<img class="mav2-item-img" src="' + esc(item.image) + '" alt="' + esc(item.name) + '">'
+                : '<div class="mav2-item-placeholder"></div>';
+            return '<tr>'
+                + '<td><div class="mav2-item-name-cell">' + imgHTML + '<span>' + esc(item.name) + '</span></div></td>'
+                + '<td>' + esc(item.quantity) + '</td>'
+                + '<td>' + esc(item.unit_price) + '</td>'
+                + '<td>' + esc(item.line_total) + '</td>'
+                + '</tr>';
+        }).join('');
+
+        var couponHTML = d.coupons.length
+            ? '<span style="font-size:12px;color:#6b7280;margin-left:4px;">(' + d.coupons.map(esc).join(', ') + ')</span>'
+            : '';
+
+        var planHTML = d.subscription_plan !== '-'
+            ? '<span>' + esc(d.subscription_plan) + '</span>'
+            : '';
+
+        var html = ''
+            + '<div class="mav2-detail-header">'
+            +   '<div>'
+            +     '<h2>Order #' + esc(d.id) + '</h2>'
+            +     '<div class="mav2-detail-meta">'
+            +       '<span>' + esc(d.date) + '</span>'
+            +       (planHTML ? '<span>' + planHTML + '</span>' : '')
+            +     '</div>'
+            +   '</div>'
+            +   '<div class="mav2-detail-badges">'
+            +     '<span class="mav2-badge ' + esc(d.payment_status.class) + '">' + esc(d.payment_status.label) + '</span>'
+            +     '<span class="mav2-badge ' + esc(d.fulfillment_status.class) + '">' + esc(d.fulfillment_status.label) + '</span>'
+            +   '</div>'
+            + '</div>'
+
+            + '<div class="mav2-detail-grid">'
+            +   '<div class="mav2-detail-section">'
+            +     '<h4>Customer</h4>'
+            +     '<p>' + esc(d.customer_name) + '</p>'
+            +     '<p>' + esc(d.customer_email) + '</p>'
+            +   '</div>'
+            +   '<div class="mav2-detail-section">'
+            +     '<h4>' + esc(d.address.type) + '</h4>'
+            +     buildAddressLines(d.address)
+            +   '</div>'
+            + '</div>'
+
+            + '<table class="mav2-detail-items-table">'
+            +   '<thead><tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead>'
+            +   '<tbody>' + itemsHTML + '</tbody>'
+            + '</table>'
+
+            + '<table class="mav2-summary-table">'
+            +   '<tbody>'
+            +     '<tr><td>Subtotal</td><td>' + esc(d.subtotal) + '</td></tr>'
+            +     '<tr><td>Shipping</td><td>' + esc(d.shipping) + '</td></tr>'
+            +     '<tr><td>Discount' + couponHTML + '</td><td>-' + esc(d.discount) + '</td></tr>'
+            +     '<tr><td>Tax</td><td>' + esc(d.tax) + '</td></tr>'
+            +   '</tbody>'
+            +   '<tfoot>'
+            +     '<tr class="mav2-total-row"><td>Total</td><td>' + esc(d.total) + '</td></tr>'
+            +   '</tfoot>'
+            + '</table>'
+
+            + '<div class="mav2-detail-actions">'
+            +   '<button type="button" data-id="' + esc(d.id) + '" class="invoice_download"><span></span>Download Invoice</button>'
+            + '</div>';
+
+        detailBody.innerHTML = html;
+    }
+
+    function showDetail(orderId) {
+        tableView.style.display  = 'none';
+        detailView.style.display = 'block';
+        detailLoad.style.display = 'block';
+        detailBody.innerHTML     = '';
+
+        var formData = new FormData();
+        formData.append('action', 'mav2_get_order_details');
+        formData.append('id', orderId);
+        formData.append('nonce', mav2.nonce);
+
+        fetch(mav2.ajaxurl, { method: 'POST', body: formData })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                detailLoad.style.display = 'none';
+                if (res.success) {
+                    renderDetail(res.data);
+                } else {
+                    detailBody.innerHTML = '<p style="color:#991b1b;">Could not load order details.</p>';
+                }
+            })
+            .catch(function () {
+                detailLoad.style.display = 'none';
+                detailBody.innerHTML = '<p style="color:#991b1b;">Could not load order details.</p>';
+            });
+    }
+
+    document.getElementById('order_cards').addEventListener('click', function (e) {
+        var link = e.target.closest('.mav2-order-link');
+        if (link) {
+            e.preventDefault();
+            showDetail(link.dataset.id);
+        }
+    });
+
+    backBtn.addEventListener('click', function () {
+        detailView.style.display = 'none';
+        tableView.style.display  = 'block';
+    });
+
 })();
 </script>
