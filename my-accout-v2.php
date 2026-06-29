@@ -30,6 +30,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 require_once MAV2_PATH . 'include/admin/class-mav2-admin.php';
 require_once MAV2_PATH . 'include/admin/class-mav2-ajax-admin.php';
 require_once MAV2_PATH . 'include/admin/class-mav2-short-code.php';
+require_once MAV2_PATH . 'include/admin/class-mav2-email-tester.php';
 
 function mav2_init()
 {
