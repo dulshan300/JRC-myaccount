@@ -19,7 +19,7 @@
                         <div style="padding:16px 24px 16px 24px;text-align:center">
                             <img
                                 alt="Japan Rail Logo"
-                                src="https://lofpoghg4ckxgpnx.public.blob.vercel-storage.com/projects/27162abc-0ca7-4e04-8db5-678b4be25227/080f10b8-ee8b-43d3-b805-80ed0d3b2db0.svg"
+                                src="https://www.japanrailclub.com/wp-content/uploads/2024/06/JRC-Logo.png"
                                 height="80"
                                 style="height:80px;outline:none;border:none;text-decoration:none;vertical-align:middle;display:inline-block;max-width:100%" />
                         </div>

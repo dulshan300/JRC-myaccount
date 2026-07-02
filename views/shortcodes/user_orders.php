@@ -265,7 +265,7 @@ foreach ($rows as $row) {
 (function () {
 
     /* ── Pagination ── */
-    const PER_PAGE   = 5;
+    const PER_PAGE   = 15;
     let currentPage  = 1;
     const rows       = Array.from(document.querySelectorAll('.mav2-order-row'));
     const totalPages = Math.max(1, Math.ceil(rows.length / PER_PAGE));

@@ -117,6 +117,8 @@ $res = $wpdb->get_results($sql);
 
 $out_data = [];
 
+$_product_img = get_the_post_thumbnail_url(198, 'medium') ?: '';
+
 $w_countries = new WC_Countries();
 $all_countries = $w_countries->get_countries();
 
@@ -168,6 +170,7 @@ $ko_list = ['KO'];
 foreach ($res as $sub) {
     $temp = [];
     $temp['id'] = $sub->id;
+    $temp['product_img'] = $_product_img;
     $temp['status'] = $sub->prepaid_cancel === 'yes' ? 'wc-cancelled' : $sub->status;
     $temp['prepaid_cancel'] = $sub->prepaid_cancel;
     $temp['product'] = $sub->product;
@@ -394,7 +397,7 @@ foreach ($res as $sub) {
                 <div class="sub-list-card" @click="openSubDetail(sub.id)">
                     <div class="sub-thumb-wrap">
                         <img
-                            :src="sub.last_3_orders.length ? sub.last_3_orders[sub.last_3_orders.length - 1].img : ''"
+                            :src="sub.product_img"
                             class="sub-thumb"
                             alt="Subscription image"
                         />                       
