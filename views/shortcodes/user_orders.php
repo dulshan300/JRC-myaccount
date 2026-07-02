@@ -79,8 +79,18 @@ foreach ($rows as $row) {
         'order_url'          => wc_get_endpoint_url('view-order', $row->id, $myaccount_url),
     ];
 }
+
+// unique per instance so this shortcode can be placed more than once on a
+// page without both copies fighting over the same fixed element ids
+$container_id = wp_unique_id('mav2_order_cards_');
+
+// #order_processing / #invoiceModal are driven globally from mav2.site.js via
+// plain `$('#id')` selectors, so they only need to exist once per page
+$mav2_is_first_order_cards = empty($GLOBALS['mav2_order_cards_bootstrapped']);
+$GLOBALS['mav2_order_cards_bootstrapped'] = true;
 ?>
 
+<?php if ($mav2_is_first_order_cards) : ?>
 <style>
     /* ── Table view ── */
     #mav2-orders-table { width: 100%; border-collapse: collapse; }
@@ -128,8 +138,9 @@ foreach ($rows as $row) {
     .mav2-detail-loading { padding: 40px; text-align: center; color: #6b7280; font-size: 14px; }
     .mav2-detail-actions { margin-top: 8px; }
 </style>
+<?php endif; ?>
 
-<div id="order_cards">
+<div id="<?php echo esc_attr($container_id); ?>" class="mav2-order-cards">
 
 <div id="mav2-table-view">
     <table id="mav2-orders-table">
@@ -200,78 +211,87 @@ foreach ($rows as $row) {
     <div id="mav2-detail-content"></div>
 </div>
 
-    <div id="order_processing" style="display: none;">
-        <div class="processing">
-            <div class="loader">
-                <div class="mav2-custom-loader"></div>
-            </div>
+
+</div><!-- /#<?php echo esc_attr($container_id); ?> -->
+
+<?php if ($mav2_is_first_order_cards) : ?>
+<!-- driven globally from mav2.site.js via plain `$('#id')` selectors, so only needed once per page -->
+<div id="order_processing" style="display: none;">
+    <div class="processing">
+        <div class="loader">
+            <div class="mav2-custom-loader"></div>
         </div>
     </div>
-
-    <div id="invoiceModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-
-            <h1 class="invoice-number">Invoice: #<span id="display-id"></span></h1>
-            <p class="invoice-date">Date: <span id="display-date"></span></p>
-
-            <div class="billed-section" style="margin-bottom: 20px;">
-                <strong>BILLED TO:</strong><br>
-                <span id="display-address"></span>
-            </div>
-
-            <table class="invoice-table">
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th class="text-center">Quantity</th>
-                        <th class="text-right">Unit Price</th>
-                        <th class="text-right">Total</th>
-                    </tr>
-                </thead>
-                <tbody id="display-items">
-                </tbody>
-            </table>
-
-            <div class="totals-section">
-                <div class="total-row">
-                    <span>Subtotal</span>
-                    <span id="display-subtotal"></span>
-                </div>
-                <div class="total-row">
-                    <span>Shipping</span>
-                    <span id="display-shipping"></span>
-                </div>
-                <div class="total-row">
-                    <span>Discount</span>
-                    <span id="display-discount"></span>
-                </div>
-                <div class="total-row border-bottom">
-                    <span>Tax</span>
-                    <span id="display-tax"></span>
-                </div>
-                <div class="final-total">
-                    <span>Total</span>
-                    <span id="display-total"></span>
-                </div>
-            </div>
-            <div style="clear: both;"></div>
-        </div>
-    </div>
-
 </div>
+
+<div id="invoiceModal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+
+        <h1 class="invoice-number">Invoice: #<span id="display-id"></span></h1>
+        <p class="invoice-date">Date: <span id="display-date"></span></p>
+
+        <div class="billed-section" style="margin-bottom: 20px;">
+            <strong>BILLED TO:</strong><br>
+            <span id="display-address"></span>
+        </div>
+
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th class="text-center">Quantity</th>
+                    <th class="text-right">Unit Price</th>
+                    <th class="text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody id="display-items">
+            </tbody>
+        </table>
+
+        <div class="totals-section">
+            <div class="total-row">
+                <span>Subtotal</span>
+                <span id="display-subtotal"></span>
+            </div>
+            <div class="total-row">
+                <span>Shipping</span>
+                <span id="display-shipping"></span>
+            </div>
+            <div class="total-row">
+                <span>Discount</span>
+                <span id="display-discount"></span>
+            </div>
+            <div class="total-row border-bottom">
+                <span>Tax</span>
+                <span id="display-tax"></span>
+            </div>
+            <div class="final-total">
+                <span>Total</span>
+                <span id="display-total"></span>
+            </div>
+        </div>
+        <div style="clear: both;"></div>
+    </div>
+</div>
+<?php endif; ?>
 
 <script>
 (function () {
 
+    // this shortcode can be placed more than once on a page, so every DOM
+    // lookup below is scoped to this instance's own container instead of
+    // querying the whole document (which would always hit the first instance)
+    const root = document.getElementById(<?php echo json_encode($container_id); ?>);
+
     /* ── Pagination ── */
     const PER_PAGE   = 15;
     let currentPage  = 1;
-    const rows       = Array.from(document.querySelectorAll('.mav2-order-row'));
+    const rows       = Array.from(root.querySelectorAll('.mav2-order-row'));
     const totalPages = Math.max(1, Math.ceil(rows.length / PER_PAGE));
-    const prevBtn    = document.getElementById('mav2-prev-page');
-    const nextBtn    = document.getElementById('mav2-next-page');
-    const pageInfo   = document.getElementById('mav2-page-info');
+    const prevBtn    = root.querySelector('#mav2-prev-page');
+    const nextBtn    = root.querySelector('#mav2-next-page');
+    const pageInfo   = root.querySelector('#mav2-page-info');
 
     function renderTable() {
         const start = (currentPage - 1) * PER_PAGE;
@@ -294,11 +314,11 @@ foreach ($rows as $row) {
     renderTable();
 
     /* ── Detail view ── */
-    const tableView  = document.getElementById('mav2-table-view');
-    const detailView = document.getElementById('mav2-detail-view');
-    const detailLoad = document.getElementById('mav2-detail-loading');
-    const detailBody = document.getElementById('mav2-detail-content');
-    const backBtn    = document.getElementById('mav2-back-btn');
+    const tableView  = root.querySelector('#mav2-table-view');
+    const detailView = root.querySelector('#mav2-detail-view');
+    const detailLoad = root.querySelector('#mav2-detail-loading');
+    const detailBody = root.querySelector('#mav2-detail-content');
+    const backBtn    = root.querySelector('#mav2-back-btn');
 
     function esc(str) {
         var d = document.createElement('div');
@@ -413,7 +433,7 @@ foreach ($rows as $row) {
             });
     }
 
-    document.getElementById('order_cards').addEventListener('click', function (e) {
+    root.addEventListener('click', function (e) {
         var link = e.target.closest('.mav2-order-link');
         if (link) {
             e.preventDefault();

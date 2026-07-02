@@ -91,9 +91,17 @@ if (count($token_details) == 0 && array_search($user_email, $email_list) !== tru
     $show_waring = true;
 }
 
+// unique per instance so this shortcode can be placed more than once on a
+// page without both copies fighting over the same Stripe elements / ids
+$container_id = wp_unique_id('mav2_payment_methods_');
+
+// the shared helper functions + Stripe library script only need to load once
+$mav2_is_first_payment_methods = empty($GLOBALS['mav2_payment_methods_bootstrapped']);
+$GLOBALS['mav2_payment_methods_bootstrapped'] = true;
+
 ?>
 
-<div id="payment_methods">
+<div id="<?php echo esc_attr($container_id); ?>">
 
     <?php if ($show_waring): ?>
         <?php if ($lang == 'en'): ?>
@@ -185,9 +193,14 @@ if (count($token_details) == 0 && array_search($user_email, $email_list) !== tru
     </div>
 
 
+    <?php if ($mav2_is_first_payment_methods) : ?>
     <script src="https://js.stripe.com/v3/"></script>
+    <?php endif; ?>
 
     <script>
+    <?php if ($mav2_is_first_payment_methods) : ?>
+        // shared helpers -- take the instance root element/selector as `parent`
+        // so they work no matter how many times this shortcode is on the page
         function mav2_show_success_from(parent) {
             jQuery(parent).find('.mav2_success_alert').fadeIn();
 
@@ -204,15 +217,30 @@ if (count($token_details) == 0 && array_search($user_email, $email_list) !== tru
             jQuery(parent).find('.processing').fadeOut();
         }
 
-        jQuery(document).ready(function ($) {
+        function stripeTokenHandler(token, form) {
+            var hiddenInput = document.createElement('input');
+            hiddenInput.setAttribute('type', 'hidden');
+            hiddenInput.setAttribute('name', 'stripeToken');
+            hiddenInput.setAttribute('value', token.id);
+            form.appendChild(hiddenInput);
+            form.submit();
+        }
+    <?php endif; ?>
+
+        jQuery(function ($) {
+
+            // this shortcode can be placed more than once on a page, so every
+            // lookup below is scoped to this instance's own container instead
+            // of relying on ids being unique in the document
+            var root = document.getElementById(<?php echo json_encode($container_id); ?>);
 
             var stripe = Stripe('<?= apply_filters('get_stripe_keys', 'publishable_key') ?>');
             var elements = stripe.elements();
             var card = elements.create('card');
-            card.mount('#card-element');
+            card.mount(root.querySelector('#card-element'));
 
             card.addEventListener('change', function (event) {
-                var displayError = document.getElementById('card-errors');
+                var displayError = root.querySelector('#card-errors');
                 if (event.error) {
                     displayError.textContent = event.error.message;
                 } else {
@@ -232,11 +260,11 @@ if (count($token_details) == 0 && array_search($user_email, $email_list) !== tru
                                         </tr>`
                 })
 
-                $('#pm_tokens_table_body').html(body_data);
+                $(root).find('#pm_tokens_table_body').html(body_data);
             }
 
 
-            var form = document.getElementById('payment-form');
+            var form = root.querySelector('#payment-form');
 
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
@@ -249,10 +277,10 @@ if (count($token_details) == 0 && array_search($user_email, $email_list) !== tru
                     },
                 }).then(function (result) {
                     if (result.error) {
-                        var errorElement = document.getElementById('card-errors');
+                        var errorElement = root.querySelector('#card-errors');
                         errorElement.textContent = result.error.message;
                     } else {
-                        show_processing('#payment_methods');
+                        show_processing(root);
                         $.ajax({
                             type: "POST",
                             url: mav2.ajaxurl,
@@ -262,9 +290,9 @@ if (count($token_details) == 0 && array_search($user_email, $email_list) !== tru
                                 token: result.paymentMethod,
                             },
                             success: function (tokens) {
-                                hide_processing('#payment_methods');
+                                hide_processing(root);
                                 fill_table(tokens)
-                                mav2_show_success_from('#payment_methods');
+                                mav2_show_success_from(root);
                                 card.clear();
                             }
                         })
@@ -275,14 +303,14 @@ if (count($token_details) == 0 && array_search($user_email, $email_list) !== tru
 
             });
 
-            $(document).on('click', '.remove_token', function () {
+            $(root).on('click', '.remove_token', function () {
                 var token_id = $(this).data('id');
                 const conf = confirm('Are you sure?');
                 if (!conf) {
                     return;
                 }
 
-                show_processing('#payment_methods');
+                show_processing(root);
 
                 try {
 
@@ -295,8 +323,8 @@ if (count($token_details) == 0 && array_search($user_email, $email_list) !== tru
                             id: token_id
                         },
                         success: function (tokens) {
-                            hide_processing('#payment_methods');
-                            mav2_show_success_from('#payment_methods');
+                            hide_processing(root);
+                            mav2_show_success_from(root);
 
                             if (tokens.success == false) {
                                 alert(tokens.data);
@@ -306,7 +334,7 @@ if (count($token_details) == 0 && array_search($user_email, $email_list) !== tru
                             fill_table(tokens.data)
                         },
                         error: function (xhr, error) {
-                            hide_processing('#payment_methods');
+                            hide_processing(root);
                             console.log([xhr, error]);
 
                         }
@@ -324,19 +352,6 @@ if (count($token_details) == 0 && array_search($user_email, $email_list) !== tru
 
 
         })
-
-        function stripeTokenHandler(token) {
-
-            const keys = Object.keys(token.card);
-
-            var form = document.getElementById('payment-form');
-            var hiddenInput = document.createElement('input');
-            hiddenInput.setAttribute('type', 'hidden');
-            hiddenInput.setAttribute('name', 'stripeToken');
-            hiddenInput.setAttribute('value', token.id);
-            form.appendChild(hiddenInput);
-            form.submit();
-        }
     </script>
 
 </div>
