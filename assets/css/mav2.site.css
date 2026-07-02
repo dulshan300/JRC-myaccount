@@ -67,7 +67,7 @@
             transform: rotate(1turn);
   }
 }
-#order_cards {
+.mav2-order-cards {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -78,18 +78,18 @@
   gap: 20px;
   position: relative;
 }
-#order_cards table {
+.mav2-order-cards table {
   text-align: left;
   border-collapse: collapse;
 }
-#order_cards table th {
+.mav2-order-cards table th {
   background: #fefcf2;
   padding: 15px;
 }
-#order_cards table td {
+.mav2-order-cards table td {
   padding: 15px;
 }
-#order_cards .invoice_download {
+.mav2-order-cards .invoice_download {
   border: none;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -106,10 +106,10 @@
   gap: 10px;
   cursor: pointer;
 }
-#order_cards .invoice_download:hover {
+.mav2-order-cards .invoice_download:hover {
   background: rgba(103, 168, 85, 0.3);
 }
-#order_cards .invoice_download span {
+.mav2-order-cards .invoice_download span {
   display: -webkit-inline-box;
   display: -ms-inline-flexbox;
   display: inline-flex;
@@ -127,7 +127,7 @@
   border-radius: 50%;
   position: relative;
 }
-#order_cards .invoice_download span:after {
+.mav2-order-cards .invoice_download span:after {
   content: "";
   position: absolute;
   background: #fff;
@@ -137,102 +137,7 @@
   max-height: 3px;
   border-radius: 50%;
 }
-#order_cards .modal-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-}
-#order_cards .modal-content {
-  position: relative;
-  background: #F8F7F2;
-  /* Matching the cream background */
-  width: 90%;
-  max-width: 700px;
-  margin: 50px auto;
-  padding: 40px;
-  border-radius: 12px;
-  font-family: sans-serif;
-  -webkit-box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  max-height: 95vh;
-  overflow-y: auto;
-}
-#order_cards .close-modal {
-  position: absolute;
-  right: 20px;
-  top: 15px;
-  font-size: 28px;
-  cursor: pointer;
-  color: #666;
-}
-#order_cards .invoice-number {
-  font-size: 24px;
-  margin: 0;
-}
-#order_cards .invoice-date {
-  color: #333;
-  margin-bottom: 30px;
-}
-#order_cards .invoice-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-}
-#order_cards .invoice-table th {
-  border-top: 2px solid #333;
-  border-bottom: 2px solid #333;
-  padding: 10px;
-  text-align: left;
-  font-size: 14px;
-  background: transparent;
-}
-#order_cards .invoice-table td {
-  padding: 15px 10px;
-  border-bottom: 1px solid #ddd;
-  font-size: 14px;
-}
-#order_cards .totals-section {
-  width: 40%;
-  float: right;
-  margin-top: 20px;
-}
-#order_cards .total-row {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: justify;
-      -ms-flex-pack: justify;
-          justify-content: space-between;
-  padding: 5px 0;
-  font-size: 14px;
-}
-#order_cards .border-bottom {
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 10px;
-}
-#order_cards .final-total {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: justify;
-      -ms-flex-pack: justify;
-          justify-content: space-between;
-  font-weight: bold;
-  font-size: 20px;
-  padding-top: 15px;
-}
-#order_cards .text-right {
-  text-align: right;
-}
-#order_cards .text-center {
-  text-align: center;
-}
-#order_cards .order_card * {
+.mav2-order-cards .order_card * {
   margin: 0;
   padding: 0;
   -webkit-box-sizing: border-box;
@@ -243,7 +148,7 @@
   font-size: 14px;
   font-weight: 600;
 }
-#order_cards .order_card {
+.mav2-order-cards .order_card {
   background: #fff;
   padding: 24px;
   border-radius: 14px;
@@ -260,35 +165,35 @@
   gap: 15px;
 }
 @media only screen and (max-width: 768px) {
-  #order_cards .order_card {
+  .mav2-order-cards .order_card {
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
         -ms-flex-direction: column;
             flex-direction: column;
   }
 }
-#order_cards .order_card .oc_left {
+.mav2-order-cards .order_card .oc_left {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   gap: 26px;
 }
 @media only screen and (max-width: 768px) {
-  #order_cards .order_card .oc_left {
+  .mav2-order-cards .order_card .oc_left {
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
         -ms-flex-direction: column;
             flex-direction: column;
   }
 }
-#order_cards .order_card .oc_left img {
+.mav2-order-cards .order_card .oc_left img {
   width: 132px;
   height: 132px;
   -o-object-fit: cover;
      object-fit: cover;
   border-radius: 7px;
 }
-#order_cards .order_card .oc_left .oc_data {
+.mav2-order-cards .order_card .oc_left .oc_data {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -298,15 +203,15 @@
           flex-direction: column;
   gap: 15px;
 }
-#order_cards .order_card .oc_left .oc_data h3.oc_product_name {
+.mav2-order-cards .order_card .oc_left .oc_data h3.oc_product_name {
   font-size: 24px !important;
   font-weight: bold;
   color: #4d4d4d;
 }
-#order_cards .order_card .oc_left .oc_data h4 {
+.mav2-order-cards .order_card .oc_left .oc_data h4 {
   font-weight: bold;
 }
-#order_cards .order_card .oc_left .oc_data .oc_items {
+.mav2-order-cards .order_card .oc_left .oc_data .oc_items {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -316,7 +221,7 @@
           flex-direction: column;
   gap: 15px;
 }
-#order_cards .order_card .oc_price_details {
+.mav2-order-cards .order_card .oc_price_details {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -325,18 +230,129 @@
       -ms-flex-direction: column;
           flex-direction: column;
 }
-#order_cards .order_card .oc_price_details .order_id {
+.mav2-order-cards .order_card .oc_price_details .order_id {
   font-weight: bold;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   margin-bottom: 10px;
 }
-#order_cards .order_card .oc_price_details span {
+.mav2-order-cards .order_card .oc_price_details span {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   margin-bottom: 5px;
+}
+
+/* ── Invoice modal (#invoiceModal is rendered once globally, as a sibling
+   after .mav2-order-cards, not a descendant — see user_orders.php) ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modal-content {
+  position: relative;
+  background: #F8F7F2;
+  /* Matching the cream background */
+  width: 90%;
+  max-width: 700px;
+  margin: 50px auto;
+  padding: 40px;
+  border-radius: 12px;
+  font-family: sans-serif;
+  -webkit-box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-height: 95vh;
+  overflow-y: auto;
+}
+
+.close-modal {
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  font-size: 28px;
+  cursor: pointer;
+  color: #666;
+}
+
+.invoice-number {
+  font-size: 24px;
+  margin: 0;
+}
+
+.invoice-date {
+  color: #333;
+  margin-bottom: 30px;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.invoice-table th {
+  border-top: 2px solid #333;
+  border-bottom: 2px solid #333;
+  padding: 10px;
+  text-align: left;
+  font-size: 14px;
+  background: transparent;
+}
+
+.invoice-table td {
+  padding: 15px 10px;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.totals-section {
+  width: 40%;
+  float: right;
+  margin-top: 20px;
+}
+
+.total-row {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  padding: 5px 0;
+  font-size: 14px;
+}
+
+.border-bottom {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.final-total {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  font-weight: bold;
+  font-size: 20px;
+  padding-top: 15px;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-center {
+  text-align: center;
 }
 
 /* ── Subscription detail view ── */

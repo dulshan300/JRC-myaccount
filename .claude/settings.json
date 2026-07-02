@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed 's/^\\\\.mav2-order-cards //')",
+      "Bash(sed -i '140,234d' mav2.site.css)"
+    ]
+  }
+}
