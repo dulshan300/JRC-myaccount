@@ -124,6 +124,9 @@ $all_countries = $w_countries->get_countries();
 
 $orders_history = [];
 
+// guarded because this file is now `include`d (not include_once) so the
+// shortcode can be placed more than once on the same page
+if (!function_exists('mav2_get_tracking')) {
 function mav2_get_tracking($order)
 {
     if ($order->tracking == 404) {
@@ -160,6 +163,7 @@ function mav2_get_tracking($order)
     }
 
     return $order->tracking;
+}
 }
 
 
@@ -358,16 +362,13 @@ foreach ($res as $sub) {
     $out_data[] = $temp;
 }
 
+// unique per instance so multiple placements of this shortcode on one page
+// don't collide on DOM id / mount selector
+$container_id = wp_unique_id('mav2_subscription_app_');
+
 ?>
 
-
-
-
-<script>
-    const _subscription_data = <?php echo json_encode($out_data); ?>;
-</script>
-
-<div id="subscription_app">
+<div id="<?php echo esc_attr($container_id); ?>">
 
     <div v-if="false" class="loading" style="width: 100%;">
         <div class="spinner-mini"></div>
