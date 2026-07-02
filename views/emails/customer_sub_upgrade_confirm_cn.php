@@ -26,7 +26,7 @@
         <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="email-container" style="max-width:600px;width:100%;background-color:#ffffff;">
   <tr>
     <td align="center" style="padding-top:10px;padding-right:0px;padding-bottom:10px;padding-left:0px;">
-      <a href="https://www.japanrailclub.com/zh/?utm_source=email&utm_medium=email&utm_campaign=automated" target="_blank" style="text-decoration:none;"><img src="https://www.japanrailclub.com//wp-content/uploads/2024/07/Japan-Rail-Club-Email-Logo.jpg" alt="Japan Rail Logo" width="120" style="display:block;border:0;outline:none;text-decoration:none;max-width:100%;height:auto;" /></a>
+      <a href="https://www.japanrailclub.com/zh/?utm_source=email&utm_medium=email&utm_campaign=automated" target="_blank" style="text-decoration:none;"><img src="https://www.japanrailclub.com/wp-content/uploads/2024/06/JRC-Logo.png" alt="Japan Rail Logo" width="120" style="display:block;border:0;outline:none;text-decoration:none;max-width:100%;height:auto;" /></a>
     </td>
   </tr>
   <tr>
