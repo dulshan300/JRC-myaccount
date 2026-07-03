@@ -513,6 +513,22 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                 </div>
             </div>
 
+            <!-- Status description -->
+            <p class="sub-detail-status-desc">
+                <template v-if="selectedSub.status === 'wc-active'">
+                    Your subscription is active and your next order will be processed as scheduled.
+                </template>
+                <template v-else-if="selectedSub.status === 'wc-on-hold'">
+                    Your subscription is temporarily on hold while changes or processing are underway.
+                </template>
+                <template v-else-if="selectedSub.status === 'wc-pending-cancel'">
+                    Your subscription is scheduled to be cancelled at the end of your current billing period.
+                </template>
+                <template v-else>
+                    Your subscription has been cancelled and is no longer active.
+                </template>
+            </p>
+
             <!-- Detail rows -->
             <div class="sub-detail-body">
 
