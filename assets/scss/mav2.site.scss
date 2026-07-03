@@ -401,7 +401,7 @@ $color-brand-blue: #001a43;
     border-radius: 50%;
     flex-shrink: 0;
     display: inline-block;
-    background-color: #f97316;
+    background-color: $color-brand-blue;
     background-repeat: no-repeat;
     background-position: center;
     background-size: 14px;
@@ -442,24 +442,25 @@ $color-brand-blue: #001a43;
     }
 
     .sub-btn-primary {
-        background: #f97316;
+        background: $color-brand-blue;
         color: #fff;
-        border: 2px solid #f97316;
+        border: 2px solid $color-brand-blue;
 
         &:hover {
-            background: #ea6c07;
-            border-color: #ea6c07;
+            background: lighten($color-brand-blue, 10%);
+            border-color: lighten($color-brand-blue, 10%);
         }
     }
+
 
     .sub-btn-outline,
     a.sub-btn-outline {
         background: #fff;
-        color: #f97316;
-        border: 2px solid #f97316;
+        color: $color-brand-blue;
+        border: 2px solid $color-brand-blue;
 
         &:hover {
-            background: #fff7ed;
+            background: lighten($color-brand-blue, 65%);
         }
     }
 }
@@ -471,7 +472,7 @@ $color-brand-blue: #001a43;
     margin-top: 8px;
 
     a {
-        color: #f97316;
+        color: $color-brand-yellow;
         text-decoration: underline;
         cursor: pointer;
     }
@@ -537,7 +538,7 @@ $color-brand-blue: #001a43;
         .sub-name {
             font-weight: 700;
             font-size: 15px;
-            color: #111;
+            color: $color-brand-blue;
         }
 
         .sub-freq-badge {

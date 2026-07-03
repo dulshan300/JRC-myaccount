@@ -446,7 +446,7 @@
   -ms-flex-negative: 0;
       flex-shrink: 0;
   display: inline-block;
-  background-color: #f97316;
+  background-color: #001a43;
   background-repeat: no-repeat;
   background-position: center;
   background-size: 14px;
@@ -497,23 +497,23 @@
           justify-content: center;
 }
 .sub-detail-actions .sub-btn-primary {
-  background: #f97316;
+  background: #001a43;
   color: #fff;
-  border: 2px solid #f97316;
+  border: 2px solid #001a43;
 }
 .sub-detail-actions .sub-btn-primary:hover {
-  background: #ea6c07;
-  border-color: #ea6c07;
+  background: rgb(0, 45.7910447761, 118);
+  border-color: rgb(0, 45.7910447761, 118);
 }
 .sub-detail-actions .sub-btn-outline,
 .sub-detail-actions a.sub-btn-outline {
   background: #fff;
-  color: #f97316;
-  border: 2px solid #f97316;
+  color: #001a43;
+  border: 2px solid #001a43;
 }
 .sub-detail-actions .sub-btn-outline:hover,
 .sub-detail-actions a.sub-btn-outline:hover {
-  background: #fff7ed;
+  background: rgb(143.5, 186.7686567164, 255);
 }
 
 .sub-cancel-link {
@@ -523,7 +523,7 @@
   margin-top: 8px;
 }
 .sub-cancel-link a {
-  color: #f97316;
+  color: #e6b422;
   text-decoration: underline;
   cursor: pointer;
 }
@@ -601,7 +601,7 @@
 .sub-list-card .sub-list-body .sub-name {
   font-weight: 700;
   font-size: 15px;
-  color: #111;
+  color: #001a43;
 }
 .sub-list-card .sub-list-body .sub-freq-badge {
   background: #f0f0f0;
