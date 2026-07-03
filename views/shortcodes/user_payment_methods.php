@@ -101,7 +101,7 @@ $GLOBALS['mav2_payment_methods_bootstrapped'] = true;
 
 ?>
 
-<div id="<?php echo esc_attr($container_id); ?>">
+<div id="<?php echo esc_attr($container_id); ?>" class="payment_methods">
 
     <?php if ($show_waring): ?>
         <?php if ($lang == 'en'): ?>

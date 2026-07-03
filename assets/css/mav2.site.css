@@ -1466,7 +1466,7 @@
   text-decoration: underline;
 }
 
-#payment_methods {
+.payment_methods {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -1476,25 +1476,25 @@
           flex-direction: column;
   gap: 20px;
 }
-#payment_methods .pm_tokens_table {
+.payment_methods .pm_tokens_table {
   width: 100%;
   background: #fff;
   text-align: left;
   border-collapse: collapse;
 }
-#payment_methods .pm_tokens_table th,
-#payment_methods .pm_tokens_table td {
+.payment_methods .pm_tokens_table th,
+.payment_methods .pm_tokens_table td {
   font-weight: normal;
   padding: 10px;
 }
-#payment_methods .pm_tokens_table th {
+.payment_methods .pm_tokens_table th {
   background: #051a44;
   color: #fff;
 }
-#payment_methods .pm_tokens_table td {
+.payment_methods .pm_tokens_table td {
   border-bottom: 1px solid rgba(204, 204, 204, 0.2);
 }
-#payment_methods .pm_tokens_table button {
+.payment_methods .pm_tokens_table button {
   -webkit-appearance: none;
      -moz-appearance: none;
           appearance: none;
@@ -1503,10 +1503,10 @@
   cursor: pointer;
   color: red;
 }
-#payment_methods .pm_tokens_table button:hover {
+.payment_methods .pm_tokens_table button:hover {
   text-decoration: underline;
 }
-#payment_methods #new_payment_add {
+.payment_methods #new_payment_add {
   background: #fff;
   padding: 24px;
   border-radius: 14px;
