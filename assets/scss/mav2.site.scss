@@ -362,7 +362,7 @@ $color-brand-blue: #001a43;
         font-size: 15px;
         color: #fff;
         line-height: 1.6;
-        max-width: 420px;
+        // max-width: 420px;
         text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 
         strong {
@@ -376,7 +376,7 @@ $color-brand-blue: #001a43;
         font-size: 13px;
         color: rgba(255, 255, 255, 0.85);
         line-height: 1.5;
-        max-width: 420px;
+        // max-width: 420px;
         margin: 8px 0 0;
         text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
     }
@@ -389,24 +389,31 @@ $color-brand-blue: #001a43;
     align-items: center;
 }
 
-.sub-detail-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 0;
-    font-size: 14px;
-    color: #374151;
-    width: 100%;
-    max-width: 420px;
-    justify-content: flex-start;
+.sub-detail-table {    
+    margin: 0 auto;
+    border-collapse: collapse;
 
-    .sub-detail-label {
-        font-weight: 500;
-        min-width: 160px;
-    }
+    .sub-detail-row {
+        font-size: 14px;
+        color: #374151;
 
-    .sub-detail-value {
-        color: #111;
+        .sub-detail-label,
+        .sub-detail-value {
+            padding: 10px;
+            text-align: left;
+            vertical-align: middle;
+            white-space: nowrap;
+
+        }
+
+        .sub-detail-label {
+            font-weight: 500;
+            width: 160px;
+        }
+
+        .sub-detail-value {
+            color: #111;
+        }
     }
 }
 

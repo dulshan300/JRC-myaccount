@@ -398,7 +398,6 @@
   font-size: 15px;
   color: #fff;
   line-height: 1.6;
-  max-width: 420px;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 .sub-detail-banner .sub-detail-banner-text strong {
@@ -410,7 +409,6 @@
   font-size: 13px;
   color: rgba(255, 255, 255, 0.85);
   line-height: 1.5;
-  max-width: 420px;
   margin: 8px 0 0;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
@@ -429,28 +427,26 @@
           align-items: center;
 }
 
-.sub-detail-row {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  gap: 10px;
-  padding: 10px 0;
+.sub-detail-table {
+  margin: 0 auto;
+  border-collapse: collapse;
+}
+.sub-detail-table .sub-detail-row {
   font-size: 14px;
   color: #374151;
-  width: 100%;
-  max-width: 420px;
-  -webkit-box-pack: start;
-      -ms-flex-pack: start;
-          justify-content: flex-start;
 }
-.sub-detail-row .sub-detail-label {
+.sub-detail-table .sub-detail-row .sub-detail-label,
+.sub-detail-table .sub-detail-row .sub-detail-value {
+  padding: 10px;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.sub-detail-table .sub-detail-row .sub-detail-label {
   font-weight: 500;
-  min-width: 160px;
+  width: 160px;
 }
-.sub-detail-row .sub-detail-value {
+.sub-detail-table .sub-detail-row .sub-detail-value {
   color: #111;
 }
 
