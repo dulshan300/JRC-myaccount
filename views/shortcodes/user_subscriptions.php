@@ -99,7 +99,7 @@ $sql = "SELECT
             wp_comments
         WHERE
             comment_post_ID = od.id
-            AND comment_content LIKE '%cancelled by the user%'
+            AND comment_content LIKE '%cancelled by%'
         ORDER BY comment_date_gmt DESC
         LIMIT 1
     ) AS cancelled_at_raw
@@ -175,7 +175,7 @@ foreach ($res as $sub) {
     $temp = [];
     $temp['id'] = $sub->id;
     $temp['product_img'] = $_product_img;
-    $temp['status'] = $sub->prepaid_cancel === 'yes' ? 'wc-cancelled' : $sub->status;
+    $temp['status'] = $sub->status;
     $temp['prepaid_cancel'] = $sub->prepaid_cancel;
     $temp['product'] = $sub->product;
     $temp['plan_raw'] = $sub->plan;
@@ -511,23 +511,23 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                         Your <strong>JAPANESE SNACK SUBSCRIPTION BOX</strong> is currently cancelled.
                     </template>
                 </div>
-            </div>
 
-            <!-- Status description -->
-            <p class="sub-detail-status-desc">
-                <template v-if="selectedSub.status === 'wc-active'">
-                    Your subscription is active and your next order will be processed as scheduled.
-                </template>
-                <template v-else-if="selectedSub.status === 'wc-on-hold'">
-                    Your subscription is temporarily on hold while changes or processing are underway.
-                </template>
-                <template v-else-if="selectedSub.status === 'wc-pending-cancel'">
-                    Your subscription is scheduled to be cancelled at the end of your current billing period.
-                </template>
-                <template v-else>
-                    Your subscription has been cancelled and is no longer active.
-                </template>
-            </p>
+                <!-- Status description -->
+                <p class="sub-detail-status-desc">
+                    <template v-if="selectedSub.status === 'wc-active'">
+                        Your subscription is active and your next order will be processed as scheduled.
+                    </template>
+                    <template v-else-if="selectedSub.status === 'wc-on-hold'">
+                        Your subscription is temporarily on hold while changes or processing are underway.
+                    </template>
+                    <template v-else-if="selectedSub.status === 'wc-pending-cancel'">
+                        Your subscription is scheduled to be cancelled at the end of your current billing period.
+                    </template>
+                    <template v-else>
+                        Your subscription has been cancelled and is no longer active.
+                    </template>
+                </p>
+            </div>
 
             <!-- Detail rows -->
             <div class="sub-detail-body">
@@ -535,13 +535,13 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                 <!-- ACTIVE -->
                 <template v-if="selectedSub.status === 'wc-active'">
                     <div class="sub-detail-row">
-                        
-                        <span class="sub-detail-label">Monthly Cost:</span>
+
+                        <span class="sub-detail-label">Plan Price:</span>
                         <span class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></span>
                     </div>
-                    <div class="sub-detail-row">                        
-                        <span class="sub-detail-label">Next payment due:</span>
-                        <span class="sub-detail-value">{{ selectedSub.next_payment }}</span>
+                    <div class="sub-detail-row">
+                        <span class="sub-detail-label">Next payment date:</span>
+                        <span class="sub-detail-value">{{ selectedSub.prepaid_cancel === 'yes' ? 'N/A' : selectedSub.next_payment }}</span>
                     </div>
                     <div class="sub-detail-row">
                         <span class="sub-detail-label">Next scheduled shipment:</span>
@@ -555,7 +555,7 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                         <!-- CHANGE SHIPPING & BILLING disabled until feature is available -->
                         <a href="<?php echo esc_url( wc_get_account_endpoint_url('edit-address') ); ?>"
                            class="sub-btn-outline">
-                            CHANGE SHIPPING &amp; BILLING
+                            Update Shipping & Billing
                         </a>
                     </div>
 
@@ -565,20 +565,44 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                     </p>
                 </template>
 
-                <!-- CANCELLED / INACTIVE -->
-                <template v-else>
-                    <div class="sub-detail-row">                        
-                        <span class="sub-detail-label">Monthly Cost:</span>
+                <!-- ON-HOLD -->
+                <template v-else-if="selectedSub.status === 'wc-on-hold'">
+                    <div class="sub-detail-row">
+                        <span class="sub-detail-label">Plan Price:</span>
                         <span class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></span>
                     </div>
-                    <div class="sub-detail-row" v-if="selectedSub.cancelled_at">                        
-                        <span class="sub-detail-label">Cancelled On:</span>
+                    <div class="sub-detail-row">
+                        <span class="sub-detail-label">Next payment date:</span>
+                        <span class="sub-detail-value">On-Hold</span>
+                    </div>
+                    <div class="sub-detail-row">
+                        <span class="sub-detail-label">Next scheduled shipment:</span>
+                        <span class="sub-detail-value">On-Hold</span>
+                    </div>
+                </template>
+
+                <!-- PENDING CANCEL -->
+                <template v-else-if="selectedSub.status === 'wc-pending-cancel'">
+                    <div class="sub-detail-row">
+                        <span class="sub-detail-label">Plan Price:</span>
+                        <span class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></span>
+                    </div>
+                    <div class="sub-detail-row">
+                        <span class="sub-detail-label">Cancelled Date:</span>
+                        <span class="sub-detail-value">Pending</span>
+                    </div>
+                </template>
+
+                <!-- CANCELLED -->
+                <template v-else>
+                    <div class="sub-detail-row">
+                        <span class="sub-detail-label">Plan Price:</span>
+                        <span class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></span>
+                    </div>
+                    <div class="sub-detail-row" v-if="selectedSub.cancelled_at">
+                        <span class="sub-detail-label">Cancelled Date:</span>
                         <span class="sub-detail-value">{{ selectedSub.cancelled_at }}</span>
                     </div>
-                    <!-- <div class="sub-detail-row">                        
-                        <span class="sub-detail-label">Payment:</span>
-                        <span class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total + ' will be charged upon reactivation'"></span>
-                    </div> -->
                 </template>
 
             </div>

@@ -96,9 +96,10 @@ $countries = $countries_obj->get_countries(); // Get the list of countries
             </div>
 
         </div>
+        
 
         <!-- important note -->
-        <small class="mav2_field_note">IMPORTANT: Shipping address updates apply from your next shipment onward. For orders currently being processed, please contact Support for assistance. Orders that have already shipped cannot be redirected.</small>
+        <small class="mav2_field_note"><strong>IMPORTANT</strong>: Shipping address updates apply from your next shipment onward. For orders currently being processed, please contact Support for assistance. Orders that have already shipped cannot be redirected.</small>
 
         <div class="">
             <button type="submit">Save</button>

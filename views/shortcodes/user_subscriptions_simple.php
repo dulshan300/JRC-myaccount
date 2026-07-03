@@ -74,7 +74,7 @@ foreach ($res as $sub) {
     $temp = [];
     $temp['id'] = $sub->id;
     $temp['product_img'] = $_product_img;
-    $temp['status'] = $sub->prepaid_cancel === 'yes' ? 'wc-cancelled' : $sub->status;
+    $temp['status'] = $sub->status;
     $temp['product'] = $sub->product;
     $temp['plan_raw'] = $sub->plan;
 
