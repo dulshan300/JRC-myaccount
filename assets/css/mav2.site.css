@@ -387,6 +387,11 @@
   overflow: hidden;
   margin-bottom: 24px;
 }
+@media only screen and (max-width: 768px) {
+  .sub-detail-banner {
+    background-position: left center;
+  }
+}
 .sub-detail-banner .sub-detail-banner-text {
   position: relative;
   z-index: 1;
@@ -399,14 +404,15 @@
 .sub-detail-banner .sub-detail-banner-text strong {
   font-weight: 700;
 }
-
-.sub-detail-status-desc {
-  font-size: 14px;
-  color: #6b7280;
-  text-align: center;
+.sub-detail-banner .sub-detail-status-desc {
+  position: relative;
+  z-index: 1;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
   max-width: 420px;
-  margin: 0 auto 8px;
-  text-align: center;
+  margin: 8px 0 0;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
 .sub-detail-body {
