@@ -612,8 +612,7 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                     </div>
 
                     <p class="sub-cancel-link">
-                        I would like to.
-                        <a href="#" @click.prevent="showCancleOpenPopup(selectedSub.id, selectedSub.plan_raw)">Cancel Subscription</a>
+                        I would like to <a href="#" @click.prevent="showCancleOpenPopup(selectedSub.id, selectedSub.plan_raw)">Cancel Subscription</a>
                     </p>
                 </template>
 
@@ -754,7 +753,7 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                 </ul>
 
                 <template v-slot:footer>
-                    <p><strong>IMPORTANT</strong>: Changes to your subscription will take effect after your current
+                    <p><strong class="mav2_strong">IMPORTANT</strong>: Changes to your subscription will take effect after your current
                         cycle ends on {{next_renew_at}}.</p>
                     <div class="jrc_popup_panel_footer_buttons">
                         <button type="button" @click.prevent="closePopup"

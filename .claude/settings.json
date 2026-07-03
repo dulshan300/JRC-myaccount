@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(sed 's/^\\\\.mav2-order-cards //')",
-      "Bash(sed -i '140,234d' mav2.site.css)"
+      "Bash(sed -i '140,234d' mav2.site.css)",
+      "Bash(cd /tmp)",
+      "Bash(curl -sSL -o lora.zip \"https://fonts.google.com/download?family=Lora\" --max-time 30 -w \"HTTP:%{http_code} SIZE:%{size_download}\\\\n\")",
+      "Bash(unzip -l lora.zip)",
+      "Bash(curl -sSL \"https://api.github.com/repos/google/fonts/contents/ofl/plusjakartasans\" --max-time 20)",
+      "Bash(php -l \"include/admin/class-mav2-ajax-admin.php\")",
+      "Bash(php -l \"views/invoices/default.php\")",
+      "Bash(php -l \"views/invoices/subscription.php\")"
     ]
   }
 }

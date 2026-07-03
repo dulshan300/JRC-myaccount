@@ -41,6 +41,20 @@ $color-brand-blue: #001a43;
     animation: mav2_s2 1s infinite linear;
 }
 
+.mav2_strong {
+    font-weight: 700 !important;
+}
+
+.mav2_field_note {
+    font-size: 11px !important;
+    font-weight: bold !important;
+    color: rgb(88, 87, 87);
+}
+
+.mav2_field_note_2 {
+    font-size: 16px !important;   
+    color: rgb(140 138 138);
+}
 
 .processing {
     position: absolute;
@@ -352,7 +366,7 @@ $color-brand-blue: #001a43;
     overflow: hidden;
     margin-bottom: 24px;
 
-    @include break(){
+    @include break() {
         background-position: left center;
     }
 
@@ -389,7 +403,7 @@ $color-brand-blue: #001a43;
     align-items: center;
 }
 
-.sub-detail-table {    
+.sub-detail-table {
     margin: 0 auto;
     border-collapse: collapse;
 
@@ -1224,11 +1238,7 @@ $color-brand-blue: #001a43;
                 }
             }
 
-            .mav2_field_note {
-                font-size: 11px !important;
-                font-weight: bold !important;
-                color: rgb(88, 87, 87);
-            }
+
 
 
             select {

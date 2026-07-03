@@ -1383,10 +1383,51 @@ final class MAV2_Ajax_Admin
     }
 
 
+    /**
+     * Build an Mpdf instance with the invoice custom fonts (Lora, Plus Jakarta Sans) registered.
+     */
+    private function get_invoice_mpdf()
+    {
+        $default_font_config = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+        $font_dirs = $default_font_config['fontDir'];
+
+        $default_font_vars = (new \Mpdf\Config\FontVariables())->getDefaults();
+        $font_data = $default_font_vars['fontdata'];
+
+        return new \Mpdf\Mpdf([
+            'mode' => 'utf-8',
+            'autoScriptToLang' => true,
+            'autoLangToFont' => true,
+            'format' => 'A4',
+            'margin_left' => 15,
+            'margin_right' => 15,
+            'margin_top' => 15,
+            'margin_bottom' => 15,
+            'fontDir' => array_merge($font_dirs, [
+                MAV2_PATH . 'assets/fonts/lora',
+                MAV2_PATH . 'assets/fonts/plus-jakarta-sans',
+            ]),
+            'fontdata' => $font_data + [
+                'lora' => [
+                    'R' => 'Lora-Regular.ttf',
+                    'B' => 'Lora-Bold.ttf',
+                    'I' => 'Lora-Italic.ttf',
+                    'BI' => 'Lora-BoldItalic.ttf',
+                ],
+                'plusjakartasans' => [
+                    'R' => 'PlusJakartaSans-Regular.ttf',
+                    'B' => 'PlusJakartaSans-Bold.ttf',
+                    'I' => 'PlusJakartaSans-Italic.ttf',
+                    'BI' => 'PlusJakartaSans-BoldItalic.ttf',
+                ],
+            ],
+        ]);
+    }
+
     public function prepair_invoice()
     {
         $order_id = $_POST['id'];
-        // $order = wc_get_order('56556'); 
+        // $order = wc_get_order('56556');
         $data_collection = $this->get_invoice_data($order_id);
 
         $template_path = MAV2_PATH . 'views/invoices/default.php';
@@ -1404,16 +1445,7 @@ final class MAV2_Ajax_Admin
 
         try {
 
-            $mpdf = new \Mpdf\Mpdf([
-                'mode' => 'utf-8',
-                'autoScriptToLang' => true,
-                'autoLangToFont' => true,
-                'format' => 'A4',
-                'margin_left' => 15,
-                'margin_right' => 15,
-                'margin_top' => 15,
-                'margin_bottom' => 15,
-            ]);
+            $mpdf = $this->get_invoice_mpdf();
 
             $mpdf->WriteHTML($html);
             $string = $mpdf->Output("", 'S');
@@ -1471,16 +1503,7 @@ final class MAV2_Ajax_Admin
 
         try {
 
-            $mpdf = new \Mpdf\Mpdf([
-                'mode' => 'utf-8',
-                'autoScriptToLang' => true,
-                'autoLangToFont' => true,
-                'format' => 'A4',
-                'margin_left' => 15,
-                'margin_right' => 15,
-                'margin_top' => 15,
-                'margin_bottom' => 15,
-            ]);
+            $mpdf = $this->get_invoice_mpdf();
 
             $mpdf->WriteHTML($html);
             $string = $mpdf->Output("", 'S');

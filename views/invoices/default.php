@@ -1,14 +1,10 @@
 <style>
     body {
-        font-family: "DejaVu Sans", sans-serif;
+        font-family: "Plus Jakarta Sans", sans-serif;
         color: #1a1a1a;
         background-color: #F8F7F2;
         /* Cream/Off-white background */
         padding: 20px;
-    }
-
-    .serif {
-        font-family: "DejaVu Serif", serif;
     }
 
     /* Header Section */
@@ -24,6 +20,8 @@
     }
 
     .invoice-title {
+        font-family: "Lora", serif;
+        color: #1a1a1a;
         font-size: 40pt;
         text-align: right;
         text-transform: uppercase;
@@ -150,7 +148,7 @@
     <tr>
         <td class="logo"><img src="https://japanrailclub.com/wp-content/uploads/2024/06/Japan-Rail-Club-Logo-Blue.svg"
                 class="logo" width="100" alt="Logo" /></td>
-        <td class="invoice-title serif">INVOICE</td>
+        <td class="invoice-title">INVOICE</td>
     </tr>
 </table>
 
@@ -236,7 +234,7 @@
             <span class="thank-you">Thank you!</span>
         </td>
         <td class="company-sig">
-            <div class="sig-name serif">JR East Business Development SEA Pte. Ltd.</div>
+            <div class="sig-name">JR East Business Development SEA Pte. Ltd.</div>
             20 Anson Road, #11-01, Twenty Anson Singapore 079912<br>
             UEN No. 201840125Z
         </td>
