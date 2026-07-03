@@ -507,6 +507,12 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                         You are currently on a <strong>JAPANESE SNACK SUBSCRIPTION BOX</strong>
                         plan paying {{ selectedSub.plan_raw == 1 ? 'every 1 month' : 'every ' + selectedSub.plan_raw + ' months' }}
                     </template>
+                    <template v-else-if="selectedSub.status === 'wc-on-hold'">
+                        Your <strong>JAPANESE SNACK SUBSCRIPTION BOX</strong> is currently on hold.
+                    </template>
+                    <template v-else-if="selectedSub.status === 'wc-pending-cancel'">
+                        Your <strong>JAPANESE SNACK SUBSCRIPTION BOX</strong> is pending cancellation.
+                    </template>
                     <template v-else>
                         Your <strong>JAPANESE SNACK SUBSCRIPTION BOX</strong> is currently cancelled.
                     </template>
@@ -532,22 +538,68 @@ $container_id = wp_unique_id('mav2_subscription_app_');
             <!-- Detail rows -->
             <div class="sub-detail-body">
 
-                <!-- ACTIVE -->
+                <table class="sub-detail-table">
+                    <tbody>
+                        <!-- ACTIVE -->
+                        <template v-if="selectedSub.status === 'wc-active'">
+                            <tr class="sub-detail-row">
+                                <td class="sub-detail-label">Plan Price:</td>
+                                <td class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></td>
+                            </tr>
+                            <tr class="sub-detail-row">
+                                <td class="sub-detail-label">Next payment date:</td>
+                                <td class="sub-detail-value">{{ selectedSub.prepaid_cancel === 'yes' ? 'N/A' : selectedSub.next_payment }}</td>
+                            </tr>
+                            <tr class="sub-detail-row">
+                                <td class="sub-detail-label">Next scheduled shipment:</td>
+                                <td class="sub-detail-value">{{ selectedSub.next_shipment_date }}</td>
+                            </tr>
+                        </template>
+
+                        <!-- ON-HOLD -->
+                        <template v-else-if="selectedSub.status === 'wc-on-hold'">
+                            <tr class="sub-detail-row">
+                                <td class="sub-detail-label">Plan Price:</td>
+                                <td class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></td>
+                            </tr>
+                            <tr class="sub-detail-row">
+                                <td class="sub-detail-label">Next payment date:</td>
+                                <td class="sub-detail-value">On-Hold</td>
+                            </tr>
+                            <tr class="sub-detail-row">
+                                <td class="sub-detail-label">Next scheduled shipment:</td>
+                                <td class="sub-detail-value">On-Hold</td>
+                            </tr>
+                        </template>
+
+                        <!-- PENDING CANCEL -->
+                        <template v-else-if="selectedSub.status === 'wc-pending-cancel'">
+                            <tr class="sub-detail-row">
+                                <td class="sub-detail-label">Plan Price:</td>
+                                <td class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></td>
+                            </tr>
+                            <tr class="sub-detail-row">
+                                <td class="sub-detail-label">Cancelled Date:</td>
+                                <td class="sub-detail-value">Pending</td>
+                            </tr>
+                        </template>
+
+                        <!-- CANCELLED -->
+                        <template v-else>
+                            <tr class="sub-detail-row">
+                                <td class="sub-detail-label">Plan Price:</td>
+                                <td class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></td>
+                            </tr>
+                            <tr class="sub-detail-row" v-if="selectedSub.cancelled_at">
+                                <td class="sub-detail-label">Cancelled Date:</td>
+                                <td class="sub-detail-value">{{ selectedSub.cancelled_at }}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+
+                <!-- Actions only apply to active subscriptions -->
                 <template v-if="selectedSub.status === 'wc-active'">
-                    <div class="sub-detail-row">
-
-                        <span class="sub-detail-label">Plan Price:</span>
-                        <span class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></span>
-                    </div>
-                    <div class="sub-detail-row">
-                        <span class="sub-detail-label">Next payment date:</span>
-                        <span class="sub-detail-value">{{ selectedSub.prepaid_cancel === 'yes' ? 'N/A' : selectedSub.next_payment }}</span>
-                    </div>
-                    <div class="sub-detail-row">
-                        <span class="sub-detail-label">Next scheduled shipment:</span>
-                        <span class="sub-detail-value">{{ selectedSub.next_shipment_date }}</span>
-                    </div>
-
                     <div class="sub-detail-actions">
                         <button @click.prevent="showUpdatePopup(selectedSub.id)" class="sub-btn-primary">
                             CHANGE PLAN
@@ -563,46 +615,6 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                         I would like to.
                         <a href="#" @click.prevent="showCancleOpenPopup(selectedSub.id, selectedSub.plan_raw)">Cancel Subscription</a>
                     </p>
-                </template>
-
-                <!-- ON-HOLD -->
-                <template v-else-if="selectedSub.status === 'wc-on-hold'">
-                    <div class="sub-detail-row">
-                        <span class="sub-detail-label">Plan Price:</span>
-                        <span class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></span>
-                    </div>
-                    <div class="sub-detail-row">
-                        <span class="sub-detail-label">Next payment date:</span>
-                        <span class="sub-detail-value">On-Hold</span>
-                    </div>
-                    <div class="sub-detail-row">
-                        <span class="sub-detail-label">Next scheduled shipment:</span>
-                        <span class="sub-detail-value">On-Hold</span>
-                    </div>
-                </template>
-
-                <!-- PENDING CANCEL -->
-                <template v-else-if="selectedSub.status === 'wc-pending-cancel'">
-                    <div class="sub-detail-row">
-                        <span class="sub-detail-label">Plan Price:</span>
-                        <span class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></span>
-                    </div>
-                    <div class="sub-detail-row">
-                        <span class="sub-detail-label">Cancelled Date:</span>
-                        <span class="sub-detail-value">Pending</span>
-                    </div>
-                </template>
-
-                <!-- CANCELLED -->
-                <template v-else>
-                    <div class="sub-detail-row">
-                        <span class="sub-detail-label">Plan Price:</span>
-                        <span class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></span>
-                    </div>
-                    <div class="sub-detail-row" v-if="selectedSub.cancelled_at">
-                        <span class="sub-detail-label">Cancelled Date:</span>
-                        <span class="sub-detail-value">{{ selectedSub.cancelled_at }}</span>
-                    </div>
                 </template>
 
             </div>
