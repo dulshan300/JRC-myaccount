@@ -232,6 +232,16 @@ $GLOBALS['mav2_subscription_app_bootstrapped'] = true;
                     selectedSubId.value = null;
                 };
 
+                // allows the dashboard's user_subscriptions_simple widget to hand
+                // off a subscription id after switching to this shortcode's tab
+                onMounted(() => {
+                    window.addEventListener('mav2:open-subscription-detail', (e) => {
+                        if (e.detail && e.detail.id) {
+                            openSubDetail(e.detail.id);
+                        }
+                    });
+                });
+
                 const show_sub_edit_popup = ref(false);
                 const current_panel = ref(PANELS.NONE);
                 const processing = ref(false);

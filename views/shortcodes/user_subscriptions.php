@@ -519,25 +519,28 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                 <!-- ACTIVE -->
                 <template v-if="selectedSub.status === 'wc-active'">
                     <div class="sub-detail-row">
-                        <span class="sub-detail-icon sub-icon-info"></span>
+                        
                         <span class="sub-detail-label">Monthly Cost:</span>
                         <span class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></span>
                     </div>
-                    <div class="sub-detail-row">
-                        <span class="sub-detail-icon sub-icon-cal"></span>
+                    <div class="sub-detail-row">                        
                         <span class="sub-detail-label">Next payment due:</span>
                         <span class="sub-detail-value">{{ selectedSub.next_payment }}</span>
+                    </div>
+                    <div class="sub-detail-row">
+                        <span class="sub-detail-label">Next scheduled shipment:</span>
+                        <span class="sub-detail-value">{{ selectedSub.next_shipment_date }}</span>
                     </div>
 
                     <div class="sub-detail-actions">
                         <button @click.prevent="showUpdatePopup(selectedSub.id)" class="sub-btn-primary">
-                            CHANGE PLAN &amp; ADD-ONS
+                            CHANGE PLAN
                         </button>
                         <!-- CHANGE SHIPPING & BILLING disabled until feature is available -->
-                        <!-- <a href="<?php echo esc_url( wc_get_account_endpoint_url('edit-address') ); ?>"
+                        <a href="<?php echo esc_url( wc_get_account_endpoint_url('edit-address') ); ?>"
                            class="sub-btn-outline">
                             CHANGE SHIPPING &amp; BILLING
-                        </a> -->
+                        </a>
                     </div>
 
                     <p class="sub-cancel-link">
@@ -548,21 +551,18 @@ $container_id = wp_unique_id('mav2_subscription_app_');
 
                 <!-- CANCELLED / INACTIVE -->
                 <template v-else>
-                    <div class="sub-detail-row">
-                        <span class="sub-detail-icon sub-icon-info"></span>
+                    <div class="sub-detail-row">                        
                         <span class="sub-detail-label">Monthly Cost:</span>
                         <span class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></span>
                     </div>
-                    <div class="sub-detail-row" v-if="selectedSub.cancelled_at">
-                        <span class="sub-detail-icon sub-icon-cal"></span>
+                    <div class="sub-detail-row" v-if="selectedSub.cancelled_at">                        
                         <span class="sub-detail-label">Cancelled On:</span>
                         <span class="sub-detail-value">{{ selectedSub.cancelled_at }}</span>
                     </div>
-                    <div class="sub-detail-row">
-                        <span class="sub-detail-icon sub-icon-card"></span>
+                    <!-- <div class="sub-detail-row">                        
                         <span class="sub-detail-label">Payment:</span>
                         <span class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total + ' will be charged upon reactivation'"></span>
-                    </div>
+                    </div> -->
                 </template>
 
             </div>

@@ -21,6 +21,16 @@ final class MAV2ShortCode
         return ob_get_clean();
     }
 
+    public function user_subscriptions_simple()
+    {
+        ob_start();
+        // include (not include_once) so the shortcode still renders when used
+        // more than once on the same page; shared function/JS defs guard themselves
+        include MAV2_PATH.'views/shortcodes/user_subscriptions_simple.php';
+
+        return ob_get_clean();
+    }
+
     public function user_orders()
     {
         ob_start();
