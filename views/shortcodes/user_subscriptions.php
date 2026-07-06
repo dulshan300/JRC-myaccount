@@ -356,7 +356,7 @@ foreach ($res as $sub) {
     $temp['next_payment'] = $_next_payment;
 
     $temp['cancelled_at'] = !empty($sub->cancelled_at_raw)
-        ? date('M d, Y H:i \J\S\T', strtotime($sub->cancelled_at_raw . ' +8 hours'))
+        ? date('M d, Y H:i \S\G\T', strtotime($sub->cancelled_at_raw . ' +8 hours'))
         : null;
 
     $out_data[] = $temp;
@@ -605,7 +605,7 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                             CHANGE PLAN
                         </button>
                         <!-- CHANGE SHIPPING & BILLING disabled until feature is available -->
-                        <a href="<?php echo esc_url( wc_get_account_endpoint_url('edit-address') ); ?>"
+                        <a style="display:none" href="<?php echo esc_url( wc_get_account_endpoint_url('edit-address') ); ?>"
                            class="sub-btn-outline">
                             Update Shipping & Billing
                         </a>
@@ -618,7 +618,7 @@ $container_id = wp_unique_id('mav2_subscription_app_');
 
                  <template v-else>
                     <div class="sub-detail-actions">
-                        <button @click.prevent="()=>console.warning('not implemented yet')" class="sub-btn-primary">
+                        <button style="display: none;" @click.prevent="()=>console.warning('not implemented yet')" class="sub-btn-primary">
                             To consider Reactivate Plan
                         </button>                        
                         
