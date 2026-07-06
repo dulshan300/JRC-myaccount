@@ -6,9 +6,6 @@
     }
 }
 
-$color-brand-yellow: #e6b422;
-$color-brand-blue: #001a43;
-
 .mav2_icon {
     display: inline-flex;
     width: 24px;
@@ -41,20 +38,6 @@ $color-brand-blue: #001a43;
     animation: mav2_s2 1s infinite linear;
 }
 
-.mav2_strong {
-    font-weight: 700 !important;
-}
-
-.mav2_field_note {
-    font-size: 11px !important;
-    font-weight: bold !important;
-    color: rgb(88, 87, 87);
-}
-
-.mav2_field_note_2 {
-    font-size: 16px !important;   
-    color: rgb(140 138 138);
-}
 
 .processing {
     position: absolute;
@@ -78,10 +61,7 @@ $color-brand-blue: #001a43;
 }
 
 
-// .mav2-order-cards wraps the table/detail views only — #invoiceModal and
-// #order_processing are rendered once globally as siblings after it (see
-// user_orders.php), so their styles below must NOT be nested in here.
-.mav2-order-cards {
+#order_cards {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -144,6 +124,111 @@ $color-brand-blue: #001a43;
 
         }
     }
+
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+    }
+
+    .modal-content {
+        position: relative;
+        background: #F8F7F2;
+        /* Matching the cream background */
+        width: 90%;
+        max-width: 700px;
+        margin: 50px auto;
+        padding: 40px;
+        border-radius: 12px;
+        font-family: sans-serif;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+
+    .close-modal {
+        position: absolute;
+        right: 20px;
+        top: 15px;
+        font-size: 28px;
+        cursor: pointer;
+        color: #666;
+    }
+
+
+
+    .invoice-number {
+        font-size: 24px;
+        margin: 0;
+    }
+
+    .invoice-date {
+        color: #333;
+        margin-bottom: 30px;
+    }
+
+    .invoice-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .invoice-table th {
+        border-top: 2px solid #333;
+        border-bottom: 2px solid #333;
+        padding: 10px;
+        text-align: left;
+        font-size: 14px;
+        background: transparent;
+    }
+
+    .invoice-table td {
+        padding: 15px 10px;
+        border-bottom: 1px solid #ddd;
+        font-size: 14px;
+    }
+
+    .totals-section {
+        width: 40%;
+        float: right;
+        margin-top: 20px;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        font-size: 14px;
+    }
+
+    .border-bottom {
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+    }
+
+    .final-total {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+        font-size: 20px;
+        padding-top: 15px;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+
 
     .order_card {
         * {
@@ -229,410 +314,6 @@ $color-brand-blue: #001a43;
         }
 
 
-    }
-}
-
-/* ── Invoice modal (#invoiceModal is rendered once globally, as a sibling
-   after .mav2-order-cards, not a descendant — see user_orders.php) ── */
-
-.modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-}
-
-.modal-content {
-    position: relative;
-    background: #F8F7F2;
-    /* Matching the cream background */
-    width: 90%;
-    max-width: 700px;
-    margin: 50px auto;
-    padding: 40px;
-    border-radius: 12px;
-    font-family: sans-serif;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-
-    max-height: 95vh;
-    overflow-y: auto;
-}
-
-.close-modal {
-    position: absolute;
-    right: 20px;
-    top: 15px;
-    font-size: 28px;
-    cursor: pointer;
-    color: #666;
-}
-
-.invoice-number {
-    font-size: 24px;
-    margin: 0;
-}
-
-.invoice-date {
-    color: #333;
-    margin-bottom: 30px;
-}
-
-.invoice-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-}
-
-.invoice-table th {
-    border-top: 2px solid #333;
-    border-bottom: 2px solid #333;
-    padding: 10px;
-    text-align: left;
-    font-size: 14px;
-    background: transparent;
-}
-
-.invoice-table td {
-    padding: 15px 10px;
-    border-bottom: 1px solid #ddd;
-    font-size: 14px;
-}
-
-.totals-section {
-    width: 40%;
-    float: right;
-    margin-top: 20px;
-}
-
-.total-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 5px 0;
-    font-size: 14px;
-}
-
-.border-bottom {
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 10px;
-}
-
-.final-total {
-    display: flex;
-    justify-content: space-between;
-    font-weight: bold;
-    font-size: 20px;
-    padding-top: 15px;
-}
-
-.text-right {
-    text-align: right;
-}
-
-.text-center {
-    text-align: center;
-}
-
-/* ── Subscription detail view ── */
-
-.sub-detail-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    color: #374151;
-    padding: 0 0 16px;
-    font-weight: 500;
-
-    &:hover {
-        color: #000;
-    }
-}
-
-.sub-detail-banner {
-    position: relative;
-    background-color: #C4873B;
-    background-image: url('https://www.japanrailclub.com/wp-content/uploads/2026/07/subscription-status-banner-01.jpg');
-    background-size: cover;
-    background-position: right top;
-    border-radius: 12px;
-    padding: 36px 28px;
-    overflow: hidden;
-    margin-bottom: 24px;
-
-    @include break() {
-        background-position: left center;
-    }
-
-    .sub-detail-banner-text {
-        position: relative;
-        z-index: 1;
-        font-size: 15px;
-        color: #fff;
-        line-height: 1.6;
-        // max-width: 420px;
-        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
-
-        strong {
-            font-weight: 700;
-        }
-    }
-
-    .sub-detail-status-desc {
-        position: relative;
-        z-index: 1;
-        font-size: 13px;
-        color: rgba(255, 255, 255, 0.85);
-        line-height: 1.5;
-        // max-width: 420px;
-        margin: 8px 0 0;
-        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
-    }
-}
-
-.sub-detail-body {
-    padding: 16px 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.sub-detail-table {
-    margin: 0 auto;
-    border-collapse: collapse;
-
-    .sub-detail-row {
-        font-size: 14px;
-        color: #374151;
-
-        .sub-detail-label,
-        .sub-detail-value {
-            padding: 10px;
-            text-align: left;
-            vertical-align: middle;
-            white-space: nowrap;
-
-        }
-
-        .sub-detail-label {
-            font-weight: 500;
-            width: 160px;
-        }
-
-        .sub-detail-value {
-            color: #111;
-        }
-    }
-}
-
-.sub-detail-icon {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    display: inline-block;
-    background-color: $color-brand-blue;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 14px;
-}
-
-.sub-icon-info {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/%3E%3C/svg%3E");
-}
-
-.sub-icon-cal {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M19 4h-1V2h-2v2H8V2H6v2H5C3.89 4 3 4.9 3 6v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zM7 12h5v5H7z'/%3E%3C/svg%3E");
-}
-
-.sub-icon-card {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z'/%3E%3C/svg%3E");
-}
-
-.sub-detail-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin: 24px 0 16px;
-
-    .sub-btn-primary,
-    .sub-btn-outline,
-    a.sub-btn-outline {
-        padding: 12px 24px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .sub-btn-primary {
-        background: $color-brand-blue;
-        color: #fff;
-        border: 2px solid $color-brand-blue;
-
-        &:hover {
-            background: lighten($color-brand-blue, 10%);
-            border-color: lighten($color-brand-blue, 10%);
-        }
-    }
-
-
-    .sub-btn-outline,
-    a.sub-btn-outline {
-        background: #fff;
-        color: $color-brand-blue;
-        border: 2px solid $color-brand-blue;
-
-        &:hover {
-            background: lighten($color-brand-blue, 65%);
-        }
-    }
-}
-
-.sub-cancel-link {
-    font-size: 13px;
-    color: #6b7280;
-    text-align: center;
-    margin-top: 8px;
-
-    a {
-        color: $color-brand-yellow;
-        text-decoration: underline;
-        cursor: pointer;
-    }
-}
-
-/* ── End subscription detail view ── */
-
-.sub-list-card {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 14px 0;
-    border-bottom: 1px solid #f0f0f0;
-    cursor: pointer;
-
-    &:last-child {
-        border-bottom: none;
-    }
-
-    .sub-thumb-wrap {
-        position: relative;
-        flex-shrink: 0;
-        width: 72px;
-        height: 72px;
-
-        .sub-thumb {
-            width: 72px;
-            height: 72px;
-            border-radius: 10px;
-            object-fit: cover;
-            display: block;
-        }
-
-        .sub-item-badge {
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            background: #111;
-            color: #fff;
-            font-size: 11px;
-            font-weight: 700;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-    }
-
-    .sub-list-body {
-        flex: 1;
-        min-width: 0;
-
-        .sub-list-top {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 4px;
-        }
-
-        .sub-name {
-            font-weight: 700;
-            font-size: 15px;
-            color: $color-brand-blue;
-        }
-
-        .sub-freq-badge {
-            background: #f0f0f0;
-            color: #555;
-            font-size: 12px;
-            padding: 3px 10px;
-            border-radius: 20px;
-        }
-
-        .sub-list-price {
-            font-size: 14px;
-            color: #333;
-            margin-bottom: 4px;
-        }
-
-        .sub-view-link {
-            font-size: 13px;
-            color: #0b5ccc;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-    }
-
-    .sub-list-arrow {
-        flex-shrink: 0;
-        color: #999;
-
-        svg {
-            width: 20px;
-            height: 20px;
-            display: block;
-        }
-    }
-}
-
-.sub-tabs {
-    display: flex;
-    border-bottom: 1px solid #e0e0e0;
-    margin-bottom: 24px;
-
-    .sub-tab {
-        background: none;
-        border: none;
-        border-bottom: 2px solid transparent;
-        padding: 10px 20px;
-        font-size: 15px;
-        font-weight: 500;
-        cursor: pointer;
-        color: #999;
-        margin-bottom: -1px;
-        transition: color 0.2s, border-color 0.2s;
-
-        &.active {
-            color: #001A43;
-            border-bottom-color: #001A43;
-            font-weight: 600;
-        }
     }
 }
 
@@ -1229,17 +910,7 @@ $color-brand-blue: #001a43;
                     box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .1);
                     outline: 0;
                 }
-
-                &[readonly] {
-                    background-color: #F0F1F3;
-                    color: #8A8F98;
-                    cursor: not-allowed;
-                    box-shadow: none;
-                }
             }
-
-
-
 
             select {
                 appearance: none;
@@ -1293,7 +964,7 @@ $color-brand-blue: #001a43;
     }
 }
 
-.payment_methods {
+#payment_methods {
 
     display: flex;
     flex-direction: column;
@@ -2175,11 +1846,11 @@ $border-radius: 8px;
     background-color: $alert-bg;
     border: 1px solid $alert-border;
     border-radius: $border-radius;
-
-    * {
+    
+    *{
         font-family: var(--e-global-typography-primary-font-family) !important;
     }
-
+    
     margin: 20px auto;
 
     &__icon {
@@ -2220,7 +1891,7 @@ $border-radius: 8px;
             line-height: 1.5;
             color: $alert-text;
 
-            span {
+            span{
                 text-decoration: underline;
             }
         }

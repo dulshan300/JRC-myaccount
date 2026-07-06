@@ -48,9 +48,8 @@ $display_name = $user->display_name;
 
             <div class="mav2_fg">
                 <label for="email">Email <span class="astric">*</span></label>
-                <input type="text" name="email" id="email" value="<?= $email; ?>" required readonly>
+                <input type="text" name="email" id="email" value="<?= $email; ?>" required>
                 <span id="ua_email_error" style="display: none;" class="mav2_error"></span>
-                <small class="mav2_field_note">Please contact us at info@japanrailclub.com to update your email.</small>
             </div>
 
         </div>

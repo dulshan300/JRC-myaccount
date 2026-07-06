@@ -1383,51 +1383,10 @@ final class MAV2_Ajax_Admin
     }
 
 
-    /**
-     * Build an Mpdf instance with the invoice custom fonts (Lora, Plus Jakarta Sans) registered.
-     */
-    private function get_invoice_mpdf()
-    {
-        $default_font_config = (new \Mpdf\Config\ConfigVariables())->getDefaults();
-        $font_dirs = $default_font_config['fontDir'];
-
-        $default_font_vars = (new \Mpdf\Config\FontVariables())->getDefaults();
-        $font_data = $default_font_vars['fontdata'];
-
-        return new \Mpdf\Mpdf([
-            'mode' => 'utf-8',
-            'autoScriptToLang' => true,
-            'autoLangToFont' => true,
-            'format' => 'A4',
-            'margin_left' => 15,
-            'margin_right' => 15,
-            'margin_top' => 15,
-            'margin_bottom' => 15,
-            'fontDir' => array_merge($font_dirs, [
-                MAV2_PATH . 'assets/fonts/lora',
-                MAV2_PATH . 'assets/fonts/plus-jakarta-sans',
-            ]),
-            'fontdata' => $font_data + [
-                'lora' => [
-                    'R' => 'Lora-Regular.ttf',
-                    'B' => 'Lora-Bold.ttf',
-                    'I' => 'Lora-Italic.ttf',
-                    'BI' => 'Lora-BoldItalic.ttf',
-                ],
-                'plusjakartasans' => [
-                    'R' => 'PlusJakartaSans-Regular.ttf',
-                    'B' => 'PlusJakartaSans-Bold.ttf',
-                    'I' => 'PlusJakartaSans-Italic.ttf',
-                    'BI' => 'PlusJakartaSans-BoldItalic.ttf',
-                ],
-            ],
-        ]);
-    }
-
     public function prepair_invoice()
     {
         $order_id = $_POST['id'];
-        // $order = wc_get_order('56556');
+        // $order = wc_get_order('56556'); 
         $data_collection = $this->get_invoice_data($order_id);
 
         $template_path = MAV2_PATH . 'views/invoices/default.php';
@@ -1445,7 +1404,16 @@ final class MAV2_Ajax_Admin
 
         try {
 
-            $mpdf = $this->get_invoice_mpdf();
+            $mpdf = new \Mpdf\Mpdf([
+                'mode' => 'utf-8',
+                'autoScriptToLang' => true,
+                'autoLangToFont' => true,
+                'format' => 'A4',
+                'margin_left' => 15,
+                'margin_right' => 15,
+                'margin_top' => 15,
+                'margin_bottom' => 15,
+            ]);
 
             $mpdf->WriteHTML($html);
             $string = $mpdf->Output("", 'S');
@@ -1503,7 +1471,16 @@ final class MAV2_Ajax_Admin
 
         try {
 
-            $mpdf = $this->get_invoice_mpdf();
+            $mpdf = new \Mpdf\Mpdf([
+                'mode' => 'utf-8',
+                'autoScriptToLang' => true,
+                'autoLangToFont' => true,
+                'format' => 'A4',
+                'margin_left' => 15,
+                'margin_right' => 15,
+                'margin_top' => 15,
+                'margin_bottom' => 15,
+            ]);
 
             $mpdf->WriteHTML($html);
             $string = $mpdf->Output("", 'S');
@@ -1610,139 +1587,5 @@ final class MAV2_Ajax_Admin
         $admin_emails = array_filter($admin_emails, 'is_email');
 
         $this->send_html_email($admin_emails, $subject, $template, $data);
-    }
-
-    public function get_order_details()
-    {
-        if (!check_ajax_referer('mav2-nonce', 'nonce', false)) {
-            wp_send_json_error('Invalid nonce', 403);
-            return;
-        }
-
-        $user_id = get_current_user_id();
-        if (!$user_id) {
-            wp_send_json_error('Not logged in', 401);
-            return;
-        }
-
-        $order_id = intval($_POST['id']);
-        $order    = wc_get_order($order_id);
-
-        if (!$order || (int) $order->get_customer_id() !== $user_id) {
-            wp_send_json_error('Order not found', 404);
-            return;
-        }
-
-        $currency_symbol = html_entity_decode(get_woocommerce_currency_symbol($order->get_currency()), ENT_QUOTES, 'UTF-8');
-        $status          = 'wc-' . $order->get_status();
-
-        // Payment status
-        $paid_statuses   = ['wc-completed', 'wc-processing', 'wc-active', 'wc-pending-cancel'];
-        $failed_statuses = ['wc-failed', 'wc-cancelled', 'wc-refunded', 'wc-expired'];
-        if (in_array($status, $paid_statuses)) {
-            $payment_status = ['label' => 'Paid', 'class' => 'mav2-badge-paid'];
-        } elseif (in_array($status, $failed_statuses)) {
-            $payment_status = ['label' => 'Failed', 'class' => 'mav2-badge-failed'];
-        } else {
-            $payment_status = ['label' => 'Pending', 'class' => 'mav2-badge-pending'];
-        }
-
-        // Fulfillment status
-        $fulfillment_status = $status === 'wc-completed'
-            ? ['label' => 'Completed', 'class' => 'mav2-badge-completed']
-            : ['label' => 'Processing', 'class' => 'mav2-badge-processing'];
-
-        // Address: virtual orders use billing, physical orders use shipping
-        $all_countries = WC()->countries->get_countries();
-        if ($order->needs_shipping_address()) {
-            $country_code = $order->get_shipping_country();
-            $address = [
-                'type'      => 'Shipping Address',
-                'name'      => trim($order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name()),
-                'company'   => $order->get_shipping_company(),
-                'address_1' => $order->get_shipping_address_1(),
-                'address_2' => $order->get_shipping_address_2(),
-                'city'      => $order->get_shipping_city(),
-                'state'     => $order->get_shipping_state(),
-                'postcode'  => $order->get_shipping_postcode(),
-                'country'   => $all_countries[$country_code] ?? $country_code,
-            ];
-        } else {
-            $country_code = $order->get_billing_country();
-            $address = [
-                'type'      => 'Billing Address',
-                'name'      => trim($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()),
-                'company'   => $order->get_billing_company(),
-                'address_1' => $order->get_billing_address_1(),
-                'address_2' => $order->get_billing_address_2(),
-                'city'      => $order->get_billing_city(),
-                'state'     => $order->get_billing_state(),
-                'postcode'  => $order->get_billing_postcode(),
-                'country'   => $all_countries[$country_code] ?? $country_code,
-            ];
-        }
-
-        // Line items
-        $items = [];
-        foreach ($order->get_items() as $item) {
-            $product   = $item->get_product();
-            $image_url = '';
-            if ($product) {
-                $thumb = wp_get_attachment_image_url(get_post_thumbnail_id($product->get_id()), 'thumbnail');
-                if ($thumb) {
-                    $image_url = $thumb;
-                }
-            }
-            $subtotal = floatval($item->get_subtotal());
-            $qty      = max(1, $item->get_quantity());
-            $items[]  = [
-                'name'       => $item->get_name(),
-                'image'      => $image_url,
-                'quantity'   => $item->get_quantity(),
-                'unit_price' => $currency_symbol . number_format($subtotal / $qty, 2),
-                'line_total' => $currency_symbol . number_format($subtotal, 2),
-            ];
-        }
-
-        // Coupons
-        $coupons = $order->get_coupon_codes();
-
-        // Subscription plan from meta
-        $plan_raw          = $order->get_meta('_ps_prepaid_pieces');
-        $subscription_plan = '-';
-        if ($plan_raw !== '') {
-            $n                 = intval($plan_raw);
-            $subscription_plan = $n === 1 ? 'Monthly' : $n . ' months';
-        }
-
-        // Date (SGT)
-        $created = $order->get_date_created();
-        $date_str = '';
-        if ($created) {
-            $dt = new DateTime($created->date('Y-m-d H:i:s'), new DateTimeZone('GMT'));
-            $dt->setTimezone(new DateTimeZone('Asia/Singapore'));
-            $date_str = $dt->format('d M Y');
-        }
-
-        $data = [
-            'id'                => $order->get_id(),
-            'date'              => $date_str,
-            'subscription_plan' => $subscription_plan,
-            'payment_status'    => $payment_status,
-            'fulfillment_status'=> $fulfillment_status,
-            'customer_name'     => trim($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()),
-            'customer_email'    => $order->get_billing_email(),
-            'address'           => $address,
-            'items'             => $items,
-            'coupons'           => $coupons,
-            'subtotal'          => $currency_symbol . number_format(floatval($order->get_subtotal()), 2),
-            'shipping'          => $currency_symbol . number_format(floatval($order->get_shipping_total()), 2),
-            'discount'          => $currency_symbol . number_format(floatval($order->get_total_discount()), 2),
-            'tax'               => $currency_symbol . number_format(floatval($order->get_total_tax()), 2),
-            'total'             => $currency_symbol . number_format(floatval($order->get_total()), 2),
-            'total_raw'         => floatval($order->get_total()),
-        ];
-
-        wp_send_json_success($data);
     }
 }

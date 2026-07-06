@@ -39,16 +39,8 @@ foreach ($cancelling_coupons as $key => $coupon_code) {
 }
 // }
 
-// This file is now included (not include_once) once per shortcode instance so
-// the same shortcode can be placed more than once on a page. The template and
-// script setup below are only needed once per page, so they're guarded with a
-// global flag; only the per-instance init call at the bottom runs every time.
-$mav2_is_first_subscription_app = empty($GLOBALS['mav2_subscription_app_bootstrapped']);
-$GLOBALS['mav2_subscription_app_bootstrapped'] = true;
-
 ?>
 
-<?php if ($mav2_is_first_subscription_app) : ?>
 <template id="panel-template">
 
     <div class="jrc_popup">
@@ -87,10 +79,9 @@ $GLOBALS['mav2_subscription_app_bootstrapped'] = true;
     </div>
 
 </template>
-<?php endif; ?>
+
 
 <script>
-<?php if ($mav2_is_first_subscription_app) : ?>
     window.vueLoader = (properties) => {
         console.log(Vue.version + ' ' + 'vueLoader init...');
 
@@ -105,7 +96,7 @@ $GLOBALS['mav2_subscription_app_bootstrapped'] = true;
 
 
     // define vPopup component
-    const mav2VPopup = {
+    const vPopup = {
         template: '#panel-template',
         props: {
             canClose: {
@@ -133,533 +124,477 @@ $GLOBALS['mav2_subscription_app_bootstrapped'] = true;
 
     */
 
-    // shared factory so every instance of this shortcode on the page gets its
-    // own Vue app + state, instead of colliding on global consts/ids
-    window.mav2InitSubscriptionApp = function(containerSelector, subscriptionData, eligibleCouponsPlans) {
+    const subscription_app = createApp({
+        setup() {
 
-        const subscription_app = createApp({
-            setup() {
+            const PANELS = {
+                NONE: 0,
+                LOADING: 100,
+                ERROR: 404,
+                CHANGE_PLAN: 200,
+                CHANGE_PLAN_CONFIRM: 201,
+                CANCEL_OPEN: 202,
+                CANCEL_WAIT: 203,
+                CANCEL_NOTE: 204,
+                COUPON_APPLY: 205,
+                COUPON_APPLY_SUCCESS: 206,
+            }
 
-                const PANELS = {
-                    NONE: 0,
-                    LOADING: 100,
-                    ERROR: 404,
-                    CHANGE_PLAN: 200,
-                    CHANGE_PLAN_CONFIRM: 201,
-                    CANCEL_OPEN: 202,
-                    CANCEL_WAIT: 203,
-                    CANCEL_NOTE: 204,
-                    COUPON_APPLY: 205,
-                    COUPON_APPLY_SUCCESS: 206,
-                }
+            const reasons = ref([{
+                id: 1,
+                text: "The subscription cost is too high",
+                action: "switch-plan"
+            },
+            {
+                id: 2,
+                text: "The variety of snacks is limited",
+                action: null
+            },
+            {
+                id: 3,
+                text: "Too many snacks delivered each month",
+                action: null
+            },
+            {
+                id: 4,
+                text: "Poor snack quality",
+                action: "feedback"
+            },
+            {
+                id: 5,
+                text: "I only wanted a one-time subscription",
+                action: "discount"
+            },
+            {
+                id: 6,
+                text: "Frequent delivery delays",
+                action: null
+            },
+            {
+                id: 7,
+                text: "I've lost interest in receiving regular snacks",
+                action: null
+            },
+            {
+                id: 8,
+                text: "I've moved to a new address",
+                action: "address"
+            },
+            {
+                id: 9,
+                text: "Others or additional feedback",
+                action: "feedback"
+            }
+            ]);
 
-                const reasons = ref([{
-                    id: 1,
-                    text: "The subscription cost is too high",
-                    action: "switch-plan"
-                },
-                {
-                    id: 2,
-                    text: "The variety of snacks is limited",
-                    action: null
-                },
-                {
-                    id: 3,
-                    text: "Too many snacks delivered each month",
-                    action: null
-                },
-                {
-                    id: 4,
-                    text: "Poor snack quality",
-                    action: "feedback"
-                },
-                {
-                    id: 5,
-                    text: "I only wanted a one-time subscription",
-                    action: "discount"
-                },
-                {
-                    id: 6,
-                    text: "Frequent delivery delays",
-                    action: null
-                },
-                {
-                    id: 7,
-                    text: "I've lost interest in receiving regular snacks",
-                    action: null
-                },
-                {
-                    id: 8,
-                    text: "I've moved to a new address",
-                    action: "address"
-                },
-                {
-                    id: 9,
-                    text: "Others or additional feedback",
-                    action: "feedback"
-                }
-                ]);
+            const msg = ref('hello world');
 
-                const msg = ref('hello world');
-
-                const subscription_data = ref([...subscriptionData]);
-
-                const activeTab = ref('active');
-
-                const activeSubscriptions = computed(() =>
-                    subscription_data.value.filter(s => s.status === 'wc-active')
-                );
-                const inactiveSubscriptions = computed(() =>
-                    subscription_data.value.filter(s => s.status !== 'wc-active')
-                );
-
-                // [1,3,6,12]
-                const eligible_coupons_plans = ref(eligibleCouponsPlans);
-                const coupon_box = ref({});
+            const subscription_data = ref([..._subscription_data]);
+            // [1,3,6,12]
+            const eligible_coupons_plans = ref(<?php echo json_encode($eligible_coupons); ?>);
+            const coupon_box = ref({});
 
 
-                const selectedSubId = ref(null);
+            const show_sub_edit_popup = ref(false);
+            const current_panel = ref(PANELS.NONE);
+            const processing = ref(false);
+            const processing_text = ref('Processing...');
+            const error_text = ref('');
 
-                const selectedSub = computed(() =>
-                    subscription_data.value.find(s => s.id === selectedSubId.value) || null
-                );
+            const next_renew_at = ref('');
+            const selected_subscription_id = ref(null);
+            const selected_plan_id = ref("");
+            const selected_plan = ref({});
+            const current_plan = ref({});
+            const plan_selection = ref([]);
 
-                const openSubDetail = (id) => {
-                    selectedSubId.value = id;
-                };
+            const cancel_reason = ref('');
+            const other_reasons = ref('');
+            const other_reasons_error = ref(false);
 
-                const closeSubDetail = () => {
-                    selectedSubId.value = null;
-                };
+            const setProcessing = (status = false, text = 'Processing...',) => {
+                processing_text.value = text;
+                processing.value = status;
+                if (status) setPanel(PANELS.LOADING);
+            }
 
-                // allows the dashboard's user_subscriptions_simple widget to hand
-                // off a subscription id after switching to this shortcode's tab
-                onMounted(() => {
-                    window.addEventListener('mav2:open-subscription-detail', (e) => {
-                        if (e.detail && e.detail.id) {
-                            openSubDetail(e.detail.id);
-                        }
-                    });
-                });
+            const setPanel = (panel) => {
+                current_panel.value = panel; // Update refs directly using .value
+                show_sub_edit_popup.value = true;
+            }
 
-                const show_sub_edit_popup = ref(false);
-                const current_panel = ref(PANELS.NONE);
-                const processing = ref(false);
-                const processing_text = ref('Processing...');
-                const error_text = ref('');
+            const closePopup = () => {
+                current_panel.value = PANELS.NONE;
+                setTimeout(() => {
 
-                const next_renew_at = ref('');
-                const selected_subscription_id = ref(null);
-                const selected_plan_id = ref("");
-                const selected_plan = ref({});
-                const current_plan = ref({});
-                const plan_selection = ref([]);
-
-                const cancel_reason = ref('');
-                const other_reasons = ref('');
-                const other_reasons_error = ref(false);
-
-                const setProcessing = (status = false, text = 'Processing...',) => {
-                    processing_text.value = text;
-                    processing.value = status;
-                    if (status) setPanel(PANELS.LOADING);
-                }
-
-                const setPanel = (panel) => {
-                    current_panel.value = panel; // Update refs directly using .value
-                    show_sub_edit_popup.value = true;
-                }
-
-                const closePopup = () => {
-                    current_panel.value = PANELS.NONE;
-                    setTimeout(() => {
-
-                        show_sub_edit_popup.value = false;
-                        next_renew_at.value = "";
-                        selected_subscription_id.value = null;
-                        selected_plan.value = {};
-                        selected_plan_id.value = "";
-                        current_plan.value = {};
-                        plan_selection.value = [];
-
-                    }, 500);
-
-                }
-
-                const selectPlan = (id) => {
-                    // check if the id belongs for a current pending update
-                    let update_pending = false;
-
-                    plan_selection.value.forEach((plan) => {
-                        if (plan.id == id && plan.update_pending == true) {
-                            update_pending = true;
-                        }
-                    });
-
-                    if (!update_pending) selected_plan_id.value = id;
-                }
-
-                const showUpdatePopup = async (id) => {
-
-                    if (!id && !selected_subscription_id.value) {
-                        console.log('No subscription id found');
-                        error_text.value = 'No subscription id found';
-                        setPanel(PANELS.ERROR);
-                        return;
-                    }
-
-                    if (id) {
-                        selected_subscription_id.value = id;
-                    } else {
-                        id = selected_subscription_id.value;
-                    }
-
+                    show_sub_edit_popup.value = false;
+                    next_renew_at.value = "";
+                    selected_subscription_id.value = null;
+                    selected_plan.value = {};
+                    selected_plan_id.value = "";
                     current_plan.value = {};
                     plan_selection.value = [];
 
+                }, 500);
 
-                    setProcessing(true, 'Loading...');
+            }
 
-                    // get subscription data
-                    let param = {
-                        'action': 'mav2_get_subscription_details',
-                        id: id
-                    };
+            const selectPlan = (id) => {
+                // check if the id belongs for a current pending update
+                let update_pending = false;
 
-                    try {
-
-                        let {
-                            data
-                        } = await _ajax(param);
-
-                        if (data.success == false) {
-                            error_text.value = data.data;
-                            setPanel(PANELS.ERROR);
-                            return;
-                        }
-
-
-                        // get data
-                        next_renew_at.value = data.data.next_renew_At_n;
-                        const plans = data.data.plans;
-
-                        for (let i = 0; i < plans.length; i++) {
-                            if (plans[i].is_current) {
-                                current_plan.value = plans[i];
-                            } else {
-                                plan_selection.value.push(plans[i])
-                            }
-
-                        }
-
-                        setProcessing();
-
-                        setPanel(PANELS.CHANGE_PLAN)
-
-                    } catch (error) {
-                        error_text.value = "Please Try Again...";
-                        setPanel(PANELS.ERROR);
+                plan_selection.value.forEach((plan) => {
+                    if (plan.id == id && plan.update_pending == true) {
+                        update_pending = true;
                     }
+                });
 
-                    // You can also access other refs here if needed
-                    // Example: show_sub_edit_popup.value = true;
+                if (!update_pending) selected_plan_id.value = id;
+            }
+
+            const showUpdatePopup = async (id) => {
+
+                if (!id && !selected_subscription_id.value) {
+                    console.log('No subscription id found');
+                    error_text.value = 'No subscription id found';
+                    setPanel(PANELS.ERROR);
+                    return;
                 }
 
-                const confirmUpdate = async () => {
-
-                    setProcessing(true, 'Updating Plan...');
-
-                    selected_plan.value = plan_selection.value.find(plan => plan.id == selected_plan_id.value);
-
-                    try {
-                        let data = {
-                            'action': 'mav2_update_subscription_plan',
-                            id: selected_subscription_id.value,
-                            plan: selected_plan_id.value,
-                            nonce: mav2.nonce
-                        };
-
-                        let res = await _ajax(data);
-
-                        setPanel(PANELS.CHANGE_PLAN_CONFIRM);
-
-
-                    } catch (error) {
-                        console.log(error);
-                    }
-
-                }
-
-
-                const selected_sub_plan = ref(null);
-
-                const showCancleOpenPopup = async (id, plan) => {
-
+                if (id) {
                     selected_subscription_id.value = id;
-                    selected_sub_plan.value = plan;
-
-
-                    setPanel(PANELS.CANCEL_OPEN);
-
+                } else {
+                    id = selected_subscription_id.value;
                 }
 
-                const cancel_anyway_handler = async () => {
-
-                    const plans_raw = [1, 3, 6, 12];
-                    const plan_index = plans_raw.indexOf(parseInt(selected_sub_plan.value));
-
-                    if (eligible_coupons_plans.value[plan_index]) {
-                        // get order details
-                        setProcessing(true, 'Getting Subscription Details...');
-
-                        try {
-                            // check for coupon usage
-                            let param = {
-                                'action': 'mav2_check_coupon_usage',
-                                id: selected_subscription_id.value
-                            };
-
-                            const usage = await _ajax(param);
-
-                            if (usage.data.remain === 0) {
-                                setPanel(PANELS.CANCEL_WAIT);
-                                return;
-                            }
-
-                            param = {
-                                'action': 'mav2_get_subscription_details',
-                                id: selected_subscription_id.value
-                            };
-
-                            let {
-                                data
-                            } = await _ajax(param);
+                current_plan.value = {};
+                plan_selection.value = [];
 
 
-                            if (data.success === false) {
-                                error_text.value = data.data;
-                                setPanel(PANELS.ERROR);
-                                return;
-                            }
+                setProcessing(true, 'Loading...');
 
-                            console.log(data);
+                // get subscription data
+                let param = {
+                    'action': 'mav2_get_subscription_details',
+                    id: id
+                };
 
-                            const plans = data.data.plans;
-                            const _current_plan = plans.find(p => p.is_current == true);
+                try {
 
-                            let saving = _current_plan.raw_price * (_current_plan.special_discount / 100);
-                            saving = parseInt(saving * 100);
-                            saving = saving / 100;
-                            saving = saving.toFixed(2);
+                    let {
+                        data
+                    } = await _ajax(param);
 
-                            let price = _current_plan.raw_price - saving;
-                            price = parseInt(price * 100);
-                            price = price / 100;
-                            price = price.toFixed(2);
-
-                            coupon_box.value = {
-                                plan: _current_plan.name,
-                                price: `${_current_plan.currency}${price}`,
-                                discount: _current_plan.special_discount,
-                                renew_at: data.data.next_renew_At_n,
-                                original_price: `${_current_plan.price}`,
-                                saving: `${_current_plan.currency}${saving}`,
-                            }
-
-                            setPanel(PANELS.COUPON_APPLY);
-
-                        } catch (error) {
-
-                        }
-
-
-                    } else {
-
-                        setPanel(PANELS.CANCEL_WAIT);
-                    }
-
-                }
-
-                const acceptCouponOffer = async () => {
-
-                    setProcessing(true, 'Accepting Coupon Offer...');
-
-                    try {
-                        const payload = {
-                            id: selected_subscription_id.value,
-                            action: 'mav2_accept_coupon_offer'
-                        }
-
-                        const {
-                            data
-                        } = await _ajax(payload);
-
-                        if (data.status == 'error') {
-                            error_text.value = data.message;
-                            setPanel(PANELS.ERROR);
-                            return;
-                        }
-
-
-
-                        setPanel(PANELS.COUPON_APPLY_SUCCESS);
-
-                    } catch (error) {
-
-                    }
-                }
-
-                const processCancel = async () => {
-
-                    if (selected_subscription_id.value == null) {
-                        error_text.value = 'Invalid subscription id';
+                    if (data.success == false) {
+                        error_text.value = data.data;
                         setPanel(PANELS.ERROR);
                         return;
                     }
 
-                    other_reasons_error.value = false;
-                    // get reason
-                    const reason = reasons.value.find(r => r.id == cancel_reason.value);
 
-                    if (reason.id == 9 && other_reasons.value.length < 6) {
-                        other_reasons_error.value = true;
-                        return;
-                    }
-                    try {
+                    // get data
+                    next_renew_at.value = data.data.next_renew_At_n;
+                    const plans = data.data.plans;
 
-                        const data = {
-                            'action': 'mav2_cancel_subscription',
-                            id: selected_subscription_id.value,
-                            rid: cancel_reason.value,
-                            r_text: cancel_reason.value == 9 ? other_reasons.value : reason.text
-                        };
-
-                        setProcessing(true, 'Cancelling subscription...');
-
-                        let res = await _ajax(data)
-                        setProcessing(true, 'Cancellation successful. Wait for a moment...');
-                        location.reload();
-
-
-                    } catch (error) {
-                        console.log(error);
+                    for (let i = 0; i < plans.length; i++) {
+                        if (plans[i].is_current) {
+                            current_plan.value = plans[i];
+                        } else {
+                            plan_selection.value.push(plans[i])
+                        }
 
                     }
 
+                    setProcessing();
 
+                    setPanel(PANELS.CHANGE_PLAN)
+
+                } catch (error) {
+                    error_text.value = "Please Try Again...";
+                    setPanel(PANELS.ERROR);
                 }
 
-                const cancel_plan_change = async () => {
-                    console.log('cancel_plan_change');
-                    setProcessing(true, 'Cancelling plan change...')
+                // You can also access other refs here if needed
+                // Example: show_sub_edit_popup.value = true;
+            }
 
+            const confirmUpdate = async () => {
+
+                setProcessing(true, 'Updating Plan...');
+
+                selected_plan.value = plan_selection.value.find(plan => plan.id == selected_plan_id.value);
+
+                try {
                     let data = {
-                        'action': 'mav2_subscription_upgrade_cancel',
+                        'action': 'mav2_update_subscription_plan',
                         id: selected_subscription_id.value,
+                        plan: selected_plan_id.value,
                         nonce: mav2.nonce
                     };
 
                     let res = await _ajax(data);
 
-                    showUpdatePopup();
+                    setPanel(PANELS.CHANGE_PLAN_CONFIRM);
+
+
+                } catch (error) {
+                    console.log(error);
                 }
 
-                const downloadInvoice = async (subid) => {
+            }
 
-                    const formData = new FormData();
-                    formData.append('action', 'mav2_download_subscription_invoice');
-                    formData.append('id', subid);
-                    formData.append('nonce', mav2.nonce);
 
-                    fetch(mav2.ajaxurl, {
-                        method: 'POST', // Use POST if you are sending invoice data
-                        body: formData, // Example data
+            const selected_sub_plan = ref(null);
 
-                    })
-                        .then(response => {
-                            if (!response.ok) throw new Error('Network response was not ok');
-                            // $('#order_processing').fadeOut(200);
-                            return response.blob(); // Convert the response to a Blob
-                        })
-                        .then(blob => {
+            const showCancleOpenPopup = async (id, plan) => {
 
-                            // Create a local URL for the binary data
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
+                selected_subscription_id.value = id;
+                selected_sub_plan.value = plan;
 
-                            a.style.display = 'none';
-                            a.href = url;
 
-                            // Set the filename based on the source data (e.g., Invoice 12345)
-                            a.download = `Invoice_${subid}.pdf`;
+                setPanel(PANELS.CANCEL_OPEN);
 
-                            document.body.appendChild(a);
-                            a.click(); // Trigger the download
+            }
 
-                            // Cleanup
-                            window.URL.revokeObjectURL(url);
-                            document.body.removeChild(a);
-                            // $('#order_processing').fadeOut(200);
-                        })
-                        .catch(error => {
-                            console.error('Download failed:', error);
-                            // $('#order_processing').fadeOut(200);
-                        });
+            const cancel_anyway_handler = async () => {
 
+                const plans_raw = [1, 3, 6, 12];
+                const plan_index = plans_raw.indexOf(parseInt(selected_sub_plan.value));
+
+                if (eligible_coupons_plans.value[plan_index]) {
+                    // get order details
+                    setProcessing(true, 'Getting Subscription Details...');
+
+                    try {
+                        // check for coupon usage
+                        let param = {
+                            'action': 'mav2_check_coupon_usage',
+                            id: selected_subscription_id.value
+                        };
+
+                        const usage = await _ajax(param);
+
+                        if (usage.data.remain === 0) {
+                            setPanel(PANELS.CANCEL_WAIT);
+                            return;
+                        }
+
+                        param = {
+                            'action': 'mav2_get_subscription_details',
+                            id: selected_subscription_id.value
+                        };
+
+                        let {
+                            data
+                        } = await _ajax(param);
+
+
+                        if (data.success === false) {
+                            error_text.value = data.data;
+                            setPanel(PANELS.ERROR);
+                            return;
+                        }
+
+                        console.log(data);
+
+                        const plans = data.data.plans;
+                        const _current_plan = plans.find(p => p.is_current == true);
+
+                        let saving = _current_plan.raw_price * (_current_plan.special_discount / 100);
+                        saving = parseInt(saving * 100);
+                        saving = saving / 100;
+                        saving = saving.toFixed(2);
+
+                        let price = _current_plan.raw_price - saving;
+                        price = parseInt(price * 100);
+                        price = price / 100;
+                        price = price.toFixed(2);
+
+                        coupon_box.value = {
+                            plan: _current_plan.name,
+                            price: `${_current_plan.currency}${price}`,
+                            discount: _current_plan.special_discount,
+                            renew_at: data.data.next_renew_At_n,
+                            original_price: `${_current_plan.price}`,
+                            saving: `${_current_plan.currency}${saving}`,
+                        }
+
+                        setPanel(PANELS.COUPON_APPLY);
+
+                    } catch (error) {
+
+                    }
+
+
+                } else {
+
+                    setPanel(PANELS.CANCEL_WAIT);
                 }
 
-                return {
-                    msg,
-                    subscription_data,
-                    activeTab,
-                    activeSubscriptions,
-                    inactiveSubscriptions,
-                    show_sub_edit_popup,
-                    current_panel,
-                    processing,
-                    processing_text,
-                    selected_plan,
-                    selected_plan_id,
-                    error_text,
-                    current_plan,
-                    plan_selection,
-                    next_renew_at,
-                    cancel_reason,
-                    PANELS,
-                    reasons,
-                    other_reasons,
-                    other_reasons_error,
-                    showCancleOpenPopup,
-                    coupon_box,
-                    selectPlan,
-                    setPanel,
-                    closePopup,
-                    showUpdatePopup,
-                    confirmUpdate,
-                    processCancel,
-                    cancel_plan_change,
-                    downloadInvoice,
-                    acceptCouponOffer,
-                    cancel_anyway_handler,
-                    selectedSubId,
-                    selectedSub,
-                    openSubDetail,
-                    closeSubDetail
+            }
+
+            const acceptCouponOffer = async () => {
+
+                setProcessing(true, 'Accepting Coupon Offer...');
+
+                try {
+                    const payload = {
+                        id: selected_subscription_id.value,
+                        action: 'mav2_accept_coupon_offer'
+                    }
+
+                    const {
+                        data
+                    } = await _ajax(payload);
+
+                    if (data.status == 'error') {
+                        error_text.value = data.message;
+                        setPanel(PANELS.ERROR);
+                        return;
+                    }
+
+
+
+                    setPanel(PANELS.COUPON_APPLY_SUCCESS);
+
+                } catch (error) {
+
                 }
             }
-        });
 
-        subscription_app.component('v-popup', mav2VPopup);
+            const processCancel = async () => {
 
-        subscription_app.mount(containerSelector);
+                if (selected_subscription_id.value == null) {
+                    error_text.value = 'Invalid subscription id';
+                    setPanel(PANELS.ERROR);
+                    return;
+                }
 
-        return subscription_app;
-    };
-<?php endif; ?>
+                other_reasons_error.value = false;
+                // get reason
+                const reason = reasons.value.find(r => r.id == cancel_reason.value);
 
-    window.mav2InitSubscriptionApp(
-        '#<?php echo esc_js($container_id); ?>',
-        <?php echo json_encode($out_data); ?>,
-        <?php echo json_encode($eligible_coupons); ?>
-    );
+                if (reason.id == 9 && other_reasons.value.length < 6) {
+                    other_reasons_error.value = true;
+                    return;
+                }
+                try {
+
+                    const data = {
+                        'action': 'mav2_cancel_subscription',
+                        id: selected_subscription_id.value,
+                        rid: cancel_reason.value,
+                        r_text: cancel_reason.value == 9 ? other_reasons.value : reason.text
+                    };
+
+                    setProcessing(true, 'Cancelling subscription...');
+
+                    let res = await _ajax(data)
+                    setProcessing(true, 'Cancellation successful. Wait for a moment...');
+                    location.reload();
+
+
+                } catch (error) {
+                    console.log(error);
+
+                }
+
+
+            }
+
+            const cancel_plan_change = async () => {
+                console.log('cancel_plan_change');
+                setProcessing(true, 'Cancelling plan change...')
+
+                let data = {
+                    'action': 'mav2_subscription_upgrade_cancel',
+                    id: selected_subscription_id.value,
+                    nonce: mav2.nonce
+                };
+
+                let res = await _ajax(data);
+
+                showUpdatePopup();
+            }
+
+            const downloadInvoice = async (subid) => {
+
+                const formData = new FormData();
+                formData.append('action', 'mav2_download_subscription_invoice');
+                formData.append('id', subid);
+                formData.append('nonce', mav2.nonce);
+
+                fetch(mav2.ajaxurl, {
+                    method: 'POST', // Use POST if you are sending invoice data
+                    body: formData, // Example data
+
+                })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        // $('#order_processing').fadeOut(200);
+                        return response.blob(); // Convert the response to a Blob
+                    })
+                    .then(blob => {                    
+                        
+                        // Create a local URL for the binary data
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+
+                        a.style.display = 'none';
+                        a.href = url;
+
+                        // Set the filename based on the source data (e.g., Invoice 12345)
+                        a.download = `Invoice_${subid}.pdf`;
+
+                        document.body.appendChild(a);
+                        a.click(); // Trigger the download
+
+                        // Cleanup
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        // $('#order_processing').fadeOut(200);
+                    })
+                    .catch(error => {
+                        console.error('Download failed:', error);
+                        // $('#order_processing').fadeOut(200);
+                    });
+
+            }
+
+            return {
+                msg,
+                subscription_data,
+                show_sub_edit_popup,
+                current_panel,
+                processing,
+                processing_text,
+                selected_plan,
+                selected_plan_id,
+                error_text,
+                current_plan,
+                plan_selection,
+                next_renew_at,
+                cancel_reason,
+                PANELS,
+                reasons,
+                other_reasons,
+                other_reasons_error,
+                showCancleOpenPopup,
+                coupon_box,
+                selectPlan,
+                setPanel,
+                closePopup,
+                showUpdatePopup,
+                confirmUpdate,
+                processCancel,
+                cancel_plan_change,
+                downloadInvoice,
+                acceptCouponOffer,
+                cancel_anyway_handler
+            }
+        }
+    });
+    subscription_app.component('v-popup', vPopup)
+
+    subscription_app.mount('#subscription_app');
 </script>

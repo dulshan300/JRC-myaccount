@@ -16,7 +16,7 @@
         }
 
         body {
-            font-family: "Plus Jakarta Sans", sans-serif;
+            font-family: "DejaVu Sans", sans-serif;
             color: #1a1a1a;
             background-color: #F8F7F2;
             /* Cream/Off-white background */
@@ -25,9 +25,8 @@
 
         }
 
-        .invoice-title {
-            font-family: "Lora", serif;
-            color: #1a1a1a;
+        .serif {
+            font-family: "DejaVu Serif", serif;
         }
 
         table {
@@ -50,13 +49,13 @@
     <!-- new version -->
 
     <!-- hader -->
-    <table style="width: 100%;">
+    <table style="width: 100%;" class="serif">
         <tr>
             <td style="width: 33.33%;"><img
                     src="https://japanrailclub.com/wp-content/uploads/2024/06/Japan-Rail-Club-Logo-Blue.svg"
                     class="logo" width="100" alt="Logo" /></td>
             <td style="width: 30%;">
-                <h1 class="invoice-title" style="font-size: 3rem;">INVOICE</h1>
+                <h1 style="font-size: 3rem;">INVOICE</h1>
             </td>
             <td style="width: 35.33%; text-align: right;">
                 <strong style="font-size: 14px;">JR East Business Development SEA Pte. Ltd.</strong><br>
@@ -68,7 +67,7 @@
     </table>
 
     <!-- billing details -->
-    <table style="width: 100%; margin-top: 20px;">
+    <table style="width: 100%; margin-top: 20px;" class="serif">
         <tr>
             <td style="width: 33.33%;">
                 <strong>BILLED TO:</strong><br>
@@ -94,7 +93,7 @@
         </tr>
     </table>
 
-    <table style="width: 100%; margin-top: 20px;">
+    <table style="width: 100%; margin-top: 20px;" class="serif">
         <thead>
             <tr>
                 <th style="width:40%; text-align: left; border-top: 2px solid black; border-bottom: 2px solid black;"
@@ -181,10 +180,10 @@
                 <td style="width:40%; padding-top: 5px; padding-bottom: 5px;">&nbsp;</td>
                 <td style="width:20%; padding-top: 5px; padding-bottom: 5px;">&nbsp;</td>
                 <td class="text-right"
-                    style="font-weight:bold; font-size: 1.1rem; white-space: nowrap; border-bottom: 1px solid black; padding-top: 5px; padding-bottom: 5px;">
+                    style="font-weight:bold; border-bottom: 1px solid black; padding-top: 5px; padding-bottom: 5px;">
                     Total</td>
                 <td class="text-right"
-                    style="font-weight:bold; font-size: 1.1rem; white-space: nowrap; border-bottom: 1px solid black; padding-top: 5px; padding-bottom: 5px;">
+                    style="font-weight:bold; border-bottom: 1px solid black; padding-top: 5px; padding-bottom: 5px;">
                     <?= $total ?>
                 </td>
             </tr>

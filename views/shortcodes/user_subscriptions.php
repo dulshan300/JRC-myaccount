@@ -91,19 +91,8 @@ $sql = "SELECT
             order_id = od.id
             AND meta_key = '_ps_scheduled_to_be_cancelled'
             AND meta_value = 'yes'
-    ) AS prepaid_cancel,
-    (
-        SELECT
-            comment_date_gmt
-        FROM
-            wp_comments
-        WHERE
-            comment_post_ID = od.id
-            AND comment_content LIKE '%cancelled by%'
-        ORDER BY comment_date_gmt DESC
-        LIMIT 1
-    ) AS cancelled_at_raw
-
+    ) AS prepaid_cancel
+    
 from
     wp_wc_orders od
 left join
@@ -117,16 +106,11 @@ $res = $wpdb->get_results($sql);
 
 $out_data = [];
 
-$_product_img = get_the_post_thumbnail_url(198, 'medium') ?: '';
-
 $w_countries = new WC_Countries();
 $all_countries = $w_countries->get_countries();
 
 $orders_history = [];
 
-// guarded because this file is now `include`d (not include_once) so the
-// shortcode can be placed more than once on the same page
-if (!function_exists('mav2_get_tracking')) {
 function mav2_get_tracking($order)
 {
     if ($order->tracking == 404) {
@@ -164,7 +148,6 @@ function mav2_get_tracking($order)
 
     return $order->tracking;
 }
-}
 
 
 $lang = 'en';
@@ -174,8 +157,7 @@ $ko_list = ['KO'];
 foreach ($res as $sub) {
     $temp = [];
     $temp['id'] = $sub->id;
-    $temp['product_img'] = $_product_img;
-    $temp['status'] = $sub->status;
+    $temp['status'] = $sub->prepaid_cancel === 'yes' ? 'wc-cancelled' : $sub->status;
     $temp['prepaid_cancel'] = $sub->prepaid_cancel;
     $temp['product'] = $sub->product;
     $temp['plan_raw'] = $sub->plan;
@@ -355,20 +337,19 @@ foreach ($res as $sub) {
 
     $temp['next_payment'] = $_next_payment;
 
-    $temp['cancelled_at'] = !empty($sub->cancelled_at_raw)
-        ? date('M d, Y H:i \J\S\T', strtotime($sub->cancelled_at_raw . ' +8 hours'))
-        : null;
-
     $out_data[] = $temp;
 }
 
-// unique per instance so multiple placements of this shortcode on one page
-// don't collide on DOM id / mount selector
-$container_id = wp_unique_id('mav2_subscription_app_');
-
 ?>
 
-<div id="<?php echo esc_attr($container_id); ?>">
+
+
+
+<script>
+    const _subscription_data = <?php echo json_encode($out_data); ?>;
+</script>
+
+<div id="subscription_app">
 
     <div v-if="false" class="loading" style="width: 100%;">
         <div class="spinner-mini"></div>
@@ -378,52 +359,11 @@ $container_id = wp_unique_id('mav2_subscription_app_');
 
     <template v-if="true">
 
-        <!-- ── LIST VIEW ── -->
-        <template v-if="!selectedSubId">
-
-        <!-- tab bar -->
-        <div class="sub-tabs">
-            <button :class="['sub-tab', { active: activeTab === 'active' }]"
-                    @click="activeTab = 'active'">Active</button>
-            <button :class="['sub-tab', { active: activeTab === 'inactive' }]"
-                    @click="activeTab = 'inactive'">Inactive</button>
-        </div>
-
         <!-- generate html -->
         <div id="sub_cards">
 
-            <template v-for="sub in activeTab === 'active' ? activeSubscriptions : inactiveSubscriptions">
+            <template v-for="sub in subscription_data">
 
-                <!-- compact list card -->
-                <div class="sub-list-card" @click="openSubDetail(sub.id)">
-                    <div class="sub-thumb-wrap">
-                        <img
-                            :src="sub.product_img"
-                            class="sub-thumb"
-                            alt="Subscription image"
-                        />                       
-                    </div>
-
-                    <div class="sub-list-body">
-                        <div class="sub-list-top">
-                            <span class="sub-name">{{ sub.product }}</span>
-                            <span class="sub-freq-badge">
-                                {{ sub.plan_raw == 1 ? 'Every month' : 'Every ' + sub.plan_raw + ' months' }}
-                            </span>
-                        </div>
-                        <div class="sub-list-price" v-html="sub.currency + sub.total"></div>
-                        <a class="sub-view-link" @click.stop="openSubDetail(sub.id)">View plan</a>
-                    </div>
-
-                    <div class="sub-list-arrow">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 18l6-6-6-6"/>
-                        </svg>
-                    </div>
-                </div>
-
-                <!-- *** PRESERVED FOR STEP 2 — detail panel HTML (do not delete) ***
                 <div class="subscription-container">
                     <div class="monthly-grid">
                         <div v-for="o3 in sub.last_3_orders" class="month-card">
@@ -435,10 +375,17 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                             </div>
                         </div>
                     </div>
+
                     <div class="details-section">
                         <div class="details-header">
                             <h3>SUBSCRIPTION DETAILS</h3>
+                            <!-- <span class="expand-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M11 11V7H13V11H17V13H13V17H11V13H7V11H11ZM12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20Z"></path>
+                                </svg>
+                            </span> -->
                         </div>
+
                         <div class="details-content">
                             <div class="left-col">
                                 <p><span>Subscription:</span> <strong>#{{sub.id}}</strong></p>
@@ -447,187 +394,67 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                                 <p v-if="sub.status != 'wc-cancelled'"><span>Renewal:</span> {{sub.next_payment}}</p>
                             </div>
                             <div class="right-col">
-                                <p><span>Shipping:</span> <span v-html="sub.shipping>0?sub.currency + sub.shipping:'Free'"> </span></p>
+                                <p><span>Shipping:</span> <span
+                                        v-html="sub.shipping>0?sub.currency + sub.shipping:'Free'"> </span></p>
                                 <p><span>Discount:</span> <span v-html="sub.currency + sub.discount"> </span></p>
-                                <strong class="total"><span>Total:</span> <span v-html="sub.currency + sub.total"></span></strong>
+                                <strong class="total"><span>Total:</span> <span v-html="sub.currency + sub.total">
+                                    </span></strong>
                             </div>
                         </div>
+
                         <div class="order_history">
+
                             <div class="details-header">
                                 <h3>Order History</h3>
                                 <span class="expand-icon arrow">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M11 11V7H13V11H17V13H13V17H11V13H7V11H11ZM12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20Z"></path>
+                                        <path
+                                            d="M11 11V7H13V11H17V13H13V17H11V13H7V11H11ZM12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20Z">
+                                        </path>
                                     </svg>
                                 </span>
                             </div>
+
                             <div style="display: none;" class="order_history_list">
                                 <table class="order_history_table">
-                                    <tr><th>Order ID</th><th>Date (GMT)</th><th>Tracking No.</th></tr>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Date (GMT)</th>
+                                        <th>Tracking No.</th>
+                                    </tr>
+
                                     <tr v-for="order in sub.order_history" class="order_history_item">
                                         <td class="order_status">{{ order.id }}</td>
                                         <td class="order_date">{{ order.date }}</td>
                                         <td class="order_tracking" v-html="order.tracking"></td>
                                     </tr>
+
                                 </table>
+
                             </div>
                         </div>
+
                         <div class="actions">
-                            <button @click.prevent="downloadInvoice(sub.id)" class="btn btn-outline">Download Invoice</button>
-                            <button v-if="sub.status == 'wc-active'" @click.prevent="showUpdatePopup(sub.id)" class="btn btn-outline">Change Plan</button>
-                            <button v-if="sub.status == 'wc-active'" @click.prevent="showCancleOpenPopup(sub.id,sub.plan_raw)" class="btn btn-outline">Cancel Plan</button>
+                            <button @click.prevent="downloadInvoice(sub.id)" class="btn btn-outline">Download
+                                Invoice</button>
+                            <button v-if="sub.status == 'wc-active'" @click.prevent="showUpdatePopup(sub.id)"
+                                class="btn btn-outline">Change Plan</button>
+                            <button v-if="sub.status == 'wc-active'"
+                                @click.prevent="showCancleOpenPopup(sub.id,sub.plan_raw)" class="btn btn-outline">Cancel
+                                Plan</button>
                             <span v-else-if="sub.status == 'wc-cancelled'" class="btn btn-disabled">Cancelled</span>
                             <span v-else class="btn btn-disabled">Pending</span>
                         </div>
                     </div>
                 </div>
-                END STEP 2 PRESERVED HTML ***-->
 
             </template>
 
-            <!-- if no subscriptions in current tab -->
-            <p v-if="activeTab === 'active' && !activeSubscriptions.length">No active subscriptions found.</p>
-            <p v-if="activeTab === 'inactive' && !inactiveSubscriptions.length">No inactive subscriptions found.</p>
+            <!-- if no subscriptions -->
+            <p v-if="!subscription_data.length">No Subscriptions Found</p>
 
 
         </div>
-
-        </template><!-- /list view -->
-
-        <!-- ── DETAIL VIEW ── -->
-        <template v-else-if="selectedSub">
-
-            <!-- Back button (same pattern as orders page) -->
-            <button class="sub-detail-back" @click="closeSubDetail">&#8592; Back</button>
-
-            <!-- Banner -->
-            <div class="sub-detail-banner">
-                <div class="sub-detail-banner-text">
-                    <template v-if="selectedSub.status === 'wc-active'">
-                        You are currently on a <strong>JAPANESE SNACK SUBSCRIPTION BOX</strong>
-                        plan paying {{ selectedSub.plan_raw == 1 ? 'every 1 month' : 'every ' + selectedSub.plan_raw + ' months' }}
-                    </template>
-                    <template v-else-if="selectedSub.status === 'wc-on-hold'">
-                        Your <strong>JAPANESE SNACK SUBSCRIPTION BOX</strong> is currently on hold.
-                    </template>
-                    <template v-else-if="selectedSub.status === 'wc-pending-cancel'">
-                        Your <strong>JAPANESE SNACK SUBSCRIPTION BOX</strong> is pending cancellation.
-                    </template>
-                    <template v-else>
-                        Your <strong>JAPANESE SNACK SUBSCRIPTION BOX</strong> is currently cancelled.
-                    </template>
-                </div>
-
-                <!-- Status description -->
-                <p class="sub-detail-status-desc">
-                    <template v-if="selectedSub.status === 'wc-active'">
-                        Your subscription is active and your next order will be processed as scheduled.
-                    </template>
-                    <template v-else-if="selectedSub.status === 'wc-on-hold'">
-                        Your subscription is temporarily on hold while changes or processing are underway.
-                    </template>
-                    <template v-else-if="selectedSub.status === 'wc-pending-cancel'">
-                        Your subscription is scheduled to be cancelled at the end of your current billing period.
-                    </template>
-                    <template v-else>
-                        Your subscription has been cancelled and is no longer active.
-                    </template>
-                </p>
-            </div>
-
-            <!-- Detail rows -->
-            <div class="sub-detail-body">
-
-                <table class="sub-detail-table">
-                    <tbody>
-                        <!-- ACTIVE -->
-                        <template v-if="selectedSub.status === 'wc-active'">
-                            <tr class="sub-detail-row">
-                                <td class="sub-detail-label">Plan Price:</td>
-                                <td class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></td>
-                            </tr>
-                            <tr class="sub-detail-row">
-                                <td class="sub-detail-label">Next payment date:</td>
-                                <td class="sub-detail-value">{{ selectedSub.prepaid_cancel === 'yes' ? 'N/A' : selectedSub.next_payment }}</td>
-                            </tr>
-                            <tr class="sub-detail-row">
-                                <td class="sub-detail-label">Next scheduled shipment:</td>
-                                <td class="sub-detail-value">{{ selectedSub.next_shipment_date }}</td>
-                            </tr>
-                        </template>
-
-                        <!-- ON-HOLD -->
-                        <template v-else-if="selectedSub.status === 'wc-on-hold'">
-                            <tr class="sub-detail-row">
-                                <td class="sub-detail-label">Plan Price:</td>
-                                <td class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></td>
-                            </tr>
-                            <tr class="sub-detail-row">
-                                <td class="sub-detail-label">Next payment date:</td>
-                                <td class="sub-detail-value">On-Hold</td>
-                            </tr>
-                            <tr class="sub-detail-row">
-                                <td class="sub-detail-label">Next scheduled shipment:</td>
-                                <td class="sub-detail-value">On-Hold</td>
-                            </tr>
-                        </template>
-
-                        <!-- PENDING CANCEL -->
-                        <template v-else-if="selectedSub.status === 'wc-pending-cancel'">
-                            <tr class="sub-detail-row">
-                                <td class="sub-detail-label">Plan Price:</td>
-                                <td class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></td>
-                            </tr>
-                            <tr class="sub-detail-row">
-                                <td class="sub-detail-label">Cancelled Date:</td>
-                                <td class="sub-detail-value">Pending</td>
-                            </tr>
-                        </template>
-
-                        <!-- CANCELLED -->
-                        <template v-else>
-                            <tr class="sub-detail-row">
-                                <td class="sub-detail-label">Plan Price:</td>
-                                <td class="sub-detail-value" v-html="selectedSub.currency + selectedSub.total"></td>
-                            </tr>
-                            <tr class="sub-detail-row" v-if="selectedSub.cancelled_at">
-                                <td class="sub-detail-label">Cancelled Date:</td>
-                                <td class="sub-detail-value">{{ selectedSub.cancelled_at }}</td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-
-                <!-- Actions only apply to active subscriptions -->
-                <template v-if="selectedSub.status === 'wc-active'">
-                    <div class="sub-detail-actions">
-                        <button @click.prevent="showUpdatePopup(selectedSub.id)" class="sub-btn-primary">
-                            CHANGE PLAN
-                        </button>
-                        <!-- CHANGE SHIPPING & BILLING disabled until feature is available -->
-                        <a href="<?php echo esc_url( wc_get_account_endpoint_url('edit-address') ); ?>"
-                           class="sub-btn-outline">
-                            Update Shipping & Billing
-                        </a>
-                    </div>
-
-                    <p class="sub-cancel-link">
-                        I would like to <a href="#" @click.prevent="showCancleOpenPopup(selectedSub.id, selectedSub.plan_raw)">Cancel Subscription</a>
-                    </p>
-                </template>
-
-                 <template v-else>
-                    <div class="sub-detail-actions">
-                        <button @click.prevent="()=>console.warning('not implemented yet')" class="sub-btn-primary">
-                            To consider Reactivate Plan
-                        </button>                        
-                        
-                    </div>
-                </template>
-
-            </div>
-
-        </template><!-- /detail view -->
 
         <!-- Data processing and loading panel -->
         <Transition name="fade">
@@ -762,7 +589,7 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                 </ul>
 
                 <template v-slot:footer>
-                    <p><strong class="mav2_strong">IMPORTANT</strong>: Changes to your subscription will take effect after your current
+                    <p><strong>IMPORTANT</strong>: Changes to your subscription will take effect after your current
                         cycle ends on {{next_renew_at}}.</p>
                     <div class="jrc_popup_panel_footer_buttons">
                         <button type="button" @click.prevent="closePopup"
