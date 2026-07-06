@@ -60,7 +60,7 @@
   </tr>
   <tr>
     <td align="center" style="padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px;">
-      <img src="https://www.japanrailclub.com/wp-content/uploads/2025/07/Japan-Rail-Club-Omiyage-Box.webp" alt="" width="210" style="display:block;border:0;outline:none;text-decoration:none;max-width:100%;height:auto;" />
+      <img src="https://www.japanrailclub.com/wp-content/uploads/2026/07/JR-CLUB-BOX_SINGLE-SQUARE-Small.jpg" alt="" width="210" style="display:block;border:0;outline:none;text-decoration:none;max-width:100%;height:auto;" />
     </td>
   </tr>
   <tr>
@@ -170,8 +170,8 @@
     </td>
   </tr>
   <tr>
-    <td style="padding-top:12px;padding-right:24px;padding-bottom:12px;padding-left:24px;">
-      <p style="margin:0;padding:0;font-family:Arial, Helvetica, sans-serif;font-size:12px;font-weight:normal;font-style:normal;color:#333333;text-align:center;line-height:1.6;">You have received this email as a registered user of JR East Business Development SEA Ptd. Ltd (JAPAN RAIL CLUB).<br />Anson Road, #11-01, Twenty Anson Singapore 079912. All rights reserved.</p>
+    <td style="padding-top:12px;padding-right:24px;padding-bottom:12px;padding-left:24px;text-align:center;color:#333333;font-size:12px;font-weight:normal;font-style:normal;font-family:Arial, Helvetica, sans-serif;">
+      20 Anson Road, #11-01, Twenty Anson Singapore 079912. <br>All rights reserved.
     </td>
   </tr>
         </table>

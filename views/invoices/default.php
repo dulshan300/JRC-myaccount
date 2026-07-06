@@ -99,7 +99,7 @@
 
     .total-row {
         font-weight: bold;
-        font-size: 16pt;
+        font-size: 1.1em;
         border-top: 1.5px solid #1a1a1a;
     }
 
@@ -220,8 +220,8 @@
         <tr class="total-row">
             <td style="width:40%;">&nbsp;</td>
             <td style="width:20%;">&nbsp;</td>
-            <td class="text-right" style="font-weight:bold;font-size:1.5em">Total</td>
-            <td class="text-right" style="font-weight:bold;font-size:1.5em"><?= $total ?></td>
+            <td class="text-right" style="font-weight:bold;font-size:1.1em;white-space:nowrap">Total</td>
+            <td class="text-right" style="font-weight:bold;font-size:1.1em;white-space:nowrap"><?= $total ?></td>
         </tr>
     </table>
 </div>

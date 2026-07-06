@@ -60,7 +60,7 @@
   </tr>
   <tr>
     <td align="center" style="padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px;">
-      <img src="https://www.japanrailclub.com/wp-content/uploads/2025/07/Japan-Rail-Club-Omiyage-Box.webp" alt="" width="210" style="display:block;border:0;outline:none;text-decoration:none;max-width:100%;height:auto;" />
+      <img src="https://www.japanrailclub.com/wp-content/uploads/2026/07/JR-CLUB-BOX_SINGLE-SQUARE-Small.jpg" alt="" width="210" style="display:block;border:0;outline:none;text-decoration:none;max-width:100%;height:auto;" />
     </td>
   </tr>
   <tr>

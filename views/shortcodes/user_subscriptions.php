@@ -616,6 +616,15 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                     </p>
                 </template>
 
+                 <template v-else>
+                    <div class="sub-detail-actions">
+                        <button @click.prevent="()=>console.warning('not implemented yet')" class="sub-btn-primary">
+                            To consider Reactivate Plan
+                        </button>                        
+                        
+                    </div>
+                </template>
+
             </div>
 
         </template><!-- /detail view -->
