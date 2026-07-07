@@ -127,43 +127,43 @@ $orders_history = [];
 // guarded because this file is now `include`d (not include_once) so the
 // shortcode can be placed more than once on the same page
 if (!function_exists('mav2_get_tracking')) {
-function mav2_get_tracking($order)
-{
-    if ($order->tracking == 404) {
-        $order->tracking = 'Tracking pending';
-    } else {
+    function mav2_get_tracking($order)
+    {
+        if ($order->tracking == 404) {
+            $order->tracking = 'Tracking pending';
+        } else {
 
-        // Regex patterns
-        $pattern_JP = '/([A-Z]+)([\d+]+)JP/';
-        $pattern_US = '/\b(\d+)\b/';
+            // Regex patterns
+            $pattern_JP = '/([A-Z]+)([\d+]+)JP/';
+            $pattern_US = '/\b(\d+)\b/';
 
-        if (preg_match($pattern_JP, $order->tracking, $matches)) {
-            $trackingNumber = $matches[0];
+            if (preg_match($pattern_JP, $order->tracking, $matches)) {
+                $trackingNumber = $matches[0];
 
-            // Build the URL
-            $link = 'https://trackings.post.japanpost.jp/services/srv/search/?requestNo1=' . $trackingNumber . '&search.x=68&search.y=17&search=Tracking+start&locale=ja&startingUrlPatten=';
+                // Build the URL
+                $link = 'https://trackings.post.japanpost.jp/services/srv/search/?requestNo1=' . $trackingNumber . '&search.x=68&search.y=17&search=Tracking+start&locale=ja&startingUrlPatten=';
 
-            // 1. Use escaped double quotes (\") for HTML attributes
-            // 2. Added rel="noopener noreferrer" for security with target="_blank"
-            $order->tracking = "<a href=\"{$link}\" target=\"_blank\" rel=\"noopener noreferrer\">{$trackingNumber}</a>";
+                // 1. Use escaped double quotes (\") for HTML attributes
+                // 2. Added rel="noopener noreferrer" for security with target="_blank"
+                $order->tracking = "<a href=\"{$link}\" target=\"_blank\" rel=\"noopener noreferrer\">{$trackingNumber}</a>";
 
-            // 2026-05-08 temporty using just tracking number
-            $order->tracking = $trackingNumber;
+                // 2026-05-08 temporty using just tracking number
+                $order->tracking = $trackingNumber;
 
 
-        } elseif (preg_match($pattern_US, $order->tracking, $matches)) {
-            // US Tracking
-            $trackingNumber = $matches[1];
-            $us_link = 'https://parcelsapp.com/en/tracking/' . $trackingNumber;
+            } elseif (preg_match($pattern_US, $order->tracking, $matches)) {
+                // US Tracking
+                $trackingNumber = $matches[1];
+                $us_link = 'https://parcelsapp.com/en/tracking/' . $trackingNumber;
 
-            $order->tracking = "<a href=\"{$us_link}\" target=\"_blank\" rel=\"noopener noreferrer\">{$trackingNumber}</a>";
-            // 2026-05-08 temporty using just tracking number
-            $order->tracking = $trackingNumber;
+                $order->tracking = "<a href=\"{$us_link}\" target=\"_blank\" rel=\"noopener noreferrer\">{$trackingNumber}</a>";
+                // 2026-05-08 temporty using just tracking number
+                $order->tracking = $trackingNumber;
+            }
         }
-    }
 
-    return $order->tracking;
-}
+        return $order->tracking;
+    }
 }
 
 
@@ -343,8 +343,8 @@ foreach ($res as $sub) {
 
     $temp['address'] = $address;
 
-    $last_date = strtotime($lo_q->date_updated_gmt . ' + 8 hours');
-    $order = wc_get_order($last_box);
+    $last_date = strtotime($lo_data->date_updated_gmt . ' + 8 hours');
+
     $_next_payment = date('j F Y', strtotime(date('Y-m-03', $last_date) . ' +' . ($sub->plan > 1 ? $sub->to_ship + 1 : 1) . ' month'));
 
     if ($lang == 'ch') {
@@ -381,49 +381,45 @@ $container_id = wp_unique_id('mav2_subscription_app_');
         <!-- ── LIST VIEW ── -->
         <template v-if="!selectedSubId">
 
-        <!-- tab bar -->
-        <div class="sub-tabs">
-            <button :class="['sub-tab', { active: activeTab === 'active' }]"
+            <!-- tab bar -->
+            <div class="sub-tabs">
+                <button :class="['sub-tab', { active: activeTab === 'active' }]"
                     @click="activeTab = 'active'">Active</button>
-            <button :class="['sub-tab', { active: activeTab === 'inactive' }]"
+                <button :class="['sub-tab', { active: activeTab === 'inactive' }]"
                     @click="activeTab = 'inactive'">Inactive</button>
-        </div>
+            </div>
 
-        <!-- generate html -->
-        <div id="sub_cards">
+            <!-- generate html -->
+            <div id="sub_cards">
 
-            <template v-for="sub in activeTab === 'active' ? activeSubscriptions : inactiveSubscriptions">
+                <template v-for="sub in activeTab === 'active' ? activeSubscriptions : inactiveSubscriptions">
 
-                <!-- compact list card -->
-                <div class="sub-list-card" @click="openSubDetail(sub.id)">
-                    <div class="sub-thumb-wrap">
-                        <img
-                            :src="sub.product_img"
-                            class="sub-thumb"
-                            alt="Subscription image"
-                        />                       
-                    </div>
-
-                    <div class="sub-list-body">
-                        <div class="sub-list-top">
-                            <span class="sub-name">{{ sub.product }}</span>
-                            <span class="sub-freq-badge">
-                                {{ sub.plan_raw == 1 ? 'Every month' : 'Every ' + sub.plan_raw + ' months' }}
-                            </span>
+                    <!-- compact list card -->
+                    <div class="sub-list-card" @click="openSubDetail(sub.id)">
+                        <div class="sub-thumb-wrap">
+                            <img :src="sub.product_img" class="sub-thumb" alt="Subscription image" />
                         </div>
-                        <div class="sub-list-price" v-html="sub.currency + sub.total"></div>
-                        <a class="sub-view-link" @click.stop="openSubDetail(sub.id)">View plan</a>
+
+                        <div class="sub-list-body">
+                            <div class="sub-list-top">
+                                <span class="sub-name">{{ sub.product }}</span>
+                                <span class="sub-freq-badge">
+                                    {{ sub.plan_raw == 1 ? 'Every month' : 'Every ' + sub.plan_raw + ' months' }}
+                                </span>
+                            </div>
+                            <div class="sub-list-price" v-html="sub.currency + sub.total"></div>
+                            <a class="sub-view-link" @click.stop="openSubDetail(sub.id)">View plan</a>
+                        </div>
+
+                        <div class="sub-list-arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 18l6-6-6-6" />
+                            </svg>
+                        </div>
                     </div>
 
-                    <div class="sub-list-arrow">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 18l6-6-6-6"/>
-                        </svg>
-                    </div>
-                </div>
-
-                <!-- *** PRESERVED FOR STEP 2 — detail panel HTML (do not delete) ***
+                    <!-- *** PRESERVED FOR STEP 2 — detail panel HTML (do not delete) ***
                 <div class="subscription-container">
                     <div class="monthly-grid">
                         <div v-for="o3 in sub.last_3_orders" class="month-card">
@@ -483,14 +479,14 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                 </div>
                 END STEP 2 PRESERVED HTML ***-->
 
-            </template>
+                </template>
 
-            <!-- if no subscriptions in current tab -->
-            <p v-if="activeTab === 'active' && !activeSubscriptions.length">No active subscriptions found.</p>
-            <p v-if="activeTab === 'inactive' && !inactiveSubscriptions.length">No inactive subscriptions found.</p>
+                <!-- if no subscriptions in current tab -->
+                <p v-if="activeTab === 'active' && !activeSubscriptions.length">No active subscriptions found.</p>
+                <p v-if="activeTab === 'inactive' && !inactiveSubscriptions.length">No inactive subscriptions found.</p>
 
 
-        </div>
+            </div>
 
         </template><!-- /list view -->
 
@@ -505,7 +501,8 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                 <div class="sub-detail-banner-text">
                     <template v-if="selectedSub.status === 'wc-active'">
                         You are currently on a <strong>JAPANESE SNACK SUBSCRIPTION BOX</strong>
-                        plan paying {{ selectedSub.plan_raw == 1 ? 'every 1 month' : 'every ' + selectedSub.plan_raw + ' months' }}
+                        plan paying {{ selectedSub.plan_raw == 1 ? 'every 1 month' : 'every ' + selectedSub.plan_raw + '
+                        months' }}
                     </template>
                     <template v-else-if="selectedSub.status === 'wc-on-hold'">
                         Your <strong>JAPANESE SNACK SUBSCRIPTION BOX</strong> is currently on hold.
@@ -548,7 +545,8 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                             </tr>
                             <tr class="sub-detail-row">
                                 <td class="sub-detail-label">Next payment date:</td>
-                                <td class="sub-detail-value">{{ selectedSub.prepaid_cancel === 'yes' ? 'N/A' : selectedSub.next_payment }}</td>
+                                <td class="sub-detail-value">{{ selectedSub.prepaid_cancel === 'yes' ? 'N/A' :
+                                    selectedSub.next_payment }}</td>
                             </tr>
                             <tr class="sub-detail-row">
                                 <td class="sub-detail-label">Next scheduled shipment:</td>
@@ -605,23 +603,27 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                             CHANGE PLAN
                         </button>
                         <!-- CHANGE SHIPPING & BILLING disabled until feature is available -->
-                        <a style="display:none" href="<?php echo esc_url( wc_get_account_endpoint_url('edit-address') ); ?>"
-                           class="sub-btn-outline">
+                        <a style="display:none"
+                            href="<?php echo esc_url(wc_get_account_endpoint_url('edit-address')); ?>"
+                            class="sub-btn-outline">
                             Update Shipping & Billing
                         </a>
                     </div>
 
                     <p class="sub-cancel-link">
-                        I would like to <a href="#" @click.prevent="showCancleOpenPopup(selectedSub.id, selectedSub.plan_raw)">Cancel Subscription</a>
+                        I would like to <a href="#"
+                            @click.prevent="showCancleOpenPopup(selectedSub.id, selectedSub.plan_raw)">Cancel
+                            Subscription</a>
                     </p>
                 </template>
 
-                 <template v-else>
+                <template v-else>
                     <div class="sub-detail-actions">
-                        <button style="display: none;" @click.prevent="()=>console.warning('not implemented yet')" class="sub-btn-primary">
+                        <button style="display: none;" @click.prevent="()=>console.warning('not implemented yet')"
+                            class="sub-btn-primary">
                             To consider Reactivate Plan
-                        </button>                        
-                        
+                        </button>
+
                     </div>
                 </template>
 
@@ -762,7 +764,8 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                 </ul>
 
                 <template v-slot:footer>
-                    <p><strong class="mav2_strong">IMPORTANT</strong>: Changes to your subscription will take effect after your current
+                    <p><strong class="mav2_strong">IMPORTANT</strong>: Changes to your subscription will take effect
+                        after your current
                         cycle ends on {{next_renew_at}}.</p>
                     <div class="jrc_popup_panel_footer_buttons">
                         <button type="button" @click.prevent="closePopup"
