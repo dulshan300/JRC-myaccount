@@ -31,6 +31,8 @@ $sql = "SELECT
         WHERE
             meta_key = '_subscription_renewal_order_ids_cache'
             AND order_id = od.id
+        LIMIT
+            1
     ) as renewal_ids,
     COALESCE(
         (
@@ -91,6 +93,8 @@ $sql = "SELECT
             order_id = od.id
             AND meta_key = '_ps_scheduled_to_be_cancelled'
             AND meta_value = 'yes'
+        LIMIT
+            1
     ) AS prepaid_cancel,
     (
         SELECT
@@ -167,11 +171,12 @@ if (!function_exists('mav2_get_tracking')) {
 }
 
 
-$lang = 'en';
 $ch_list = ['TW', 'HK', 'CN'];
-$ko_list = ['KO'];
+$ko_list = ['KR'];
 
 foreach ($res as $sub) {
+    // reset per subscription so one CH/KO shipment doesn't leak into the next
+    $lang = 'en';
     $temp = [];
     $temp['id'] = $sub->id;
     $temp['product_img'] = $_product_img;
@@ -206,12 +211,14 @@ foreach ($res as $sub) {
     }
 
     $sub_orders = [$sub->parent_order_id];
-    // if renewal orders
-    $renew_orders = unserialize($sub->renewal_ids);
-    $renew_orders = array_reverse($renew_orders);
+    // if renewal orders; meta can be missing (new subs) so unserialize may return false
+    $renew_orders = unserialize((string) $sub->renewal_ids, ['allowed_classes' => false]);
+    $renew_orders = is_array($renew_orders) ? array_reverse($renew_orders) : [];
     $sub_orders = array_merge($sub_orders, $renew_orders);
 
     // var_dump($sub_orders);
+
+    $sub_orders = array_filter(array_map('intval', $sub_orders));
 
     $last_sub = end($sub_orders);
 
@@ -222,13 +229,23 @@ foreach ($res as $sub) {
     $osql = "SELECT od.id, od.currency, lp.shipping_amount AS shipping, od.date_created_gmt AS created_at, od.total_amount, oi1.order_item_name AS coupon, meta_discount.meta_value AS discount, meta_subtotal.meta_value AS subtotal FROM wp_wc_orders od LEFT JOIN wp_woocommerce_order_items oi1 ON oi1.order_id = od.id AND oi1.order_item_type IN ('coupon','fee') LEFT JOIN wp_woocommerce_order_items oi2 ON oi2.order_id = od.id AND oi2.order_item_type IN ('line_item') LEFT JOIN wp_woocommerce_order_itemmeta meta_discount ON oi1.order_item_id = meta_discount.order_item_id AND meta_discount.meta_key ='discount_amount'LEFT JOIN wp_woocommerce_order_itemmeta meta_subtotal ON oi2.order_item_id = meta_subtotal.order_item_id AND meta_subtotal.meta_key ='_line_subtotal' LEFT JOIN wp_wc_order_product_lookup lp ON lp.order_id = od.id
     WHERE od.id IN ($str_ids) AND ( meta_discount.meta_value > 0 OR od.total_amount > 0 ) ORDER BY od.date_created_gmt DESC LIMIT 1";
 
-    $odata = $wpdb->get_row($osql);
-    $temp['created_at'] = date('j F Y', strtotime($odata->created_at . ' + 8 hours'));
-    $temp['product_value'] = number_format(floatval($odata->subtotal), 2);
-    $shipping_convert = JRC_Helper::convert_currency($odata->shipping, 'SGD', $sub->currency);
-    $temp['shipping'] = number_format(floatval($shipping_convert), 2);
-    $temp['discount'] = floatval($odata->discount) > 0 ? number_format(floatval($odata->discount), 2) : '0.00';
-    $temp['total'] = number_format(floatval($odata->total_amount), 2);
+    // query can return no row (filters on discount/total), so guard before reading
+    $odata = $str_ids !== '' ? $wpdb->get_row($osql) : null;
+
+    if ($odata) {
+        $temp['created_at'] = date('j F Y', strtotime($odata->created_at . ' + 8 hours'));
+        $temp['product_value'] = number_format(floatval($odata->subtotal), 2);
+        $shipping_convert = JRC_Helper::convert_currency($odata->shipping, 'SGD', $sub->currency);
+        $temp['shipping'] = number_format(floatval($shipping_convert), 2);
+        $temp['discount'] = floatval($odata->discount) > 0 ? number_format(floatval($odata->discount), 2) : '0.00';
+        $temp['total'] = number_format(floatval($odata->total_amount), 2);
+    } else {
+        $temp['created_at'] = '';
+        $temp['product_value'] = '0.00';
+        $temp['shipping'] = '0.00';
+        $temp['discount'] = '0.00';
+        $temp['total'] = '0.00';
+    }
 
     $name = $sub->currency;
     $symbol = get_woocommerce_currency_symbol($name);
@@ -245,17 +262,24 @@ foreach ($res as $sub) {
     $orders_history = $sub_orders;
 
     if ($sub->plan != 1) {
-        $al = unserialize($sub->fullfilled);
+        $al = unserialize((string) $sub->fullfilled, ['allowed_classes' => false]);
+        $al = is_array($al) ? $al : [];
         $last_order_id = end($al);
-        $orders_history = unserialize($sub->fullfilled);
+        $orders_history = $al;
     }
 
     $lo_sql = "SELECT od.id, od.status,od.date_updated_gmt,od.date_created_gmt, COALESCE( ( SELECT comment_content from wp_comments WHERE comment_post_ID = od.id AND comment_content LIKE '%%Tracking number%%'ORDER BY comment_date_gmt DESC LIMIT 1 ),404) as tracking, (SELECT country FROM wp_wc_order_addresses WHERE order_id=od.id LIMIT 1) country from wp_wc_orders od WHERE od.id=%s";
 
-    $lo_q = $wpdb->prepare($lo_sql, $last_order_id);
-    $lo_data = $wpdb->get_row($lo_q);
+    // no fulfilled orders yet -> $last_order_id is false and there is no row to load
+    $lo_data = null;
+    if ($last_order_id) {
+        $lo_q = $wpdb->prepare($lo_sql, $last_order_id);
+        $lo_data = $wpdb->get_row($lo_q);
+    }
 
-    $lo_data->tracking = mav2_get_tracking($lo_data);
+    if ($lo_data) {
+        $lo_data->tracking = mav2_get_tracking($lo_data);
+    }
 
     $temp_history = [];
 
@@ -263,6 +287,10 @@ foreach ($res as $sub) {
     foreach ($orders_history as $order_id) {
         $q = $wpdb->prepare($lo_sql, $order_id);
         $q_data = $wpdb->get_row($q);
+
+        if (!$q_data) {
+            continue;
+        }
 
         $format = "Y-m-d h:s a";
         $check_stamp = date_i18n($format, $q_data->date_created_gmt);
@@ -306,8 +334,6 @@ foreach ($res as $sub) {
     }
 
 
-
-
     $temp['last_order_details'] = $lo_data;
 
     // get order shipping address
@@ -329,12 +355,12 @@ foreach ($res as $sub) {
 
     $shppng_data = $wpdb->get_row($shppng_sql, ARRAY_A);
     $address = [];
-    $keys = array_keys($shppng_data);
+    $keys = is_array($shppng_data) ? array_keys($shppng_data) : [];
 
     foreach ($keys as $k) {
         if (!empty($shppng_data[$k])) {
             if ($k === 'country') {
-                $shppng_data[$k] = $all_countries[$shppng_data[$k]];
+                $shppng_data[$k] = $all_countries[$shppng_data[$k]] ?? $shppng_data[$k];
             }
 
             $address[] = $shppng_data[$k];
@@ -343,14 +369,18 @@ foreach ($res as $sub) {
 
     $temp['address'] = $address;
 
-    $last_date = strtotime($lo_data->date_updated_gmt . ' + 8 hours');
+    $_next_payment = '';
 
-    $_next_payment = date('j F Y', strtotime(date('Y-m-03', $last_date) . ' +' . ($sub->plan > 1 ? $sub->to_ship + 1 : 1) . ' month'));
+    if ($lo_data) {
+        $last_date = strtotime($lo_data->date_updated_gmt . ' + 8 hours');
 
-    if ($lang == 'ch') {
-        $_next_payment = date('Y年n月j日', strtotime($_next_payment));
-    } else if ($lang == 'ko') {
-        $_next_payment = date('Y년n월j일', strtotime($_next_payment));
+        $_next_payment = date('j F Y', strtotime(date('Y-m-03', $last_date) . ' +' . ($sub->plan > 1 ? $sub->to_ship + 1 : 1) . ' month'));
+
+        if ($lang == 'ch') {
+            $_next_payment = date('Y年n月j日', strtotime($_next_payment));
+        } else if ($lang == 'ko') {
+            $_next_payment = date('Y년n월j일', strtotime($_next_payment));
+        }
     }
 
     $temp['next_payment'] = $_next_payment;
