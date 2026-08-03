@@ -22,10 +22,20 @@ $sql = $wpdb->prepare(
             WHERE order_id = od.id
               AND meta_key = '_ps_prepaid_pieces'
             LIMIT 1
-        ) AS subscription_plan
+        ) AS subscription_plan,
+        COALESCE(
+            (
+                SELECT comment_content
+                FROM wp_comments
+                WHERE comment_post_ID = od.id
+                  AND comment_content LIKE '%%Tracking number%%'
+                ORDER BY comment_date_gmt DESC
+                LIMIT 1
+            ),
+        404) AS tracking
     FROM wp_wc_orders od
     WHERE od.customer_id = %d
-      AND od.type IN ('shop_order', 'shop_subscription', 'shop_order_renewal')     
+      AND od.type = 'shop_order'
     ORDER BY od.date_created_gmt DESC",
     $user_id
 );
@@ -74,6 +84,8 @@ foreach ($rows as $row) {
         'subscription_plan'  => mav2_orders_subscription_plan($row->subscription_plan),
         'payment_status'     => mav2_orders_payment_status($row->status),
         'fulfillment_status' => mav2_orders_fulfillment_status($row->status),
+        // subscriptions never carry shipment notes themselves, so show '-'
+        'tracking'           => $row->type === 'shop_subscription' ? '-' : wp_strip_all_tags((string) mav2_get_tracking($row)),
         'total'              => number_format(floatval($row->total_amount), 2),
         'currency'           => get_woocommerce_currency_symbol($row->currency),
         'order_url'          => wc_get_endpoint_url('view-order', $row->id, $myaccount_url),
@@ -109,6 +121,17 @@ $GLOBALS['mav2_order_cards_bootstrapped'] = true;
     #mav2-orders-pagination button:disabled { opacity: 0.4; cursor: default; }
     #mav2-page-info { font-size: 13px; color: #6b7280; }
 
+    /* ── Table view: mobile ── */
+    @media (max-width: 600px) {
+        #mav2-orders-table thead { display: none; }
+        #mav2-orders-table, #mav2-orders-table tbody, #mav2-orders-table tr, #mav2-orders-table td { display: block; width: 100%; }
+        #mav2-orders-table tr.mav2-order-row { border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 12px; padding: 4px 0; }
+        #mav2-orders-table td { display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: right; border-bottom: 1px solid #f3f4f6; }
+        #mav2-orders-table td:last-child { border-bottom: none; }
+        #mav2-orders-table td::before { content: attr(data-label); font-weight: 600; color: #6b7280; text-align: left; }
+        #mav2-orders-table td:empty::before { content: none; }
+    }
+
     /* ── Detail view ── */
     #mav2-detail-view { display: none; }
     #mav2-back-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; font-size: 14px; color: #374151; padding: 0 0 16px; font-weight: 500; }
@@ -131,6 +154,14 @@ $GLOBALS['mav2_order_cards_bootstrapped'] = true;
     .mav2-item-name-cell { display: flex; align-items: center; gap: 12px; }
     .mav2-item-img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; background: #f3f4f6; flex-shrink: 0; }
     .mav2-item-placeholder { width: 48px; height: 48px; border-radius: 6px; background: #f3f4f6; flex-shrink: 0; }
+    @media (max-width: 600px) {
+        .mav2-detail-items-table thead { display: none; }
+        .mav2-detail-items-table, .mav2-detail-items-table tbody, .mav2-detail-items-table tr, .mav2-detail-items-table td { display: block; width: 100%; }
+        .mav2-detail-items-table tr { border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 12px; padding: 4px 0; }
+        .mav2-detail-items-table td { display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: right !important; border-bottom: 1px solid #f3f4f6; }
+        .mav2-detail-items-table td:last-child { border-bottom: none; }
+        .mav2-detail-items-table td::before { content: attr(data-label); font-weight: 600; color: #6b7280; text-align: left; }
+    }
     .mav2-summary-table { width: 100%; max-width: 320px; margin-left: auto; margin-bottom: 24px; }
     .mav2-summary-table td { padding: 6px 0; font-size: 14px; }
     .mav2-summary-table td:last-child { text-align: right; }
@@ -152,6 +183,7 @@ $GLOBALS['mav2_order_cards_bootstrapped'] = true;
                 <th>Payment Status</th>
                 <th>Fulfillment Status</th>
                 <th>Total</th>
+                <th>Tracking No.</th>
                 <th>Invoice</th>
             </tr>
         </thead>
@@ -159,25 +191,26 @@ $GLOBALS['mav2_order_cards_bootstrapped'] = true;
 
             <?php foreach ($orders as $index => $order) { ?>
                 <tr class="mav2-order-row" data-row-index="<?= $index ?>">
-                    <td>
+                    <td data-label="Order">
                         <a href="#" class="mav2-order-link" data-id="<?= esc_attr($order['id']) ?>">
                             #<?= esc_html($order['id']) ?>
                         </a>
                     </td>
-                    <td><?= esc_html($order['date']) ?></td>
-                    <td><?= esc_html($order['subscription_plan']) ?></td>
-                    <td>
+                    <td data-label="Date"><?= esc_html($order['date']) ?></td>
+                    <td data-label="Subscription Plan"><?= esc_html($order['subscription_plan']) ?></td>
+                    <td data-label="Payment Status">
                         <span class="mav2-badge <?= $order['payment_status']['class'] ?>">
                             <?= $order['payment_status']['label'] ?>
                         </span>
                     </td>
-                    <td>
+                    <td data-label="Fulfillment Status">
                         <span class="mav2-badge <?= $order['fulfillment_status']['class'] ?>">
                             <?= $order['fulfillment_status']['label'] ?>
                         </span>
                     </td>
-                    <td><?= $order['currency'] ?><?= $order['total'] ?></td>
-                    <td>
+                    <td data-label="Total"><?= $order['currency'] ?><?= $order['total'] ?></td>
+                    <td data-label="Tracking No."><?= esc_html($order['tracking']) ?></td>
+                    <td data-label="Invoice">
                         <?php if (floatval($order['total']) > 0): ?>
                         <button type="button" data-id="<?= $order['id'] ?>" class="invoice_download">
                             <span></span>Download
@@ -189,7 +222,7 @@ $GLOBALS['mav2_order_cards_bootstrapped'] = true;
 
             <?php if (empty($orders)) { ?>
                 <tr>
-                    <td colspan="7"><p>No Orders Found</p></td>
+                    <td colspan="8"><p>No Orders Found</p></td>
                 </tr>
             <?php } ?>
 
@@ -340,10 +373,10 @@ $GLOBALS['mav2_order_cards_bootstrapped'] = true;
                 ? '<img class="mav2-item-img" src="' + esc(item.image) + '" alt="' + esc(item.name) + '">'
                 : '<div class="mav2-item-placeholder"></div>';
             return '<tr>'
-                + '<td><div class="mav2-item-name-cell">' + imgHTML + '<span>' + esc(item.name) + '</span></div></td>'
-                + '<td>' + esc(item.quantity) + '</td>'
-                + '<td>' + esc(item.unit_price) + '</td>'
-                + '<td>' + esc(item.line_total) + '</td>'
+                + '<td data-label="Product"><div class="mav2-item-name-cell">' + imgHTML + '<span>' + esc(item.name) + '</span></div></td>'
+                + '<td data-label="Qty">' + esc(item.quantity) + '</td>'
+                + '<td data-label="Unit Price">' + esc(item.unit_price) + '</td>'
+                + '<td data-label="Total">' + esc(item.line_total) + '</td>'
                 + '</tr>';
         }).join('');
 
@@ -379,6 +412,8 @@ $GLOBALS['mav2_order_cards_bootstrapped'] = true;
             +   '<div class="mav2-detail-section">'
             +     '<h4>' + esc(d.address.type) + '</h4>'
             +     buildAddressLines(d.address)
+            +     '<h4 style="margin-top:12px">Tracking No.</h4>'
+            +     '<p>' + esc(d.tracking) + '</p>'
             +   '</div>'
             + '</div>'
 

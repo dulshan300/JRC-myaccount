@@ -208,7 +208,7 @@ final class MAV2_Ajax_Admin
         // update_user_meta($user_id, 'billing_email', $billing_email);
         // update_user_meta($user_id, 'billing_phone', $billing_phone);
         update_user_meta($user_id, 'billing_address_1', $billing_address_1);
-        // update_user_meta($user_id, 'billing_address_2', $billing_address_2);
+        update_user_meta($user_id, 'billing_address_2', "");
         update_user_meta($user_id, 'billing_city', $billing_city);
         update_user_meta($user_id, 'billing_postcode', $billing_postcode);
         update_user_meta($user_id, 'billing_country', $billing_country);
@@ -218,7 +218,7 @@ final class MAV2_Ajax_Admin
         // update_user_meta($user_id, 'shipping_email', $billing_email);
         // update_user_meta($user_id, 'shipping_phone', $billing_phone);
         update_user_meta($user_id, 'shipping_address_1', $billing_address_1);
-        // update_user_meta($user_id, 'shipping_address_2', $billing_address_2);
+        update_user_meta($user_id, 'shipping_address_2', "");
         update_user_meta($user_id, 'shipping_city', $billing_city);
         update_user_meta($user_id, 'shipping_postcode', $billing_postcode);
         update_user_meta($user_id, 'shipping_country', $billing_country);
@@ -1328,7 +1328,7 @@ final class MAV2_Ajax_Admin
 
         $data_collection['address'] = implode('<br>', $shipping_data);
 
-        $data_collection['date'] = $order->get_date_created()->format('d M Y H:i a');
+        $data_collection['date'] = $order->get_date_created()->format('d M Y');
 
         $data_collection['subtotal'] = $currency_format . number_format($order->get_subtotal(), 2);
         $data_collection['discount'] = $currency_format . number_format($order->get_total_discount(), 2);
@@ -1626,7 +1626,7 @@ final class MAV2_Ajax_Admin
         }
 
         $order_id = intval($_POST['id']);
-        $order    = wc_get_order($order_id);
+        $order = wc_get_order($order_id);
 
         if (!$order || (int) $order->get_customer_id() !== $user_id) {
             wp_send_json_error('Order not found', 404);
@@ -1634,10 +1634,10 @@ final class MAV2_Ajax_Admin
         }
 
         $currency_symbol = html_entity_decode(get_woocommerce_currency_symbol($order->get_currency()), ENT_QUOTES, 'UTF-8');
-        $status          = 'wc-' . $order->get_status();
+        $status = 'wc-' . $order->get_status();
 
         // Payment status
-        $paid_statuses   = ['wc-completed', 'wc-processing', 'wc-active', 'wc-pending-cancel'];
+        $paid_statuses = ['wc-completed', 'wc-processing', 'wc-active', 'wc-pending-cancel'];
         $failed_statuses = ['wc-failed', 'wc-cancelled', 'wc-refunded', 'wc-expired'];
         if (in_array($status, $paid_statuses)) {
             $payment_status = ['label' => 'Paid', 'class' => 'mav2-badge-paid'];
@@ -1657,35 +1657,35 @@ final class MAV2_Ajax_Admin
         if ($order->needs_shipping_address()) {
             $country_code = $order->get_shipping_country();
             $address = [
-                'type'      => 'Shipping Address',
-                'name'      => trim($order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name()),
-                'company'   => $order->get_shipping_company(),
+                'type' => 'Shipping Address',
+                'name' => trim($order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name()),
+                'company' => $order->get_shipping_company(),
                 'address_1' => $order->get_shipping_address_1(),
                 'address_2' => $order->get_shipping_address_2(),
-                'city'      => $order->get_shipping_city(),
-                'state'     => $order->get_shipping_state(),
-                'postcode'  => $order->get_shipping_postcode(),
-                'country'   => $all_countries[$country_code] ?? $country_code,
+                'city' => $order->get_shipping_city(),
+                'state' => $order->get_shipping_state(),
+                'postcode' => $order->get_shipping_postcode(),
+                'country' => $all_countries[$country_code] ?? $country_code,
             ];
         } else {
             $country_code = $order->get_billing_country();
             $address = [
-                'type'      => 'Billing Address',
-                'name'      => trim($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()),
-                'company'   => $order->get_billing_company(),
+                'type' => 'Billing Address',
+                'name' => trim($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()),
+                'company' => $order->get_billing_company(),
                 'address_1' => $order->get_billing_address_1(),
                 'address_2' => $order->get_billing_address_2(),
-                'city'      => $order->get_billing_city(),
-                'state'     => $order->get_billing_state(),
-                'postcode'  => $order->get_billing_postcode(),
-                'country'   => $all_countries[$country_code] ?? $country_code,
+                'city' => $order->get_billing_city(),
+                'state' => $order->get_billing_state(),
+                'postcode' => $order->get_billing_postcode(),
+                'country' => $all_countries[$country_code] ?? $country_code,
             ];
         }
 
         // Line items
         $items = [];
         foreach ($order->get_items() as $item) {
-            $product   = $item->get_product();
+            $product = $item->get_product();
             $image_url = '';
             if ($product) {
                 $thumb = wp_get_attachment_image_url(get_post_thumbnail_id($product->get_id()), 'thumbnail');
@@ -1694,11 +1694,11 @@ final class MAV2_Ajax_Admin
                 }
             }
             $subtotal = floatval($item->get_subtotal());
-            $qty      = max(1, $item->get_quantity());
-            $items[]  = [
-                'name'       => $item->get_name(),
-                'image'      => $image_url,
-                'quantity'   => $item->get_quantity(),
+            $qty = max(1, $item->get_quantity());
+            $items[] = [
+                'name' => $item->get_name(),
+                'image' => $image_url,
+                'quantity' => $item->get_quantity(),
                 'unit_price' => $currency_symbol . number_format($subtotal / $qty, 2),
                 'line_total' => $currency_symbol . number_format($subtotal, 2),
             ];
@@ -1708,10 +1708,10 @@ final class MAV2_Ajax_Admin
         $coupons = $order->get_coupon_codes();
 
         // Subscription plan from meta
-        $plan_raw          = $order->get_meta('_ps_prepaid_pieces');
+        $plan_raw = $order->get_meta('_ps_prepaid_pieces');
         $subscription_plan = '-';
         if ($plan_raw !== '') {
-            $n                 = intval($plan_raw);
+            $n = intval($plan_raw);
             $subscription_plan = $n === 1 ? 'Monthly' : $n . ' months';
         }
 
@@ -1725,22 +1725,23 @@ final class MAV2_Ajax_Admin
         }
 
         $data = [
-            'id'                => $order->get_id(),
-            'date'              => $date_str,
+            'id' => $order->get_id(),
+            'date' => $date_str,
             'subscription_plan' => $subscription_plan,
-            'payment_status'    => $payment_status,
-            'fulfillment_status'=> $fulfillment_status,
-            'customer_name'     => trim($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()),
-            'customer_email'    => $order->get_billing_email(),
-            'address'           => $address,
-            'items'             => $items,
-            'coupons'           => $coupons,
-            'subtotal'          => $currency_symbol . number_format(floatval($order->get_subtotal()), 2),
-            'shipping'          => $currency_symbol . number_format(floatval($order->get_shipping_total()), 2),
-            'discount'          => $currency_symbol . number_format(floatval($order->get_total_discount()), 2),
-            'tax'               => $currency_symbol . number_format(floatval($order->get_total_tax()), 2),
-            'total'             => $currency_symbol . number_format(floatval($order->get_total()), 2),
-            'total_raw'         => floatval($order->get_total()),
+            'payment_status' => $payment_status,
+            'fulfillment_status' => $fulfillment_status,
+            'customer_name' => trim($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()),
+            'customer_email' => $order->get_billing_email(),
+            'address' => $address,
+            'tracking' => mav2_get_order_tracking_code($order->get_id()) ?: 'Tracking pending',
+            'items' => $items,
+            'coupons' => $coupons,
+            'subtotal' => $currency_symbol . number_format(floatval($order->get_subtotal()), 2),
+            'shipping' => $currency_symbol . number_format(floatval($order->get_shipping_total()), 2),
+            'discount' => $currency_symbol . number_format(floatval($order->get_total_discount()), 2),
+            'tax' => $currency_symbol . number_format(floatval($order->get_total_tax()), 2),
+            'total' => $currency_symbol . number_format(floatval($order->get_total()), 2),
+            'total_raw' => floatval($order->get_total()),
         ];
 
         wp_send_json_success($data);

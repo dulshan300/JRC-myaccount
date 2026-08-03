@@ -128,48 +128,8 @@ $all_countries = $w_countries->get_countries();
 
 $orders_history = [];
 
-// guarded because this file is now `include`d (not include_once) so the
-// shortcode can be placed more than once on the same page
-if (!function_exists('mav2_get_tracking')) {
-    function mav2_get_tracking($order)
-    {
-        if ($order->tracking == 404) {
-            $order->tracking = 'Tracking pending';
-        } else {
-
-            // Regex patterns
-            $pattern_JP = '/([A-Z]+)([\d+]+)JP/';
-            $pattern_US = '/\b(\d+)\b/';
-
-            if (preg_match($pattern_JP, $order->tracking, $matches)) {
-                $trackingNumber = $matches[0];
-
-                // Build the URL
-                $link = 'https://trackings.post.japanpost.jp/services/srv/search/?requestNo1=' . $trackingNumber . '&search.x=68&search.y=17&search=Tracking+start&locale=ja&startingUrlPatten=';
-
-                // 1. Use escaped double quotes (\") for HTML attributes
-                // 2. Added rel="noopener noreferrer" for security with target="_blank"
-                $order->tracking = "<a href=\"{$link}\" target=\"_blank\" rel=\"noopener noreferrer\">{$trackingNumber}</a>";
-
-                // 2026-05-08 temporty using just tracking number
-                $order->tracking = $trackingNumber;
-
-
-            } elseif (preg_match($pattern_US, $order->tracking, $matches)) {
-                // US Tracking
-                $trackingNumber = $matches[1];
-                $us_link = 'https://parcelsapp.com/en/tracking/' . $trackingNumber;
-
-                $order->tracking = "<a href=\"{$us_link}\" target=\"_blank\" rel=\"noopener noreferrer\">{$trackingNumber}</a>";
-                // 2026-05-08 temporty using just tracking number
-                $order->tracking = $trackingNumber;
-            }
-        }
-
-        return $order->tracking;
-    }
-}
-
+// mav2_get_tracking() now lives in include/mav2-tracking.php (shared with the
+// orders shortcode and the order-details AJAX handler)
 
 $ch_list = ['TW', 'HK', 'CN'];
 $ko_list = ['KR'];
@@ -280,6 +240,9 @@ foreach ($res as $sub) {
     if ($lo_data) {
         $lo_data->tracking = mav2_get_tracking($lo_data);
     }
+
+    // bare tracking code of the latest shipped order, for the list card
+    $temp['tracking'] = $lo_data ? wp_strip_all_tags((string) $lo_data->tracking) : '';
 
     $temp_history = [];
 
@@ -438,6 +401,7 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                                 </span>
                             </div>
                             <div class="sub-list-price" v-html="sub.currency + sub.total"></div>
+                            <div class="sub-list-tracking" v-if="sub.tracking">Tracking No: {{ sub.tracking }}</div>
                             <a class="sub-view-link" @click.stop="openSubDetail(sub.id)">View plan</a>
                         </div>
 
@@ -531,8 +495,7 @@ $container_id = wp_unique_id('mav2_subscription_app_');
                 <div class="sub-detail-banner-text">
                     <template v-if="selectedSub.status === 'wc-active'">
                         You are currently on a <strong>JAPANESE SNACK SUBSCRIPTION BOX</strong>
-                        plan paying {{ selectedSub.plan_raw == 1 ? 'every 1 month' : 'every ' + selectedSub.plan_raw + '
-                        months' }}
+                        plan paying {{ selectedSub.plan_raw == 1 ? 'every 1 month' : 'every ' + selectedSub.plan_raw + ' months' }}
                     </template>
                     <template v-else-if="selectedSub.status === 'wc-on-hold'">
                         Your <strong>JAPANESE SNACK SUBSCRIPTION BOX</strong> is currently on hold.

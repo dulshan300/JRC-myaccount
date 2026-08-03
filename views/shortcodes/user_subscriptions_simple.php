@@ -46,6 +46,19 @@ $sql = "SELECT
                 1
         ), 1
     ) AS plan,
+    COALESCE(
+        (
+            SELECT
+                meta_value
+            FROM
+                wp_wc_orders_meta
+            WHERE
+                order_id = od.id
+                AND meta_key = '_ps_prepaid_fulfilled_orders'
+            LIMIT
+                1
+        ), 'a:0:{}'
+    ) AS fullfilled,
     (
         SELECT
             meta_value
@@ -79,18 +92,34 @@ foreach ($res as $sub) {
     $temp['plan_raw'] = $sub->plan;
 
     $sub_orders = [$sub->parent_order_id];
-    $renew_orders = unserialize($sub->renewal_ids);
-    $renew_orders = array_reverse($renew_orders);
+    // meta can be missing (new subs) so unserialize may return false
+    $renew_orders = unserialize((string) $sub->renewal_ids, ['allowed_classes' => false]);
+    $renew_orders = is_array($renew_orders) ? array_reverse($renew_orders) : [];
     $sub_orders = array_merge($sub_orders, $renew_orders);
 
+    $sub_orders = array_filter(array_map('intval', $sub_orders));
+
     $str_ids = implode(',', $sub_orders);
+
+    // latest shipped order (prepaid plans track fulfilment separately), same
+    // selection logic as user_subscriptions.php
+    $last_order_id = end($sub_orders);
+    if ($sub->plan != 1) {
+        $al = unserialize((string) $sub->fullfilled, ['allowed_classes' => false]);
+        $al = is_array($al) ? $al : [];
+        $last_order_id = end($al);
+    }
+
+    $tracking = mav2_get_order_tracking_code($last_order_id);
+    $temp['tracking'] = ($last_order_id && $tracking === '') ? 'Tracking pending' : $tracking;
 
     // find the most recent order with an actual charge, to show as the card price
     $osql = "SELECT od.id, od.currency, od.total_amount FROM wp_wc_orders od LEFT JOIN wp_woocommerce_order_items oi1 ON oi1.order_id = od.id AND oi1.order_item_type IN ('coupon','fee') LEFT JOIN wp_woocommerce_order_itemmeta meta_discount ON oi1.order_item_id = meta_discount.order_item_id AND meta_discount.meta_key ='discount_amount'
     WHERE od.id IN ($str_ids) AND ( meta_discount.meta_value > 0 OR od.total_amount > 0 ) ORDER BY od.date_created_gmt DESC LIMIT 1";
 
-    $odata = $wpdb->get_row($osql);
-    $temp['total'] = number_format(floatval($odata->total_amount), 2);
+    // query can return no row (filters on discount/total), so guard before reading
+    $odata = $str_ids !== '' ? $wpdb->get_row($osql) : null;
+    $temp['total'] = number_format($odata ? floatval($odata->total_amount) : 0, 2);
 
     $name = $sub->currency;
     $symbol = get_woocommerce_currency_symbol($name);
@@ -143,6 +172,7 @@ $container_id = wp_unique_id('mav2_subscription_simple_app_');
                         </span>
                     </div>
                     <div class="sub-list-price" v-html="sub.currency + sub.total"></div>
+                    <div class="sub-list-tracking" v-if="sub.tracking">Tracking No: {{ sub.tracking }}</div>
                     <a class="sub-view-link" @click.stop="goToSubscription(sub.id)">View plan</a>
                 </div>
 
