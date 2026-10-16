@@ -33,6 +33,48 @@ require_once MAV2_PATH . 'include/admin/class-mav2-ajax-admin.php';
 require_once MAV2_PATH . 'include/admin/class-mav2-short-code.php';
 require_once MAV2_PATH . 'include/admin/class-mav2-email-tester.php';
 
+/**
+ * Countries customers may select for their address (current delivery areas).
+ * Returns [code => name] using WooCommerce country names.
+ */
+function mav2_get_allowed_countries()
+{
+    $codes = [
+        'AU', // Australia
+        'AT', // Austria
+        'BE', // Belgium
+        'CA', // Canada
+        'FR', // France
+        'DE', // Germany
+        'HK', // Hong Kong SAR
+        'IS', // Iceland
+        'ID', // Indonesia
+        'IT', // Italy
+        'MY', // Malaysia
+        'NL', // Netherlands
+        'NO', // Norway
+        'PH', // Philippines
+        'SG', // Singapore
+        'KR', // South Korea
+        'ES', // Spain
+        'TW', // Taiwan
+        'TH', // Thailand
+        'GB', // United Kingdom (UK)
+        'VN', // Vietnam
+    ];
+
+    $all_countries = WC()->countries->get_countries();
+    $countries = [];
+
+    foreach ($codes as $code) {
+        $countries[$code] = $all_countries[$code] ?? $code;
+    }
+
+    asort($countries);
+
+    return $countries;
+}
+
 function mav2_init()
 {
 

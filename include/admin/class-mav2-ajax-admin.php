@@ -195,6 +195,8 @@ final class MAV2_Ajax_Admin
 
         if (empty($billing_country)) {
             $validation_erros['billing_country'] = 'Country is required';
+        } elseif (!array_key_exists($billing_country, mav2_get_allowed_countries())) {
+            $validation_erros['billing_country'] = 'We currently do not deliver to this country';
         }
 
         if (!empty($validation_erros)) {
@@ -1342,6 +1344,32 @@ final class MAV2_Ajax_Admin
 
         $data_collection['shipping'] = $order->get_shipping_total() > 0 ? $currency_format . number_format($order->get_shipping_total(), 2) : 'Free';
 
+        // Subscription plan: resolve via the related subscription (parent order
+        // or one of its cached renewal orders), since renewal orders don't carry
+        // '_ps_prepaid_pieces' on themselves the way the initiating order does
+        global $wpdb;
+        $subscription_plan = '-';
+        $sub_rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT od.parent_order_id, om.meta_value as renew, om2.meta_value as ps
+             FROM {$wpdb->prefix}wc_orders od
+             LEFT JOIN {$wpdb->prefix}wc_orders_meta om ON om.order_id = od.id AND om.meta_key = '_subscription_renewal_order_ids_cache'
+             LEFT JOIN {$wpdb->prefix}wc_orders_meta om2 ON om2.order_id = od.id AND om2.meta_key = '_ps_prepaid_pieces'
+             WHERE od.type = 'shop_subscription' AND od.customer_id = %d",
+            $order->get_customer_id()
+        ));
+        foreach ($sub_rows as $sub_row) {
+            $related_ids = [(int) $sub_row->parent_order_id];
+            $renewal = maybe_unserialize($sub_row->renew);
+            if (is_array($renewal)) {
+                $related_ids = array_merge($related_ids, array_map('intval', $renewal));
+            }
+            if (in_array((int) $order_id, $related_ids, true)) {
+                $n = max(1, intval($sub_row->ps));
+                $subscription_plan = $n === 1 ? 'Monthly' : $n . ' months';
+                break;
+            }
+        }
+
         $order_items = $order->get_items();
 
         foreach ($order_items as $item) {
@@ -1359,8 +1387,13 @@ final class MAV2_Ajax_Admin
                 $total = $total_with_tax / (1.09);
             }
 
+            $name = $item->get_name();
+            if ($subscription_plan !== '-') {
+                $name .= ' - ' . $subscription_plan;
+            }
+
             $temp = [
-                'name' => $item->get_name(),
+                'name' => $name,
                 'quantity' => $item->get_quantity(),
                 'unit_price' => $currency_format . number_format($subtotal / $item->get_quantity(), 2),
                 'price' => $currency_format . number_format($subtotal, 2),
@@ -1682,6 +1715,32 @@ final class MAV2_Ajax_Admin
             ];
         }
 
+        // Subscription plan: resolve via the related subscription (parent order
+        // or one of its cached renewal orders), since renewal orders don't carry
+        // '_ps_prepaid_pieces' on themselves the way the initiating order does
+        global $wpdb;
+        $subscription_plan = '-';
+        $sub_rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT od.parent_order_id, om.meta_value as renew, om2.meta_value as ps
+             FROM {$wpdb->prefix}wc_orders od
+             LEFT JOIN {$wpdb->prefix}wc_orders_meta om ON om.order_id = od.id AND om.meta_key = '_subscription_renewal_order_ids_cache'
+             LEFT JOIN {$wpdb->prefix}wc_orders_meta om2 ON om2.order_id = od.id AND om2.meta_key = '_ps_prepaid_pieces'
+             WHERE od.type = 'shop_subscription' AND od.customer_id = %d",
+            $user_id
+        ));
+        foreach ($sub_rows as $sub_row) {
+            $related_ids = [(int) $sub_row->parent_order_id];
+            $renewal = maybe_unserialize($sub_row->renew);
+            if (is_array($renewal)) {
+                $related_ids = array_merge($related_ids, array_map('intval', $renewal));
+            }
+            if (in_array($order_id, $related_ids, true)) {
+                $n = max(1, intval($sub_row->ps));
+                $subscription_plan = $n === 1 ? 'Monthly' : $n . ' months';
+                break;
+            }
+        }
+
         // Line items
         $items = [];
         foreach ($order->get_items() as $item) {
@@ -1695,8 +1754,12 @@ final class MAV2_Ajax_Admin
             }
             $subtotal = floatval($item->get_subtotal());
             $qty = max(1, $item->get_quantity());
+            $name = $item->get_name();
+            if ($subscription_plan !== '-') {
+                $name .= ' - ' . $subscription_plan;
+            }
             $items[] = [
-                'name' => $item->get_name(),
+                'name' => $name,
                 'image' => $image_url,
                 'quantity' => $item->get_quantity(),
                 'unit_price' => $currency_symbol . number_format($subtotal / $qty, 2),
@@ -1706,14 +1769,6 @@ final class MAV2_Ajax_Admin
 
         // Coupons
         $coupons = $order->get_coupon_codes();
-
-        // Subscription plan from meta
-        $plan_raw = $order->get_meta('_ps_prepaid_pieces');
-        $subscription_plan = '-';
-        if ($plan_raw !== '') {
-            $n = intval($plan_raw);
-            $subscription_plan = $n === 1 ? 'Monthly' : $n . ' months';
-        }
 
         // Date (SGT)
         $created = $order->get_date_created();

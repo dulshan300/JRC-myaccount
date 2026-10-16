@@ -28,8 +28,7 @@ $pcc_q = $wpdb->prepare($pcc_sql, $user_id);
 $pccc = $wpdb->get_var($pcc_q);
 
 
-$countries_obj = new WC_Countries(); // Initialize the WC_Countries class
-$countries = $countries_obj->get_countries(); // Get the list of countries
+$countries = mav2_get_allowed_countries(); // Only countries we currently deliver to
 
 ?>
 
